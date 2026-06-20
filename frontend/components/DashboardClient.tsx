@@ -114,8 +114,9 @@ export function DashboardClient() {
     <div className="history-page">
       <header className="console-header">
         <div>
-          <span className="eyebrow">History</span>
-          <h1>Detection Review</h1>
+          <span className="eyebrow">Overview</span>
+          <h1>Operations Dashboard</h1>
+          <p>Monitor analysis jobs, active processing, and recent evidence.</p>
         </div>
         <div className="header-actions">
           <button className="button secondary" type="button" onClick={loadData}>
@@ -140,7 +141,7 @@ export function DashboardClient() {
         <StatCard label="Clear Results" value={clearJobCount} />
       </section>
 
-      {error ? <div className="notice danger">{error}</div> : null}
+      {error ? <div className="notice danger" role="alert">{error}</div> : null}
 
       <section className="review-controls" aria-label="Review filters">
         <label className="search-field">
@@ -205,7 +206,7 @@ export function DashboardClient() {
 
         <section className="content-card">
           <div className="section-title">
-            <h2>Evidence</h2>
+            <h2>Recent Evidence</h2>
             <span className="pill">{visibleViolations.length} records</span>
           </div>
 

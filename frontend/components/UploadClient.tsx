@@ -1,6 +1,6 @@
 "use client";
 
-import { DragEvent, FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { DragEvent, FormEvent, type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Clock3,
@@ -229,8 +229,8 @@ export function UploadClient() {
     <div className="console-page">
       <header className="console-header">
         <div>
-          <span className="eyebrow">Analysis Console</span>
-          <h1>SafeRide</h1>
+          <span className="eyebrow">SafeRide</span>
+          <h1>Analysis Console</h1>
         </div>
         <div className="console-status">
           <span className={`status-dot ${backendOnline ? "online" : "offline"}`} />
@@ -282,7 +282,7 @@ export function UploadClient() {
             </div>
           </form>
 
-          <div className="source-message">{status || "Ready"}</div>
+          <div className="source-message" aria-live="polite">{status || "Ready"}</div>
 
           <SettingsPanel
             disabled={isActive(job) || savingSettings}
@@ -293,7 +293,7 @@ export function UploadClient() {
             status={settingsStatus}
           />
 
-          <p className="source-hint">Past jobs and saved evidence live in Dashboard and Violations.</p>
+          <p className="source-hint">Dashboard and Violations stay synced with completed analyses.</p>
         </aside>
 
         <main className="viewer-panel">
@@ -464,7 +464,15 @@ function LiveTab({ job }: { job: Job | null }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [detections, setDetections] = useState<DetectionFrame[]>([]);
   const [overlayFrame, setOverlayFrame] = useState<DetectionFrame | null>(null);
+  const [videoSize, setVideoSize] = useState<{ width: number; height: number } | null>(null);
   const videoUrl = job?.source_video ? mediaUrl(job.source_video) : null;
+  const displaySize = detections[0] ?? videoSize;
+  const videoFrameStyle = displaySize
+    ? ({
+        "--video-aspect-ratio": `${displaySize.width} / ${displaySize.height}`,
+        "--video-ratio-number": displaySize.width / displaySize.height
+      } as CSSProperties)
+    : undefined;
 
   const drawOverlay = useCallback(() => {
     const video = videoRef.current;
@@ -491,7 +499,7 @@ function LiveTab({ job }: { job: Job | null }) {
       return;
     }
 
-    const videoRect = containedRect(bounds.width, bounds.height, video.videoWidth, video.videoHeight);
+    const videoRect = { x: 0, y: 0, width: bounds.width, height: bounds.height };
     const drawBox = (box: DetectionBox, color: string, label: string) => {
       const [x1, y1, x2, y2] = box.xyxy;
       const left = videoRect.x + (x1 / frame.width) * videoRect.width;
@@ -523,6 +531,7 @@ function LiveTab({ job }: { job: Job | null }) {
   useEffect(() => {
     setDetections([]);
     setOverlayFrame(null);
+    setVideoSize(null);
   }, [job?.id]);
 
   useEffect(() => {
@@ -569,11 +578,19 @@ function LiveTab({ job }: { job: Job | null }) {
     return () => window.removeEventListener("resize", drawOverlay);
   }, [drawOverlay]);
 
+  function handleLoadedMetadata() {
+    const video = videoRef.current;
+    if (video?.videoWidth && video.videoHeight) {
+      setVideoSize({ width: video.videoWidth, height: video.videoHeight });
+    }
+    window.requestAnimationFrame(drawOverlay);
+  }
+
   return (
     <div className="live-view">
       <div className="preview-stage professional video-preview-stage">
         {videoUrl ? (
-          <>
+          <div className="video-canvas-layer" style={videoFrameStyle}>
             <video
               key={videoUrl}
               ref={videoRef}
@@ -582,14 +599,14 @@ function LiveTab({ job }: { job: Job | null }) {
               muted
               playsInline
               preload="metadata"
-              onLoadedMetadata={drawOverlay}
+              onLoadedMetadata={handleLoadedMetadata}
               onPlay={drawOverlay}
               onPause={drawOverlay}
               onSeeked={drawOverlay}
               onTimeUpdate={drawOverlay}
             />
             <canvas ref={canvasRef} className="detection-overlay" aria-hidden="true" />
-          </>
+          </div>
         ) : (
           <div className="empty-preview">
             <FileVideo size={42} />

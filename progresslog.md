@@ -1,5 +1,38 @@
 # SafeRide Progress Log
 
+## 2026-06-21 01:10:00 +07:00
+
+### Professional UI/UX Polish And Playback Framing Fix
+
+- Reworked the frontend visual system in `frontend/app/globals.css` for a cleaner operations-console feel.
+- Consolidated styling around consistent surfaces, controls, badges, filters, tables, modals, empty states, and responsive behavior.
+- Updated main page hierarchy and copy:
+  - `/upload`: Analysis Console
+  - `/dashboard`: Operations Dashboard
+  - `/violations`: Review Queue
+- Added small accessibility improvements for live status/error messages.
+- Investigated a playback issue where a detected/uploaded video looked zoomed or showed no meaningful subjects.
+- Confirmed the latest uploaded clip was portrait (`504x900`) while the Live viewer was using a fixed stage.
+- Updated `frontend/components/UploadClient.tsx` so the Live tab sizes its video/canvas layer from the actual media or detection metadata aspect ratio.
+- Updated overlay drawing to map boxes directly onto the aspect-aware video/canvas layer.
+- Restarted the frontend dev server after `npm run build` running alongside `npm run dev` caused the local page to appear without CSS.
+- Verified the Next CSS asset for `/upload` returned 200 and contained generated CSS.
+
+### Verification
+
+- Ran frontend build:
+  - `npm run build`
+- Ran frontend type check after build completed:
+  - `npm run typecheck`
+- Verified runtime services:
+  - `http://localhost:3000/upload` returned 200.
+  - `http://127.0.0.1:8000/api/health` returned 200 during frontend polling.
+
+### Notes
+
+- Avoid running `npm run build` while `npm run dev` is active on Windows. It can rewrite `.next` assets/types underneath the dev server and temporarily break CSS or typecheck.
+- The current app still analyzes uploaded videos, not RTSP/CCTV streams. Real-time CCTV support is feasible, but should be implemented as a separate live ingest/inference pipeline.
+
 ## 2026-05-21 00:59:02 +07:00
 
 ### Implemented ByteTrack-Style Rider Tracking

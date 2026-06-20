@@ -60,9 +60,9 @@ export function ViolationsClient() {
     <div className="history-page violations-page">
       <header className="console-header">
         <div>
-          <span className="eyebrow">Records</span>
-          <h1>Violation Review</h1>
-          <p>View, filter, export, and clean up helmet violation evidence.</p>
+          <span className="eyebrow">Review Queue</span>
+          <h1>Violations</h1>
+          <p>Confirm detections, mark false positives, and export reviewed evidence.</p>
         </div>
         <div className="header-actions">
           <div className="console-clock">
@@ -86,7 +86,7 @@ export function ViolationsClient() {
         </div>
       </header>
 
-      <section className="content-card violation-summary-card">
+      <section className="content-card violation-summary-card" aria-label="Violation summary">
         <div>
           <h2>Violation Records</h2>
           <p>Recent helmet violations detected across completed analyses.</p>
@@ -94,12 +94,12 @@ export function ViolationsClient() {
         <span className="pill warning">{violations.length} total</span>
       </section>
 
-      {error ? <div className="notice danger">{error}</div> : null}
+      {error ? <div className="notice danger" role="alert">{error}</div> : null}
 
       <section className="content-card violation-history">
         <div className="section-title">
           <div>
-            <h2>Violation History</h2>
+            <h2>Review Queue</h2>
             <p className="muted">Search by plate, date, status, or job id.</p>
           </div>
           {loading ? <span className="pill processing">loading</span> : null}

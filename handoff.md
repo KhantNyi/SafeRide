@@ -2,9 +2,48 @@
 
 ## Current Status
 
-SafeRide is now a local full-stack computer vision web app for uploaded-video helmet violation analysis. The app supports video upload, YOLO-based frame analysis, ByteTrack-style rider identity tracking, real video playback with detection overlays, job progress tracking, processing timing telemetry, runtime detection settings, result summaries, and evidence persistence.
+SafeRide is now a local full-stack computer vision web app for uploaded-video helmet violation analysis. The app supports video upload, YOLO-based frame analysis, ByteTrack-style rider identity tracking, real video playback with detection overlays, job progress tracking, processing timing telemetry, runtime detection settings, result summaries, evidence persistence, and a cleaner operations-console UI.
 
 The project is still an MVP. The web app and backend workflow are functional, but model accuracy, OCR quality, tracker tuning, and production hardening remain future work.
+
+## Progress Log - 2026-06-21
+
+### Accomplished Today
+
+- Performed a broad professional UI/UX polish pass across the frontend.
+- Rebuilt `frontend/app/globals.css` around a smaller design system:
+  - cleaner tokens
+  - restrained neutral palette
+  - consistent panels, cards, buttons, badges, filters, tables, modals, and empty states
+  - tighter operations-console spacing
+  - improved responsive behavior
+- Updated page hierarchy and wording:
+  - `/upload` now presents as the Analysis Console.
+  - `/dashboard` now presents as an Operations Dashboard.
+  - `/violations` now presents as a Review Queue.
+- Improved status/error accessibility with live status and alert semantics where appropriate.
+- Investigated a video playback issue where portrait uploaded footage looked zoomed or badly framed after detection.
+- Confirmed the latest uploaded clip was portrait (`504x900`) while the viewer was using a fixed console-style stage.
+- Fixed the Live tab player so the video/canvas layer sizes from the actual video or detection metadata aspect ratio instead of being forced into one fixed layout.
+- Simplified overlay drawing for the new aspect-aware layer so boxes map directly to the displayed video frame.
+- Confirmed the frontend and backend can run together:
+  - Frontend: `http://localhost:3000`
+  - Backend: `http://127.0.0.1:8000`
+- Restarted the frontend dev server after CSS disappeared locally.
+- Confirmed `http://localhost:3000/upload` returns 200 and the generated Next CSS asset is present and non-empty.
+
+### Challenges Faced And Tracked
+
+- Running `npm run build` while `npm run dev` was active confused the Next dev cache and caused the browser to appear unstyled.
+  - Fixed by stopping the active Node dev-server processes and starting `npm run dev` again.
+  - Development note updated below: avoid running build and dev against the same `.next` directory at the same time.
+- A parallel `npm run typecheck` and `npm run build` run briefly failed because `next build` rewrote `.next/types` while TypeScript was reading it.
+  - Reran `npm run typecheck` by itself and it passed.
+- Windows denied `Get-NetTCPConnection` for port lookup in the current shell.
+  - Used active Node process inspection and targeted `Stop-Process` instead.
+- The video framing bug was caused by frontend layout rather than the backend serving a preview/crop in place of the original video.
+  - `source_video` still points to the uploaded source media.
+  - The fix was scoped to `frontend/components/UploadClient.tsx` and `frontend/app/globals.css`.
 
 ## Progress Log - 2026-05-17
 
@@ -108,6 +147,7 @@ The project is still an MVP. The web app and backend workflow are functional, bu
   - max violations per video
   - OCR on/off
 - Added professional UI styling in `frontend/app/globals.css`.
+- Reworked the global frontend styling into a more consistent operations-console design system.
 - Added responsive behavior for smaller screens.
 - Added Dashboard search and job status filters.
 - Added Violation search, status filters, CSV export, and evidence image inspector.
@@ -125,6 +165,7 @@ The project is still an MVP. The web app and backend workflow are functional, bu
 - Updated plate labels so unreadable or uncaptured plates are shown clearly instead of as pending.
 - Added `scripts/backfill_plate_ocr.py` to populate OCR text for existing saved violation crops.
 - Added `/upload?job=<job_id>` support so saved jobs can be reopened for playback from Dashboard.
+- Fixed portrait/non-16:9 playback framing by sizing the Live tab video/canvas layer from the actual media or detection metadata aspect ratio.
 
 ### Backend
 
@@ -330,6 +371,7 @@ python -m uvicorn app.main:app --reload --reload-dir backend --app-dir backend -
 
 - Detection is sampled, not every frame. Controlled by `sample_every_seconds` in `backend/app/core/config.py`.
 - Live preview plays the original uploaded video and overlays the nearest sampled detection metadata, so boxes update at sampled-frame cadence rather than every video frame.
+- Uploaded videos can be portrait or landscape; the Live tab now adapts its playback/overlay layer to the source aspect ratio.
 - Larger inference sizes improve small rider recall but cost more processing time. Controlled by `object_imgsz`, `helmet_imgsz`, and `plate_imgsz`.
 - Runtime settings apply to subsequent analyses, not jobs that are already running.
 - Runtime settings are not persisted across backend restarts yet.
@@ -409,14 +451,14 @@ python -m uvicorn app.main:app --reload --reload-dir backend --app-dir backend -
 
 ## Suggested Next Session Plan
 
-1. Add a script or debug mode to export sampled frames and rider/helmet crops from uploaded videos into a local dataset folder.
-2. Label a first Thai motorcycle helmet dataset in YOLO format with `With Helmet` and `Without Helmet`.
-3. Fine-tune the helmet model from `models/helmet-yolov8n.pt` and compare validation metrics against the current baseline.
-4. Tune runtime thresholds against 3-5 sample Thailand traffic clips using the Settings panel.
-5. Add timeline markers and jump-to-violation controls for completed video playback.
-6. Add tracker-based duplicate suppression.
-7. Improve motorcycle plate OCR with Thai plate post-processing and better crop scoring.
-8. Add PDF/report export for school presentation/reporting.
+1. Add timeline markers and jump-to-violation controls for completed video playback.
+2. Add a script or debug mode to export sampled frames and rider/helmet crops from uploaded videos into a local dataset folder.
+3. Label a first Thai motorcycle helmet dataset in YOLO format with `With Helmet` and `Without Helmet`.
+4. Fine-tune the helmet model from `models/helmet-yolov8n.pt` and compare validation metrics against the current baseline.
+5. Tune runtime thresholds against 3-5 sample Thailand traffic clips using the Settings panel.
+6. Improve motorcycle plate OCR with Thai plate post-processing and better crop scoring.
+7. Add PDF/report export for school presentation/reporting.
+8. Plan RTSP/CCTV support as a new live-stream pipeline rather than an extension of the current upload-only job flow.
 
 ## Known Good Checks
 
@@ -440,6 +482,7 @@ Also verified:
 - `GET /api/settings` returns current runtime detection settings.
 - `PATCH /api/settings` accepts bounded runtime detection settings.
 - `PATCH /api/violations/{violation_id}/review` persists `review_status`.
+- Next CSS asset for `/upload` loads successfully after a clean dev-server restart.
 
 ## Current Runtime Ports
 
