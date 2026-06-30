@@ -1,5 +1,35 @@
 # SafeRide Progress Log
 
+## 2026-06-30
+
+### Hardened Rider-Motorcycle-Plate Association
+
+- Tightened the current geometry-plus-ByteTrack association pipeline instead of replacing it.
+- Expanded object-model context from person/motorcycle only to include COCO car, bus, and truck boxes as negative vehicle context.
+- Added association tuning defaults in `backend/app/core/config.py`:
+  - `min_helmet_person_score`
+  - `min_person_motorcycle_score`
+  - `min_helmet_motorcycle_score`
+  - `min_no_helmet_association_score`
+  - `min_plate_motorcycle_score`
+- Updated no-helmet association saving so pedestrian-only no-helmet detections are rejected unless a plausible motorcycle is linked.
+- Added a save-time guard so future weak no-helmet associations still cannot persist without a motorcycle and minimum association score.
+- Tightened plate assignment:
+  - plate candidates must pass motorcycle-relative location, size, aspect, and lower-region gates before scoring
+  - plates that score better against nearby car/bus/truck boxes are rejected
+  - the plate-to-helmet fallback is no longer used for saved no-helmet rider associations
+- Kept existing ByteTrack-style rider association tracking and multi-frame plate aggregation in place.
+
+### Verification
+
+- Ran backend syntax check:
+  - `./.venv/bin/python -m py_compile backend/app/services/pipeline.py backend/app/core/config.py`
+
+### Notes
+
+- This is a stricter MVP association pass. It should reduce pedestrian false positives and wrong car/different-motorcycle plate attachment, but thresholds still need tuning against real Thai traffic clips.
+- Future higher-accuracy work can still add rider-local plate crop detection or a trained rider/motorcycle/plate association model.
+
 ## 2026-06-21 01:10:00 +07:00
 
 ### Professional UI/UX Polish And Playback Framing Fix

@@ -245,6 +245,12 @@ The project is still an MVP. The web app and backend workflow are functional, bu
   - pending violations wait briefly before saving
   - multiple plate crops can be scored during that window
   - saved records use the best crop/OCR result found for that rider
+- Hardened rider association against common false matches:
+  - no-helmet violations now require a plausible motorcycle association before saving
+  - weak no-helmet associations are rejected by a minimum association score
+  - plate-to-motorcycle matching now uses hard spatial plausibility gates before scoring
+  - COCO car, bus, and truck detections are used as negative vehicle context so car/truck/bus plates are less likely to attach to motorcycle riders
+  - the risky plate-to-helmet fallback is no longer used for saved no-helmet rider associations
 - Added sampled-frame detection metadata for video overlays:
   - source video URLs are returned as `source_video`
   - metadata is written under `data/metadata/`
@@ -256,6 +262,12 @@ The project is still an MVP. The web app and backend workflow are functional, bu
   - `sample_every_seconds`
   - `max_violations_per_video`
   - `enable_ocr`
+- Added association tuning settings:
+  - `min_helmet_person_score`
+  - `min_person_motorcycle_score`
+  - `min_helmet_motorcycle_score`
+  - `min_no_helmet_association_score`
+  - `min_plate_motorcycle_score`
 
 ## Current Architecture
 

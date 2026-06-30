@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Clock3, Download, RefreshCcw, Search, Trash2, X } from "lucide-react";
+import Link from "next/link";
+import { ChevronDown, Clock3, Download, PlayCircle, RefreshCcw, Search, Trash2, X } from "lucide-react";
 
-import { clearJobs, deleteViolation, fetchViolations, mediaUrl, reviewViolation, Violation } from "@/lib/api";
+import { clearJobs, deleteViolation, fetchJobs, fetchViolations, Job, mediaUrl, reviewViolation, Violation } from "@/lib/api";
 
 export function ViolationsClient() {
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [violations, setViolations] = useState<Violation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -16,11 +18,14 @@ export function ViolationsClient() {
   const [selectedPlate, setSelectedPlate] = useState<Violation | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [clearing, setClearing] = useState(false);
+  const [collapsedJobIds, setCollapsedJobIds] = useState<string[]>([]);
 
-  async function loadViolations() {
+  async function loadReviewData() {
     setError(null);
     try {
-      setViolations(await fetchViolations());
+      const [jobData, violationData] = await Promise.all([fetchJobs(), fetchViolations()]);
+      setJobs(jobData);
+      setViolations(violationData);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not load violation records");
     } finally {
@@ -30,8 +35,8 @@ export function ViolationsClient() {
 
   useEffect(() => {
     setNow(new Date());
-    loadViolations();
-    const dataTimer = window.setInterval(loadViolations, 5000);
+    loadReviewData();
+    const dataTimer = window.setInterval(loadReviewData, 5000);
     const clockTimer = window.setInterval(() => setNow(new Date()), 1000);
     return () => {
       window.clearInterval(dataTimer);
@@ -39,13 +44,18 @@ export function ViolationsClient() {
     };
   }, []);
 
+  const jobsById = useMemo(() => new Map(jobs.map((job) => [job.id, job])), [jobs]);
+
   const rows = useMemo(
     () =>
       violations.filter((violation) => {
         const normalizedQuery = query.trim().toLowerCase();
+        const job = jobsById.get(violation.job_id);
         const matchesQuery =
           !normalizedQuery ||
           plateLabel(violation).toLowerCase().includes(normalizedQuery) ||
+          (job?.filename ?? "").toLowerCase().includes(normalizedQuery) ||
+          (job?.message ?? "").toLowerCase().includes(normalizedQuery) ||
           violation.helmet_status.toLowerCase().includes(normalizedQuery) ||
           violation.job_id.toLowerCase().includes(normalizedQuery) ||
           String(violation.track_id ?? "").includes(normalizedQuery) ||
@@ -53,7 +63,17 @@ export function ViolationsClient() {
         const matchesStatus = statusFilter === "all" || reviewState(violation) === statusFilter;
         return matchesQuery && matchesStatus;
       }),
-    [violations, query, statusFilter]
+    [jobsById, violations, query, statusFilter]
+  );
+
+  const groupedRows = useMemo(
+    () =>
+      groupViolationsByJob(rows, jobsById).sort((a, b) => {
+        const aTime = new Date(a.job?.created_at ?? a.latestDetectedAt).getTime();
+        const bTime = new Date(b.job?.created_at ?? b.latestDetectedAt).getTime();
+        return bTime - aTime;
+      }),
+    [jobsById, rows]
   );
 
   return (
@@ -71,7 +91,7 @@ export function ViolationsClient() {
               <strong>{now ? formatClockTime(now) : "--:--:--"}</strong>
             </time>
           </div>
-          <button className="button secondary" type="button" onClick={loadViolations}>
+          <button className="button secondary" type="button" onClick={loadReviewData}>
             <RefreshCcw size={16} />
             Refresh
           </button>
@@ -100,7 +120,7 @@ export function ViolationsClient() {
         <div className="section-title">
           <div>
             <h2>Review Queue</h2>
-            <p className="muted">Search by plate, date, status, or job id.</p>
+            <p className="muted">Search by plate, date, status, filename, or job id.</p>
           </div>
           {loading ? <span className="pill processing">loading</span> : null}
         </div>
@@ -108,7 +128,7 @@ export function ViolationsClient() {
             <div className="violation-controls">
               <label className="violation-search">
                 <Search size={16} />
-                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search plate, date, status, job" />
+                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search plate, filename, date, status, job" />
               </label>
               <div className="violation-filter-chips" role="group" aria-label="Violation status filter">
                 {(["all", "pending", "confirmed", "false_positive"] as const).map((filter) => (
@@ -123,62 +143,81 @@ export function ViolationsClient() {
               <span><i className="status-dot review" />Use Confirm or False positive to finalize each detection.</span>
             </div>
 
-            <div className="violation-table" role="table" aria-label="Violation history">
-              <div className="violation-table-head" role="row">
-                <span>Snapshot</span>
-                <span>Plate OCR</span>
-                <span>Plate Crop</span>
-                <span>Date &amp; Time</span>
-                <span>Status</span>
-                <span>Decision</span>
-                <span>Delete</span>
+            {groupedRows.length ? (
+              <div className="violation-job-groups">
+                {groupedRows.map((group) => {
+                  const collapsed = collapsedJobIds.includes(group.jobId);
+                  return (
+                    <article className="violation-job-group" key={group.jobId}>
+                      <header className="violation-job-header">
+                        <button className="job-collapse-button" type="button" onClick={() => toggleJobGroup(group.jobId)} aria-expanded={!collapsed}>
+                          <ChevronDown size={17} className={collapsed ? "collapsed" : ""} />
+                          <span>
+                            <strong>{group.job?.filename ?? `Job ${shortJobId(group.jobId)}`}</strong>
+                            <small>{jobSubtitle(group)}</small>
+                          </span>
+                        </button>
+                        <div className="violation-job-actions">
+                          <span className="pill warning">{group.violations.length} violations</span>
+                          {group.job ? <span className={`pill ${group.job.status}`}>{group.job.status}</span> : null}
+                          <Link className="button secondary" href={`/jobs/${group.jobId}`}>
+                            <PlayCircle size={16} />
+                            Replay Job
+                          </Link>
+                          <button className="button secondary" type="button" onClick={() => exportJobCsv(group)}>
+                            <Download size={16} />
+                            Export Job
+                          </button>
+                          <button
+                            className="button secondary"
+                            type="button"
+                            onClick={() => confirmPendingForGroup(group.violations)}
+                            disabled={!group.violations.some((violation) => reviewState(violation) === "pending")}
+                          >
+                            Confirm Pending
+                          </button>
+                        </div>
+                      </header>
+
+                      {!collapsed ? (
+                        <div className="violation-table" role="table" aria-label={`${group.job?.filename ?? group.jobId} violations`}>
+                          <div className="violation-table-head" role="row">
+                            <span>Snapshot</span>
+                            <span>Plate OCR</span>
+                            <span>Plate Crop</span>
+                            <span>Frame</span>
+                            <span>Status</span>
+                            <span>Decision</span>
+                            <span>Replay</span>
+                            <span>Delete</span>
+                          </div>
+
+                          {group.violations.map((violation) => (
+                            <ViolationRow
+                              deletingId={deletingId}
+                              key={violation.id}
+                              onApplyReview={applyReview}
+                              onInspectEvidence={setSelectedViolation}
+                              onInspectPlate={setSelectedPlate}
+                              onRemove={removeRecord}
+                              violation={violation}
+                            />
+                          ))}
+                        </div>
+                      ) : null}
+                    </article>
+                  );
+                })}
               </div>
+            ) : (
+              <div className="violation-empty">
+                <Clock3 size={34} />
+                <strong>No violation records</strong>
+                <span>Run an analysis to populate this table.</span>
+              </div>
+            )}
 
-              {rows.length ? (
-                rows.map((violation) => (
-                  <article className="violation-table-row" key={violation.id} role="row">
-                    <button className="violation-snapshot" type="button" onClick={() => setSelectedViolation(violation)} aria-label="Inspect evidence snapshot">
-                      <img src={mediaUrl(violation.evidence_image)} alt="Violation evidence snapshot" />
-                    </button>
-                    <span className={`plate-chip ${violation.plate_text ? "" : "pending"}`}>{plateLabel(violation)}</span>
-                    {violation.plate_image ? (
-                      <button className="plate-preview interactive" type="button" onClick={() => setSelectedPlate(violation)} aria-label="Inspect plate crop">
-                        <img src={mediaUrl(violation.plate_image)} alt="Detected license plate crop" />
-                      </button>
-                    ) : (
-                      <span className="plate-preview">Not captured</span>
-                    )}
-                    <time dateTime={violation.detected_at}>{formatRecordTime(violation.detected_at)}</time>
-                    <span className={`violation-status ${statusTone(violation)}`}>{statusLabel(violation)}</span>
-                    <span className="review-actions">
-                      <button type="button" onClick={() => applyReview(violation, "confirmed")} disabled={violation.review_status === "confirmed"}>
-                        Confirm
-                      </button>
-                      <button type="button" onClick={() => applyReview(violation, "false_positive")} disabled={violation.review_status === "false_positive"}>
-                        False positive
-                      </button>
-                    </span>
-                    <button
-                      className="icon-button danger"
-                      type="button"
-                      onClick={() => removeRecord(violation)}
-                      disabled={deletingId === violation.id}
-                      aria-label="Delete violation record"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </article>
-                ))
-              ) : (
-                <div className="violation-empty">
-                  <Clock3 size={34} />
-                  <strong>No violation records</strong>
-                  <span>Run an analysis to populate this table.</span>
-                </div>
-              )}
-            </div>
-
-            <footer className="violation-total">Showing {rows.length} of {violations.length} violation(s)</footer>
+            <footer className="violation-total">Showing {rows.length} of {violations.length} violation(s) across {groupedRows.length} job(s)</footer>
       </section>
 
       {selectedViolation ? (
@@ -230,6 +269,13 @@ export function ViolationsClient() {
               </div>
             ) : null}
             <div className="evidence-modal-actions">
+              <Link
+                className="button secondary"
+                href={`/jobs/${selectedViolation.job_id}${selectedViolation.frame_number === null ? "" : `?frame=${selectedViolation.frame_number}`}`}
+              >
+                <PlayCircle size={16} />
+                Replay Moment
+              </Link>
               <button className="button secondary" type="button" onClick={() => applyReview(selectedViolation, "confirmed")}>
                 Confirm Violation
               </button>
@@ -266,27 +312,15 @@ export function ViolationsClient() {
   );
 
   function exportCsv() {
-    const header = ["Plate OCR", "Detected At", "Status", "Confidence", "Frame", "Track", "Evidence Image"];
-    const lines = rows.map((violation) =>
-      [
-        plateLabel(violation),
-        formatRecordTime(violation.detected_at),
-        statusLabel(violation),
-        Math.round(violation.helmet_confidence * 100),
-        violation.frame_number ?? "",
-        violation.track_id ?? "",
-        mediaUrl(violation.evidence_image)
-      ]
-        .map(csvCell)
-        .join(",")
-    );
-    const csv = [header.map(csvCell).join(","), ...lines].join("\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "saferide-violations.csv";
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadViolationCsv("saferide-violations.csv", rows, jobsById);
+  }
+
+  function exportJobCsv(group: ViolationJobGroup) {
+    downloadViolationCsv(`saferide-${group.job?.filename ?? group.jobId}-violations.csv`, group.violations, jobsById);
+  }
+
+  function toggleJobGroup(jobId: string) {
+    setCollapsedJobIds((current) => (current.includes(jobId) ? current.filter((id) => id !== jobId) : [...current, jobId]));
   }
 
   async function removeRecord(violation: Violation) {
@@ -301,7 +335,7 @@ export function ViolationsClient() {
       if (selectedViolation?.id === violation.id) {
         setSelectedViolation(null);
       }
-      await loadViolations();
+      await loadReviewData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not delete violation");
     } finally {
@@ -320,6 +354,21 @@ export function ViolationsClient() {
     }
   }
 
+  async function confirmPendingForGroup(groupViolations: Violation[]) {
+    const pending = groupViolations.filter((violation) => reviewState(violation) === "pending");
+    if (!pending.length || !window.confirm(`Confirm ${pending.length} pending violation(s) for this job?`)) {
+      return;
+    }
+
+    setError(null);
+    try {
+      await Promise.all(pending.map((violation) => reviewViolation(violation.id, "confirmed")));
+      await loadReviewData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not confirm pending violations");
+    }
+  }
+
   async function clearAllRecords() {
     if (!window.confirm("Delete all previous jobs, violation records, and generated media?")) {
       return;
@@ -331,13 +380,145 @@ export function ViolationsClient() {
       await clearJobs();
       setSelectedViolation(null);
       setSelectedPlate(null);
-      await loadViolations();
+      await loadReviewData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not clear records");
     } finally {
       setClearing(false);
     }
   }
+}
+
+type ViolationJobGroup = {
+  jobId: string;
+  job: Job | null;
+  latestDetectedAt: string;
+  violations: Violation[];
+};
+
+function ViolationRow({
+  deletingId,
+  onApplyReview,
+  onInspectEvidence,
+  onInspectPlate,
+  onRemove,
+  violation
+}: {
+  deletingId: string | null;
+  onApplyReview: (violation: Violation, reviewStatus: "confirmed" | "false_positive") => void;
+  onInspectEvidence: (violation: Violation) => void;
+  onInspectPlate: (violation: Violation) => void;
+  onRemove: (violation: Violation) => void;
+  violation: Violation;
+}) {
+  return (
+    <article className="violation-table-row" role="row">
+      <button className="violation-snapshot" type="button" onClick={() => onInspectEvidence(violation)} aria-label="Inspect evidence snapshot">
+        <img src={mediaUrl(violation.evidence_image)} alt="Violation evidence snapshot" />
+      </button>
+      <span className={`plate-chip ${violation.plate_text ? "" : "pending"}`}>{plateLabel(violation)}</span>
+      {violation.plate_image ? (
+        <button className="plate-preview interactive" type="button" onClick={() => onInspectPlate(violation)} aria-label="Inspect plate crop">
+          <img src={mediaUrl(violation.plate_image)} alt="Detected license plate crop" />
+        </button>
+      ) : (
+        <span className="plate-preview">Not captured</span>
+      )}
+      <span className="frame-cell">Frame {violation.frame_number ?? "-"}</span>
+      <span className={`violation-status ${statusTone(violation)}`}>{statusLabel(violation)}</span>
+      <span className="review-actions">
+        <button type="button" onClick={() => onApplyReview(violation, "confirmed")} disabled={violation.review_status === "confirmed"}>
+          Confirm
+        </button>
+        <button type="button" onClick={() => onApplyReview(violation, "false_positive")} disabled={violation.review_status === "false_positive"}>
+          False positive
+        </button>
+      </span>
+      <Link
+        className="icon-button"
+        href={`/jobs/${violation.job_id}${violation.frame_number === null ? "" : `?frame=${violation.frame_number}`}`}
+        aria-label="Replay violation moment"
+      >
+        <PlayCircle size={16} />
+      </Link>
+      <button
+        className="icon-button danger"
+        type="button"
+        onClick={() => onRemove(violation)}
+        disabled={deletingId === violation.id}
+        aria-label="Delete violation record"
+      >
+        <Trash2 size={16} />
+      </button>
+    </article>
+  );
+}
+
+function groupViolationsByJob(rows: Violation[], jobsById: Map<string, Job>): ViolationJobGroup[] {
+  const groups = new Map<string, Violation[]>();
+  for (const violation of rows) {
+    const records = groups.get(violation.job_id) ?? [];
+    records.push(violation);
+    groups.set(violation.job_id, records);
+  }
+
+  return [...groups.entries()].map(([jobId, groupViolations]) => {
+    const sorted = [...groupViolations].sort((a, b) => {
+      const frameA = a.frame_number ?? Number.MAX_SAFE_INTEGER;
+      const frameB = b.frame_number ?? Number.MAX_SAFE_INTEGER;
+      if (frameA !== frameB) {
+        return frameA - frameB;
+      }
+      return new Date(a.detected_at).getTime() - new Date(b.detected_at).getTime();
+    });
+    return {
+      jobId,
+      job: jobsById.get(jobId) ?? null,
+      latestDetectedAt: sorted.reduce((latest, violation) => (violation.detected_at > latest ? violation.detected_at : latest), sorted[0]?.detected_at ?? ""),
+      violations: sorted
+    };
+  });
+}
+
+function downloadViolationCsv(filename: string, records: Violation[], jobsById: Map<string, Job>) {
+  const header = ["Job", "Job ID", "Plate OCR", "Detected At", "Status", "Confidence", "Frame", "Track", "Evidence Image"];
+  const lines = records.map((violation) => {
+    const job = jobsById.get(violation.job_id);
+    return [
+      job?.filename ?? "",
+      violation.job_id,
+      plateLabel(violation),
+      formatRecordTime(violation.detected_at),
+      statusLabel(violation),
+      Math.round(violation.helmet_confidence * 100),
+      violation.frame_number ?? "",
+      violation.track_id ?? "",
+      mediaUrl(violation.evidence_image)
+    ]
+      .map(csvCell)
+      .join(",");
+  });
+  const csv = [header.map(csvCell).join(","), ...lines].join("\n");
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = sanitizeFilename(filename);
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function jobSubtitle(group: ViolationJobGroup) {
+  const date = group.job?.created_at ?? group.latestDetectedAt;
+  const formatted = date ? formatRecordTime(date) : "Unknown date";
+  return `${shortJobId(group.jobId)} | ${formatted}`;
+}
+
+function shortJobId(jobId: string) {
+  return jobId.slice(0, 8);
+}
+
+function sanitizeFilename(filename: string) {
+  return filename.replace(/[^a-z0-9._-]+/gi, "-").replace(/^-+|-+$/g, "") || "saferide-violations.csv";
 }
 
 function plateLabel(violation: Violation) {

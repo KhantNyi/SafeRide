@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     tracker_new_track_confidence: float = 0.25
     tracker_match_threshold: float = 0.25
     tracker_max_lost_seconds: float = 3
+    min_helmet_person_score: float = 0.24
+    min_person_motorcycle_score: float = 0.18
+    min_helmet_motorcycle_score: float = 0.30
+    min_no_helmet_association_score: float = 0.38
+    min_plate_motorcycle_score: float = 0.28
     max_violations_per_video: int = 25
     preview_every_samples: int = 1
     object_imgsz: int = 960

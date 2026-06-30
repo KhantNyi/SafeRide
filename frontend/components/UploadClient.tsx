@@ -11,6 +11,7 @@ import {
   Save,
   ShieldAlert,
   ShieldCheck,
+  PlayCircle,
   SlidersHorizontal,
   Upload
 } from "lucide-react";
@@ -466,7 +467,7 @@ function LiveTab({ job }: { job: Job | null }) {
   const [overlayFrame, setOverlayFrame] = useState<DetectionFrame | null>(null);
   const [videoSize, setVideoSize] = useState<{ width: number; height: number } | null>(null);
   const videoUrl = job?.source_video ? mediaUrl(job.source_video) : null;
-  const displaySize = detections[0] ?? videoSize;
+  const displaySize = videoSize ?? detections[0];
   const videoFrameStyle = displaySize
     ? ({
         "--video-aspect-ratio": `${displaySize.width} / ${displaySize.height}`,
@@ -499,7 +500,12 @@ function LiveTab({ job }: { job: Job | null }) {
       return;
     }
 
-    const videoRect = { x: 0, y: 0, width: bounds.width, height: bounds.height };
+    const videoRect = containedRect(
+      bounds.width,
+      bounds.height,
+      video.videoWidth || frame.width,
+      video.videoHeight || frame.height
+    );
     const drawBox = (box: DetectionBox, color: string, label: string) => {
       const [x1, y1, x2, y2] = box.xyxy;
       const left = videoRect.x + (x1 / frame.width) * videoRect.width;
@@ -738,6 +744,12 @@ function ResultsTab({ job, violations }: { job: Job | null; violations: Violatio
           <span className="pill">{job.sampled_frames} sampled frames</span>
           <span className="pill warning">{job.violation_count} violations</span>
         </div>
+        {job.source_video ? (
+          <Link className="button secondary" href={`/jobs/${job.id}`}>
+            <PlayCircle size={16} />
+            Open Replay
+          </Link>
+        ) : null}
       </div>
     </div>
   );
@@ -826,6 +838,11 @@ function CurrentJob({ job, violations }: { job: Job | null; violations: Violatio
           <Link href="/dashboard" className="button secondary full">
             Open History
           </Link>
+          {job.source_video ? (
+            <Link href={`/jobs/${job.id}`} className="button secondary full">
+              Open Replay
+            </Link>
+          ) : null}
           {violations.length ? (
             <Link href="/violations" className="button full">
               Review Violations
@@ -951,4 +968,3 @@ function formatDuration(seconds: number) {
 function formatPercent(value: number) {
   return `${Math.round(value * 100)}%`;
 }
-

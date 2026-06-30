@@ -16,7 +16,11 @@ from app.services.streaming import frame_hub
 os.environ.setdefault("YOLO_CONFIG_DIR", str(settings.cache_dir / "ultralytics"))
 
 PERSON_CLASS_ID = 0
+CAR_CLASS_ID = 2
 MOTORCYCLE_CLASS_ID = 3
+BUS_CLASS_ID = 5
+TRUCK_CLASS_ID = 7
+NEGATIVE_VEHICLE_CLASS_IDS = {CAR_CLASS_ID, BUS_CLASS_ID, TRUCK_CLASS_ID}
 WITH_HELMET_LABEL = "with helmet"
 NO_HELMET_LABEL = "without helmet"
 
@@ -73,6 +77,8 @@ class AssociationTracker:
         ready = []
         for association in associations:
             if association.get("helmet_status") != "no_helmet":
+                continue
+            if not valid_no_helmet_association(association):
                 continue
 
             track_id = association.get("track_id")
@@ -220,6 +226,7 @@ def process_uploaded_video(job_id: str, source_path: str) -> None:
     if not capture.isOpened():
         update_job(job_id, "failed", "Could not open the uploaded video", result="failed")
         return
+    enable_capture_orientation_auto(capture)
 
     fps = capture.get(cv2.CAP_PROP_FPS) or 30
     total_frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
@@ -406,7 +413,7 @@ def analyze_frame(frame, models) -> dict:
 
     object_result = object_model.predict(
         frame.copy(),
-        classes=[PERSON_CLASS_ID, MOTORCYCLE_CLASS_ID],
+        classes=[PERSON_CLASS_ID, CAR_CLASS_ID, MOTORCYCLE_CLASS_ID, BUS_CLASS_ID, TRUCK_CLASS_ID],
         conf=settings.object_confidence,
         imgsz=settings.object_imgsz,
         verbose=False,
@@ -414,6 +421,7 @@ def analyze_frame(frame, models) -> dict:
     object_boxes = extract_boxes(object_result)
     motorcycles = [box for box in object_boxes if box["class_id"] == MOTORCYCLE_CLASS_ID]
     people = [box for box in object_boxes if box["class_id"] == PERSON_CLASS_ID]
+    negative_vehicles = [box for box in object_boxes if box["class_id"] in NEGATIVE_VEHICLE_CLASS_IDS]
 
     helmet_result = helmet_model.predict(
         frame.copy(),
@@ -436,7 +444,7 @@ def analyze_frame(frame, models) -> dict:
         verbose=False,
     )[0]
     plate_boxes = extract_boxes(plate_result)
-    associations = associate_riders(people, motorcycles, with_helmet_boxes, no_helmet_boxes, plate_boxes)
+    associations = associate_riders(people, motorcycles, with_helmet_boxes, no_helmet_boxes, plate_boxes, negative_vehicles)
     no_helmet_associations = [
         association for association in associations if association["helmet_status"] == "no_helmet"
     ]
@@ -451,6 +459,7 @@ def analyze_frame(frame, models) -> dict:
     return {
         "objects": object_boxes,
         "motorcycles": motorcycles,
+        "negative_vehicles": negative_vehicles,
         "people": people,
         "helmets": with_helmet_boxes,
         "no_helmets": no_helmet_boxes,
@@ -466,6 +475,7 @@ def empty_analysis() -> dict:
     return {
         "objects": [],
         "motorcycles": [],
+        "negative_vehicles": [],
         "people": [],
         "helmets": [],
         "no_helmets": [],
@@ -556,6 +566,12 @@ def publish_stream_frame(job_id: str, annotated) -> None:
     ok, encoded = cv2.imencode(".jpg", annotated, [int(cv2.IMWRITE_JPEG_QUALITY), 82])
     if ok:
         frame_hub.publish(job_id, encoded.tobytes())
+
+
+def enable_capture_orientation_auto(capture) -> None:
+    orientation_auto = getattr(cv2, "CAP_PROP_ORIENTATION_AUTO", None)
+    if orientation_auto is not None:
+        capture.set(orientation_auto, 1)
 
 
 def save_violation(job_id: str, payload: dict) -> None:
@@ -678,6 +694,7 @@ def associate_riders(
     with_helmet_boxes: list[dict],
     no_helmet_boxes: list[dict],
     plate_boxes: list[dict],
+    negative_vehicles: list[dict],
 ) -> list[dict]:
     helmet_detections = [
         {"box": box, "status": "with_helmet"} for box in with_helmet_boxes
@@ -687,18 +704,26 @@ def associate_riders(
 
     for person in people:
         helmet_detection, helmet_score = best_helmet_for_person(person, helmet_detections)
-        if not helmet_detection or helmet_score < 0.20:
+        if not helmet_detection or helmet_score < settings.min_helmet_person_score:
             continue
 
         helmet_box = helmet_detection["box"]
         motorcycle, motorcycle_score = best_motorcycle_for_person(person, motorcycles)
-        plate, plate_score = best_plate_for_motorcycle(motorcycle, plate_boxes)
+        if motorcycle_score < settings.min_person_motorcycle_score:
+            motorcycle = None
+            motorcycle_score = 0.0
+
+        plate, plate_score = best_plate_for_motorcycle(motorcycle, plate_boxes, negative_vehicles)
         association_score = combined_score(
             helmet_box["confidence"],
             helmet_score,
             motorcycle_score,
             plate_score,
         )
+        if helmet_detection["status"] == "no_helmet" and (
+            not motorcycle or association_score < settings.min_no_helmet_association_score
+        ):
+            continue
         associations.append(
             {
                 "person_box": person,
@@ -716,14 +741,22 @@ def associate_riders(
             continue
 
         person, helmet_score = best_person_for_helmet(helmet_box, people)
-        if person:
+        if person and helmet_score >= settings.min_helmet_person_score:
             motorcycle, motorcycle_score = best_motorcycle_for_person(person, motorcycles)
         else:
+            person = None
             motorcycle, motorcycle_score = best_motorcycle_for_helmet(helmet_box, motorcycles)
+        if person and motorcycle_score < settings.min_person_motorcycle_score:
+            motorcycle = None
+            motorcycle_score = 0.0
+        if not person and motorcycle_score < settings.min_helmet_motorcycle_score:
+            motorcycle = None
+            motorcycle_score = 0.0
 
-        plate, plate_score = best_plate_for_motorcycle(motorcycle, plate_boxes)
-        if not plate:
-            plate, plate_score = best_plate_for_helmet(helmet_box, plate_boxes)
+        if not motorcycle:
+            continue
+
+        plate, plate_score = best_plate_for_motorcycle(motorcycle, plate_boxes, negative_vehicles)
 
         association_score = combined_score(
             helmet_box["confidence"],
@@ -731,6 +764,8 @@ def associate_riders(
             motorcycle_score,
             plate_score,
         )
+        if association_score < settings.min_no_helmet_association_score:
+            continue
         associations.append(
             {
                 "person_box": person,
@@ -792,14 +827,24 @@ def best_motorcycle_for_helmet(helmet_box: dict, motorcycles: list[dict]) -> tup
     return best_motorcycle, best_score
 
 
-def best_plate_for_motorcycle(motorcycle: dict | None, plate_boxes: list[dict]) -> tuple[dict | None, float]:
+def best_plate_for_motorcycle(
+    motorcycle: dict | None,
+    plate_boxes: list[dict],
+    negative_vehicles: list[dict],
+) -> tuple[dict | None, float]:
     if not motorcycle:
         return None, 0.0
 
     best_plate = None
     best_score = 0.0
     for plate in plate_boxes:
+        if not plausible_plate_for_motorcycle(plate, motorcycle):
+            continue
         score = score_plate_to_motorcycle(plate, motorcycle)
+        if score < settings.min_plate_motorcycle_score:
+            continue
+        if plate_prefers_negative_vehicle(plate, score, negative_vehicles):
+            continue
         if score > best_score:
             best_plate = plate
             best_score = score
@@ -893,6 +938,54 @@ def score_plate_to_motorcycle(plate: dict, motorcycle: dict) -> float:
     distance_score = max(0.0, 1.0 - normalized_distance) * 0.25
     confidence_score = plate["confidence"] * 0.10
     return min(center_bonus + lower_bonus + distance_score + confidence_score, 1.0)
+
+
+def plausible_plate_for_motorcycle(plate: dict, motorcycle: dict) -> bool:
+    px, py = box_center(plate["xyxy"])
+    mx1, my1, mx2, my2 = motorcycle["xyxy"]
+    motorcycle_width = max(mx2 - mx1, 1)
+    motorcycle_height = max(my2 - my1, 1)
+    plate_width = max(plate["xyxy"][2] - plate["xyxy"][0], 1)
+    plate_height = max(plate["xyxy"][3] - plate["xyxy"][1], 1)
+    plate_area_ratio = box_area(plate["xyxy"]) / max(box_area(motorcycle["xyxy"]), 1)
+    plate_aspect = plate_width / max(plate_height, 1)
+    expanded_motorcycle = expand_box(motorcycle["xyxy"], 0.28)
+
+    if not point_in_box((px, py), expanded_motorcycle):
+        return False
+    if py < my1 + motorcycle_height * 0.20:
+        return False
+    if not 0.0015 <= plate_area_ratio <= 0.20:
+        return False
+    if not 0.45 <= plate_aspect <= 7.5:
+        return False
+
+    horizontal_slop = motorcycle_width * 0.28
+    return mx1 - horizontal_slop <= px <= mx2 + horizontal_slop
+
+
+def plate_prefers_negative_vehicle(
+    plate: dict,
+    motorcycle_score: float,
+    negative_vehicles: list[dict],
+) -> bool:
+    for vehicle in negative_vehicles:
+        if not plausible_plate_for_vehicle(plate, vehicle):
+            continue
+        vehicle_score = score_plate_to_motorcycle(plate, vehicle)
+        if vehicle_score >= motorcycle_score + 0.03:
+            return True
+    return False
+
+
+def plausible_plate_for_vehicle(plate: dict, vehicle: dict) -> bool:
+    px, py = box_center(plate["xyxy"])
+    x1, y1, x2, y2 = vehicle["xyxy"]
+    height = max(y2 - y1, 1)
+    expanded_vehicle = expand_box(vehicle["xyxy"], 0.12)
+    if not point_in_box((px, py), expanded_vehicle):
+        return False
+    return py >= y1 + height * 0.28
 
 
 def score_plate_to_helmet(plate: dict, helmet_box: dict) -> float:
@@ -1081,6 +1174,14 @@ def association_track_score(association: dict) -> float:
     confidence = float(helmet_box.get("confidence", 0.0))
     association_score = float(association.get("association_score", 0.0))
     return max(confidence * 0.55 + association_score * 0.45, association_score)
+
+
+def valid_no_helmet_association(association: dict) -> bool:
+    if association.get("helmet_status") != "no_helmet":
+        return False
+    if not association.get("helmet_box") or not association.get("motorcycle_box"):
+        return False
+    return float(association.get("association_score", 0.0)) >= settings.min_no_helmet_association_score
 
 
 def track_match_score(previous_xyxy: list[int], current_xyxy: list[int]) -> float:

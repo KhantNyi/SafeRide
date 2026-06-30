@@ -319,8 +319,9 @@ User uploads video
     -> OpenCV opens video
     -> Models are loaded lazily
     -> Frames are sampled based on sample_every_seconds
-    -> YOLO detects person, motorcycle, helmet/no-helmet, and plate
+    -> YOLO detects person, motorcycle, car/bus/truck context, helmet/no-helmet, and plate
     -> Rider association links person -> motorcycle -> helmet -> plate
+    -> Hard gates reject weak no-helmet rider and implausible plate links
     -> Detection metadata is appended to JSON
     -> Preview frames are annotated and published/saved
     -> No-helmet rider tracks are aggregated briefly for better plate crops
@@ -337,6 +338,7 @@ The pipeline uses three model roles:
 - General object detector:
   - detects `person`
   - detects `motorcycle`
+  - detects `car`, `bus`, and `truck` as negative vehicle context for plate matching
 - Helmet detector:
   - detects `With Helmet`
   - detects `Without Helmet`
@@ -352,13 +354,22 @@ Inference is controlled by runtime and config settings:
 - `helmet_imgsz`
 - `plate_imgsz`
 - `sample_every_seconds`
+- `min_helmet_person_score`
+- `min_person_motorcycle_score`
+- `min_helmet_motorcycle_score`
+- `min_no_helmet_association_score`
+- `min_plate_motorcycle_score`
 
 Rider association is geometry-based:
 
 - match person to motorcycle
 - match helmet/no-helmet box to upper body
-- match plate to lower motorcycle region
-- score associations and save no-helmet rider evidence
+- reject no-helmet evidence unless a plausible motorcycle is linked
+- match plate to lower motorcycle region only after location, size, aspect, and lower-region gates pass
+- reject plate candidates that score better against nearby car/bus/truck boxes
+- score associations and save no-helmet rider evidence only above the minimum association score
+
+The plate-to-helmet fallback is not used for saved no-helmet rider associations because it can attach unrelated car or neighboring-motorcycle plates in dense scenes.
 
 Rider associations are passed through a local ByteTrack-style tracker. The tracker matches high-confidence association boxes first, then uses lower-confidence boxes as a second-stage continuation pass. Stable `track_id` values are written into sampled detection metadata, evidence annotations, saved violation records, the violation detail modal, and CSV exports.
 

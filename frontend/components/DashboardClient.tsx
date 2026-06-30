@@ -184,7 +184,7 @@ export function DashboardClient() {
                 <span className="job-date">{new Date(job.created_at).toLocaleString()}</span>
                 <Link
                   className={`icon-button ${job.source_video ? "" : "disabled"}`}
-                  href={job.source_video ? `/upload?job=${job.id}` : "#"}
+                  href={job.source_video ? `/jobs/${job.id}` : "#"}
                   aria-disabled={!job.source_video}
                   aria-label={`Open playback for ${job.filename}`}
                 >
@@ -227,6 +227,10 @@ export function DashboardClient() {
                   <Link className="inline-review-link" href="/violations">
                     <AlertTriangle size={15} />
                     Open violation table
+                  </Link>
+                  <Link className="inline-review-link" href={`/jobs/${violation.job_id}${violation.frame_number === null ? "" : `?frame=${violation.frame_number}`}`}>
+                    <PlayCircle size={15} />
+                    Replay moment
                   </Link>
                 </div>
               </article>
