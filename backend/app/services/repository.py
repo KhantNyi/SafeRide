@@ -248,3 +248,70 @@ def delete_violation(violation_id: str) -> bool:
 def get_violation_job_id(conn, violation_id: str) -> str | None:
     row = conn.execute("SELECT job_id FROM violations WHERE id = ?", (violation_id,)).fetchone()
     return row["job_id"] if row else None
+
+
+def review_metrics() -> dict:
+    """Aggregate human review decisions into precision metrics.
+
+    Precision here is confirmed / (confirmed + false_positive), i.e. how often a
+    saved violation survived human review. Pending records are excluded from
+    precision but counted, so the metric is only meaningful once reviews exist.
+    """
+    with get_connection() as conn:
+        rows = conn.execute(
+            """
+            SELECT v.job_id, v.review_status, v.helmet_confidence, j.filename
+            FROM violations v
+            LEFT JOIN jobs j ON j.id = v.job_id
+            """
+        ).fetchall()
+
+    def empty_bucket() -> dict:
+        return {"total": 0, "pending": 0, "confirmed": 0, "false_positive": 0}
+
+    overall = empty_bucket()
+    jobs: dict[str, dict] = {}
+    bands = {band: empty_bucket() for band in CONFIDENCE_BANDS}
+
+    for row in rows:
+        status = row["review_status"]
+        if status not in ("confirmed", "false_positive"):
+            status = "pending"
+        job_bucket = jobs.setdefault(
+            row["job_id"],
+            {"job_id": row["job_id"], "filename": row["filename"], **empty_bucket()},
+        )
+        band_bucket = bands[confidence_band(row["helmet_confidence"])]
+        for bucket in (overall, job_bucket, band_bucket):
+            bucket["total"] += 1
+            bucket[status] += 1
+
+    for bucket in [overall, *jobs.values(), *bands.values()]:
+        bucket["precision"] = review_precision(bucket)
+
+    return {
+        "overall": overall,
+        "jobs": sorted(jobs.values(), key=lambda job: job["total"], reverse=True),
+        "confidence_bands": bands,
+    }
+
+
+CONFIDENCE_BANDS = ["under_50", "50_to_65", "65_to_80", "80_plus"]
+
+
+def confidence_band(helmet_confidence: float | None) -> str:
+    value = helmet_confidence or 0.0
+    if value < 0.50:
+        return "under_50"
+    if value < 0.65:
+        return "50_to_65"
+    if value < 0.80:
+        return "65_to_80"
+    return "80_plus"
+
+
+def review_precision(bucket: dict) -> float | None:
+    reviewed = bucket["confirmed"] + bucket["false_positive"]
+    if reviewed == 0:
+        return None
+    return round(bucket["confirmed"] / reviewed, 4)

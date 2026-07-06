@@ -1,0 +1,16 @@
+{
+  "frame_tolerance": 30,
+  "clips": [
+    {
+      "video": "../data/eval/clip-01.mp4",
+      "events": [
+        { "frame_start": 90, "frame_end": 240, "plate": "1กข1234" },
+        { "frame_start": 600, "frame_end": 780 }
+      ]
+    },
+    {
+      "video": "../data/eval/clean-clip.mp4",
+      "events": []
+    }
+  ]
+}

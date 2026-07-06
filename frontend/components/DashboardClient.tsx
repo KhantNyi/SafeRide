@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, FileSearch, PlayCircle, RefreshCcw, Search, Trash2, Upload } from "lucide-react";
+import { Activity, AlertTriangle, CheckCircle2, FileSearch, PlayCircle, RefreshCcw, Search, ShieldCheck, Trash2, Upload } from "lucide-react";
 
 import { clearJobs, deleteJob, fetchJobs, fetchViolations, Job, mediaUrl, Violation } from "@/lib/api";
 import { StatCard } from "@/components/StatCard";
@@ -135,10 +135,10 @@ export function DashboardClient() {
       </header>
 
       <section className="stats-grid" aria-label="System summary">
-        <StatCard label="Violations" value={violations.length} />
-        <StatCard label="Completed Jobs" value={completedJobs} />
-        <StatCard label="Active Jobs" value={activeJobs} />
-        <StatCard label="Clear Results" value={clearJobCount} />
+        <StatCard label="Violations" value={violations.length} icon={AlertTriangle} tone="danger" />
+        <StatCard label="Completed Jobs" value={completedJobs} icon={CheckCircle2} tone="info" />
+        <StatCard label="Active Jobs" value={activeJobs} icon={Activity} tone="warning" />
+        <StatCard label="Clear Results" value={clearJobCount} icon={ShieldCheck} tone="success" />
       </section>
 
       {error ? <div className="notice danger" role="alert">{error}</div> : null}

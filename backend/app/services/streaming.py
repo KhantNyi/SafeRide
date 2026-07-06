@@ -9,6 +9,10 @@ class FrameHub:
         self._frames: dict[str, bytes] = {}
         self._versions: dict[str, int] = defaultdict(int)
         self._closed: set[str] = set()
+        self._viewers: dict[str, int] = defaultdict(int)
+
+    def has_viewers(self, job_id: str) -> bool:
+        return self._viewers[job_id] > 0
 
     def publish(self, job_id: str, frame: bytes) -> None:
         condition = self._conditions[job_id]
@@ -25,6 +29,16 @@ class FrameHub:
             condition.notify_all()
 
     def stream(self, job_id: str):
+        condition = self._conditions[job_id]
+        with condition:
+            self._viewers[job_id] += 1
+        try:
+            yield from self._stream_frames(job_id)
+        finally:
+            with condition:
+                self._viewers[job_id] = max(self._viewers[job_id] - 1, 0)
+
+    def _stream_frames(self, job_id: str):
         last_version = -1
         idle_started = monotonic()
         boundary = b"--frame\r\nContent-Type: image/jpeg\r\nCache-Control: no-store\r\n\r\n"

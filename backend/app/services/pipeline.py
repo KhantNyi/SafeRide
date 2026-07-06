@@ -24,13 +24,29 @@ NEGATIVE_VEHICLE_CLASS_IDS = {CAR_CLASS_ID, BUS_CLASS_ID, TRUCK_CLASS_ID}
 WITH_HELMET_LABEL = "with helmet"
 NO_HELMET_LABEL = "without helmet"
 
+# Thai plate line shapes: registration prefix ("1กข"), plain digit group ("1234"),
+# and a pure-Thai province line ("เชียงใหม่").
+PLATE_PREFIX_PATTERN = re.compile(r"^\d{0,2}[ก-ฮ]{1,3}\d{0,4}$")
+PLATE_DIGITS_PATTERN = re.compile(r"^\d{1,4}$")
+PLATE_PROVINCE_PATTERN = re.compile(r"^[ก-๙]{3,}$")
+
 _object_model = None
 _helmet_model = None
 _plate_model = None
 _ocr_reader = None
 
 
-class AssociationTracker:
+class RiderTrackManager:
+    """Anchors rider identity to motorcycle tracks and votes helmet status per track.
+
+    Raw motorcycle detections are far more stable than gated rider associations,
+    so the ByteTracker runs on motorcycle boxes every sampled frame. Helmet
+    observations accumulate as per-track votes, and a violation only becomes
+    eligible once a track has enough no-helmet votes that are not drowned out by
+    with-helmet votes. This suppresses single-frame helmet-model flickers while
+    still allowing mixed rider/passenger tracks through to human review.
+    """
+
     def __init__(
         self,
         cooldown_frames: int,
@@ -49,29 +65,61 @@ class AssociationTracker:
             max_time_lost=max_lost_frames,
         )
         self.violation_tracks: dict[int, dict] = {}
+        self.helmet_votes: dict[int, dict] = {}
+        self.recent_saves: list[dict] = []
 
-    def update_association_tracks(self, associations: list[dict], frame_number: int) -> list[dict]:
-        detections = []
-        for index, association in enumerate(associations):
-            detections.append(
-                ByteTrackDetection(
-                    xyxy=association_reference_box(association),
-                    score=association_track_score(association),
-                    metadata={"index": index},
-                )
+    def update(self, analysis: dict, frame_number: int) -> None:
+        motorcycles = analysis["motorcycles"]
+        detections = [
+            ByteTrackDetection(
+                xyxy=motorcycle["xyxy"],
+                score=motorcycle["confidence"],
+                metadata={"index": index},
             )
+            for index, motorcycle in enumerate(motorcycles)
+        ]
 
         tracked_detections = self.tracker.update(detections, frame_number)
         for tracked_detection in tracked_detections:
-            index = tracked_detection.metadata["index"]
-            associations[index]["track_id"] = tracked_detection.track_id
-            associations[index]["track_score"] = round(tracked_detection.score, 4)
-            associations[index]["track_hits"] = tracked_detection.hits
+            motorcycle = motorcycles[tracked_detection.metadata["index"]]
+            motorcycle["track_id"] = tracked_detection.track_id
+            motorcycle["track_hits"] = tracked_detection.hits
+
+        for association in analysis["associations"]:
+            motorcycle = association.get("motorcycle_box")
+            if not motorcycle or motorcycle.get("track_id") is None:
+                continue
+            association["track_id"] = motorcycle["track_id"]
+            association["track_hits"] = motorcycle.get("track_hits", 0)
+            association["track_score"] = round(association_track_score(association), 4)
+            self.record_helmet_vote(
+                motorcycle["track_id"], association.get("helmet_status"), frame_number
+            )
 
         self.prune(frame_number)
-        return associations
 
-    def violation_associations_to_save(
+    def record_helmet_vote(self, track_id: int, helmet_status: str | None, frame_number: int) -> None:
+        if helmet_status not in ("no_helmet", "with_helmet"):
+            return
+        votes = self.helmet_votes.setdefault(
+            track_id, {"no_helmet": 0, "with_helmet": 0, "last_frame": frame_number}
+        )
+        votes[helmet_status] += 1
+        votes["last_frame"] = frame_number
+
+    def no_helmet_vote_passes(self, track_id: int) -> bool:
+        votes = self.helmet_votes.get(track_id)
+        if not votes:
+            return False
+        no_helmet = votes["no_helmet"]
+        with_helmet = votes["with_helmet"]
+        if no_helmet < settings.min_no_helmet_votes:
+            return False
+        # A lone flicker against many with-helmet votes fails; a genuinely mixed
+        # track (driver helmeted, passenger not) still reaches human review.
+        return no_helmet * 2 >= with_helmet
+
+    def violations_to_save(
         self, associations: list[dict], frame_number: int, frame, annotated
     ) -> list[dict]:
         ready = []
@@ -84,6 +132,8 @@ class AssociationTracker:
             track_id = association.get("track_id")
             if track_id is None:
                 continue
+            if not self.no_helmet_vote_passes(track_id):
+                continue
 
             track = self.violation_track(track_id, frame_number)
             track["last_frame"] = frame_number
@@ -94,10 +144,55 @@ class AssociationTracker:
             if not self.pending_ready(track, frame_number):
                 continue
 
-            ready.append(self.violation_payload(track))
+            payload = self.violation_payload(track)
             track["last_saved_frame"] = frame_number
             self.clear_pending(track)
+            duplicate = self.is_duplicate_save(payload["association"], frame_number)
+            # Record the location either way so a moving rider keeps extending
+            # the dedup chain even while its saves are being suppressed.
+            self.record_save(payload["association"], frame_number)
+            if duplicate:
+                continue
+            ready.append(payload)
         return ready
+
+    def is_duplicate_save(self, association: dict, frame_number: int) -> bool:
+        """Suppress re-saves of the same physical rider under a churned track id.
+
+        When the tracker splits one motorcycle across two track identities (box
+        jitter, or camera pan in handheld footage), both tracks can pass the vote
+        gate. Overlap alone is not enough under pan, so a save whose motorcycle
+        center sits within ~0.8 bike-sizes of a recent save also counts as the
+        same rider - distinct motorcycles ride well over one bike-size apart."""
+        motorcycle = association.get("motorcycle_box")
+        if not motorcycle:
+            return False
+        for save in self.recent_saves:
+            if frame_number - save["frame"] > self.cooldown_frames:
+                continue
+            if box_iou(motorcycle["xyxy"], save["xyxy"]) >= 0.35:
+                return True
+            reference = max(
+                save["xyxy"][2] - save["xyxy"][0],
+                save["xyxy"][3] - save["xyxy"][1],
+                motorcycle["xyxy"][2] - motorcycle["xyxy"][0],
+                motorcycle["xyxy"][3] - motorcycle["xyxy"][1],
+                1,
+            )
+            distance = point_distance(box_center(motorcycle["xyxy"]), box_center(save["xyxy"]))
+            if distance / reference <= 1.0:
+                return True
+        return False
+
+    def record_save(self, association: dict, frame_number: int) -> None:
+        motorcycle = association.get("motorcycle_box")
+        if not motorcycle:
+            return
+        self.recent_saves.append({"frame": frame_number, "xyxy": motorcycle["xyxy"]})
+        self.recent_saves = [
+            save for save in self.recent_saves
+            if frame_number - save["frame"] <= self.cooldown_frames
+        ]
 
     def violation_track(self, track_id: int, frame_number: int) -> dict:
         existing = self.violation_tracks.get(track_id)
@@ -114,6 +209,8 @@ class AssociationTracker:
             "pending_frame": None,
             "pending_annotated": None,
             "best_plate_candidate": None,
+            "plate_sightings": 0,
+            "ocr_reads": [],
         }
         self.violation_tracks[track_id] = track
         return track
@@ -125,6 +222,8 @@ class AssociationTracker:
             track["pending_started_frame"] = frame_number
             track["pending_samples"] = 0
             track["best_plate_candidate"] = None
+            track["plate_sightings"] = 0
+            track["ocr_reads"] = []
 
         track["pending_samples"] += 1
         track["pending_association"] = association.copy()
@@ -132,9 +231,17 @@ class AssociationTracker:
         track["pending_frame"] = frame.copy()
         track["pending_annotated"] = annotated.copy()
 
+        if association.get("plate_box"):
+            track["plate_sightings"] += 1
+
         candidate = build_plate_candidate(frame, association)
         if not candidate:
             return
+
+        if candidate.get("plate_text"):
+            track["ocr_reads"].append(
+                (candidate["plate_text"], candidate.get("plate_confidence") or 0.0)
+            )
 
         best_candidate = track.get("best_plate_candidate")
         if not best_candidate or candidate["score"] > best_candidate["score"]:
@@ -152,8 +259,22 @@ class AssociationTracker:
     def violation_payload(self, track: dict) -> dict:
         association = track["pending_association"].copy()
         candidate = track.get("best_plate_candidate")
-        if candidate:
+
+        # Co-travel gate: the plate must have been seen with this track in enough
+        # samples, otherwise a one-off plate (a passing car's) is dropped rather
+        # than attached to the rider.
+        required_sightings = min(
+            settings.plate_min_track_sightings, max(track["pending_samples"], 1)
+        )
+        if candidate and track["plate_sightings"] >= required_sightings:
             association["plate_box"] = candidate["plate_box"]
+            voted = vote_plate_text(track["ocr_reads"])
+            if voted:
+                candidate = dict(candidate)
+                candidate["plate_text"], candidate["plate_confidence"] = voted
+        else:
+            candidate = None
+            association["plate_box"] = None
 
         return {
             "frame_number": track["pending_frame_number"],
@@ -168,9 +289,15 @@ class AssociationTracker:
         for track in self.violation_tracks.values():
             if track["pending_started_frame"] is None:
                 continue
-            ready.append(self.violation_payload(track))
-            track["last_saved_frame"] = track["pending_frame_number"]
+            payload = self.violation_payload(track)
+            frame_number = track["pending_frame_number"]
+            track["last_saved_frame"] = frame_number
             self.clear_pending(track)
+            duplicate = self.is_duplicate_save(payload["association"], frame_number)
+            self.record_save(payload["association"], frame_number)
+            if duplicate:
+                continue
+            ready.append(payload)
         return ready
 
     def clear_pending(self, track: dict) -> None:
@@ -181,6 +308,8 @@ class AssociationTracker:
         track["pending_frame"] = None
         track["pending_annotated"] = None
         track["best_plate_candidate"] = None
+        track["plate_sightings"] = 0
+        track["ocr_reads"] = []
 
     def prune(self, frame_number: int) -> None:
         max_age = max(self.cooldown_frames * 2, 1)
@@ -191,6 +320,13 @@ class AssociationTracker:
             if track["pending_started_frame"] is not None
             or track_id in active_track_ids
             or frame_number - track["last_frame"] <= max_age
+        }
+        self.helmet_votes = {
+            track_id: votes
+            for track_id, votes in self.helmet_votes.items()
+            if track_id in active_track_ids
+            or track_id in self.violation_tracks
+            or frame_number - votes["last_frame"] <= max_age
         }
 
 
@@ -231,6 +367,8 @@ def process_uploaded_video(job_id: str, source_path: str) -> None:
     fps = capture.get(cv2.CAP_PROP_FPS) or 30
     total_frames = int(capture.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
     analysis_interval = max(int(round(fps * settings.sample_every_seconds)), 1)
+    dense_interval = max(analysis_interval // max(settings.adaptive_sample_divisor, 1), 1)
+    dense_until_frame = -1
     preview_interval = preview_interval_for_fps(fps)
     cooldown_frames = max(int(fps * settings.violation_cooldown_seconds), analysis_interval)
     aggregation_frames = max(int(fps * settings.plate_aggregation_seconds), analysis_interval)
@@ -238,7 +376,7 @@ def process_uploaded_video(job_id: str, source_path: str) -> None:
     frame_number = 0
     sampled_count = 0
     violation_count = 0
-    association_tracker = AssociationTracker(
+    rider_tracks = RiderTrackManager(
         cooldown_frames,
         aggregation_frames,
         settings.plate_aggregation_min_samples,
@@ -248,6 +386,7 @@ def process_uploaded_video(job_id: str, source_path: str) -> None:
     latest_preview_url = None
     last_status_update = 0.0
     last_preview_save = 0.0
+    last_metadata_write = 0.0
     playback_started = monotonic()
     detection_records: list[dict] = []
     write_detection_metadata(job_id, detection_records)
@@ -266,27 +405,46 @@ def process_uploaded_video(job_id: str, source_path: str) -> None:
         )
 
         while True:
-            ok, frame = capture.read()
+            # Adaptive sampling: while a no-helmet detection is recent, sample
+            # several times per interval so short-lived riders and passengers
+            # accumulate enough helmet votes before leaving the frame.
+            in_dense_window = settings.adaptive_sampling and frame_number <= dense_until_frame
+            should_analyze = frame_number % analysis_interval == 0 or (
+                in_dense_window and frame_number % dense_interval == 0
+            )
+            should_preview = frame_number % preview_interval == 0
+            has_viewers = frame_hub.has_viewers(job_id)
+
+            # Only decode pixels for frames that are actually used; grab() advances
+            # the stream without the color-conversion cost of read().
+            if should_analyze or (should_preview and has_viewers):
+                ok, frame = capture.read()
+            else:
+                ok = capture.grab()
+                frame = None
             if not ok:
                 break
 
-            should_analyze = frame_number % analysis_interval == 0
             if should_analyze:
                 sampled_count += 1
                 analysis = analyze_frame(frame, models)
-                association_tracker.update_association_tracks(
-                    analysis["associations"], frame_number
-                )
+                rider_tracks.update(analysis, frame_number)
                 latest_analysis = analysis
+                if analysis["no_helmets"]:
+                    dense_until_frame = frame_number + int(fps * settings.adaptive_hold_seconds)
                 analysis_annotated = annotate_analysis(
                     frame, frame_number, analysis, fresh_analysis=True
                 )
                 detection_records.append(
                     serialize_detection_frame(frame_number, fps, frame, analysis)
                 )
-                write_detection_metadata(job_id, detection_records)
 
-                violations_to_save = association_tracker.violation_associations_to_save(
+                now = monotonic()
+                if now - last_metadata_write >= settings.metadata_write_seconds:
+                    write_detection_metadata(job_id, detection_records)
+                    last_metadata_write = now
+
+                violations_to_save = rider_tracks.violations_to_save(
                     analysis["associations"], frame_number, frame, analysis_annotated
                 )
                 if violations_to_save:
@@ -297,17 +455,17 @@ def process_uploaded_video(job_id: str, source_path: str) -> None:
                 analysis = latest_analysis
                 analysis_annotated = None
 
-            should_publish = should_analyze or frame_number % preview_interval == 0
-            if should_publish:
+            if frame is not None and (should_analyze or (should_preview and has_viewers)):
                 annotated = (
                     analysis_annotated
                     if analysis_annotated is not None
-                    else annotate_analysis(frame, frame_number, analysis, fresh_analysis=should_analyze)
+                    else annotate_analysis(frame, frame_number, analysis, fresh_analysis=False)
                 )
-                publish_stream_frame(job_id, annotated)
+                if has_viewers:
+                    publish_stream_frame(job_id, annotated)
 
                 now = monotonic()
-                if should_analyze or now - last_preview_save >= 1:
+                if should_analyze and now - last_preview_save >= 1:
                     latest_preview_url = save_preview(job_id, annotated)
                     last_preview_save = now
 
@@ -342,13 +500,17 @@ def process_uploaded_video(job_id: str, source_path: str) -> None:
                 if violation_count >= settings.max_violations_per_video:
                     break
 
-            pace_preview(frame_number, fps, playback_started)
+            # Real-time pacing only matters for someone watching the MJPEG stream;
+            # otherwise process as fast as the hardware allows.
+            if settings.realtime_preview or has_viewers:
+                pace_preview(frame_number, fps, playback_started)
             frame_number += 1
 
-        pending_violations = association_tracker.pending_violations_to_save()
+        pending_violations = rider_tracks.pending_violations_to_save()
         for payload in pending_violations:
             save_violation(job_id, payload)
         violation_count += len(pending_violations)
+        write_detection_metadata(job_id, detection_records)
 
         result = "violations_detected" if violation_count else "no_violations"
         message = (
@@ -412,7 +574,7 @@ def analyze_frame(frame, models) -> dict:
     object_model, helmet_model, plate_model = models
 
     object_result = object_model.predict(
-        frame.copy(),
+        frame,
         classes=[PERSON_CLASS_ID, CAR_CLASS_ID, MOTORCYCLE_CLASS_ID, BUS_CLASS_ID, TRUCK_CLASS_ID],
         conf=settings.object_confidence,
         imgsz=settings.object_imgsz,
@@ -423,13 +585,7 @@ def analyze_frame(frame, models) -> dict:
     people = [box for box in object_boxes if box["class_id"] == PERSON_CLASS_ID]
     negative_vehicles = [box for box in object_boxes if box["class_id"] in NEGATIVE_VEHICLE_CLASS_IDS]
 
-    helmet_result = helmet_model.predict(
-        frame.copy(),
-        conf=settings.helmet_confidence,
-        imgsz=settings.helmet_imgsz,
-        verbose=False,
-    )[0]
-    helmet_boxes = extract_boxes(helmet_result)
+    helmet_boxes = detect_helmet_boxes(frame, helmet_model, motorcycles, people)
     no_helmet_boxes = [
         box for box in helmet_boxes if normalize_label(box["label"]) == NO_HELMET_LABEL
     ]
@@ -438,7 +594,7 @@ def analyze_frame(frame, models) -> dict:
     ]
 
     plate_result = plate_model.predict(
-        frame.copy(),
+        frame,
         conf=settings.plate_confidence,
         imgsz=settings.plate_imgsz,
         verbose=False,
@@ -469,6 +625,123 @@ def analyze_frame(frame, models) -> dict:
         "plate_box": plate,
         "has_no_helmet": bool(no_helmet_associations),
     }
+
+
+def detect_helmet_boxes(frame, helmet_model, motorcycles: list[dict], people: list[dict]) -> list[dict]:
+    """Run the helmet model on rider-focused crops instead of the whole frame.
+
+    Distant rider heads are only a few pixels at full-frame imgsz; cropping around
+    each motorcycle gives the helmet model several times more effective resolution
+    exactly where violations happen, and skips inference entirely when no
+    motorcycles are present.
+    """
+    if not settings.helmet_crop_inference:
+        result = helmet_model.predict(
+            frame,
+            conf=settings.helmet_confidence,
+            imgsz=settings.helmet_imgsz,
+            verbose=False,
+        )[0]
+        return extract_boxes(result)
+
+    height, width = frame.shape[:2]
+    regions = rider_focus_regions(motorcycles, people, width, height)
+    if not regions:
+        return []
+
+    crops = []
+    crop_regions = []
+    for region in regions:
+        crop = crop_box(frame, region)
+        if crop is not None and crop.size:
+            crops.append(crop)
+            crop_regions.append(region)
+    if not crops:
+        return []
+
+    results = helmet_model.predict(
+        crops,
+        conf=settings.helmet_confidence,
+        imgsz=settings.helmet_crop_imgsz,
+        verbose=False,
+    )
+    boxes = []
+    for region, result in zip(crop_regions, results):
+        for box in extract_boxes(result):
+            box["xyxy"] = offset_xyxy(box["xyxy"], region[0], region[1], width, height)
+            boxes.append(box)
+    return dedupe_boxes(boxes)
+
+
+def rider_focus_regions(
+    motorcycles: list[dict], people: list[dict], width: int, height: int
+) -> list[list[int]]:
+    regions = []
+    for motorcycle in motorcycles:
+        x1, y1, x2, y2 = motorcycle["xyxy"]
+        moto_width = max(x2 - x1, 1)
+        moto_height = max(y2 - y1, 1)
+        # The rider's head sits well above the motorcycle box top.
+        region = [
+            x1 - int(moto_width * 0.25),
+            y1 - int(moto_height * 1.10),
+            x2 + int(moto_width * 0.25),
+            y2 + int(moto_height * 0.10),
+        ]
+        for person in people:
+            if boxes_intersect(person["xyxy"], region):
+                px1, py1, px2, py2 = person["xyxy"]
+                region = [
+                    min(region[0], px1),
+                    min(region[1], py1),
+                    max(region[2], px2),
+                    max(region[3], py2),
+                ]
+        regions.append(clamp_box(region, width, height))
+    return merge_intersecting_regions(regions)
+
+
+def merge_intersecting_regions(regions: list[list[int]]) -> list[list[int]]:
+    regions = [list(region) for region in regions]
+    changed = True
+    while changed:
+        changed = False
+        merged: list[list[int]] = []
+        for region in regions:
+            placed = False
+            for existing in merged:
+                if boxes_intersect(existing, region):
+                    existing[0] = min(existing[0], region[0])
+                    existing[1] = min(existing[1], region[1])
+                    existing[2] = max(existing[2], region[2])
+                    existing[3] = max(existing[3], region[3])
+                    placed = True
+                    changed = True
+                    break
+            if not placed:
+                merged.append(region)
+        regions = merged
+    return regions
+
+
+def boxes_intersect(a: list[int], b: list[int]) -> bool:
+    return not (a[2] < b[0] or b[2] < a[0] or a[3] < b[1] or b[3] < a[1])
+
+
+def offset_xyxy(xyxy: list[int], dx: int, dy: int, width: int, height: int) -> list[int]:
+    x1, y1, x2, y2 = xyxy
+    return clamp_box([x1 + dx, y1 + dy, x2 + dx, y2 + dy], width, height)
+
+
+def dedupe_boxes(boxes: list[dict], iou_threshold: float = 0.60) -> list[dict]:
+    """Drop duplicate detections produced by overlapping crops, keeping the
+    higher-confidence box regardless of label so a crop pair cannot report the
+    same head as both helmet and no-helmet."""
+    kept: list[dict] = []
+    for box in sorted(boxes, key=lambda item: item["confidence"], reverse=True):
+        if all(box_iou(box["xyxy"], existing["xyxy"]) < iou_threshold for existing in kept):
+            kept.append(box)
+    return kept
 
 
 def empty_analysis() -> dict:
@@ -547,7 +820,7 @@ def preview_interval_for_fps(source_fps: float) -> int:
 
 
 def pace_preview(frame_number: int, source_fps: float, started_at: float) -> None:
-    if not settings.realtime_preview or source_fps <= 0:
+    if source_fps <= 0:
         return
 
     target_elapsed = (frame_number + 1) / source_fps
@@ -696,14 +969,17 @@ def associate_riders(
     plate_boxes: list[dict],
     negative_vehicles: list[dict],
 ) -> list[dict]:
+    plate_assignments = assign_plates_to_motorcycles(plate_boxes, motorcycles, negative_vehicles)
     helmet_detections = [
         {"box": box, "status": "with_helmet"} for box in with_helmet_boxes
     ] + [{"box": box, "status": "no_helmet"} for box in no_helmet_boxes]
+    helmet_assignments = assign_helmets_to_people(people, helmet_detections)
     associations = []
     assigned_helmet_ids: set[int] = set()
+    assigned_person_ids: set[int] = set()
 
     for person in people:
-        helmet_detection, helmet_score = best_helmet_for_person(person, helmet_detections)
+        helmet_detection, helmet_score = helmet_assignments.get(id(person), (None, 0.0))
         if not helmet_detection or helmet_score < settings.min_helmet_person_score:
             continue
 
@@ -713,7 +989,7 @@ def associate_riders(
             motorcycle = None
             motorcycle_score = 0.0
 
-        plate, plate_score = best_plate_for_motorcycle(motorcycle, plate_boxes, negative_vehicles)
+        plate, plate_score = plate_assignments.get(id(motorcycle), (None, 0.0)) if motorcycle else (None, 0.0)
         association_score = combined_score(
             helmet_box["confidence"],
             helmet_score,
@@ -735,14 +1011,17 @@ def associate_riders(
             }
         )
         assigned_helmet_ids.add(id(helmet_box))
+        assigned_person_ids.add(id(person))
 
     for helmet_box in no_helmet_boxes:
         if id(helmet_box) in assigned_helmet_ids:
             continue
 
-        person, helmet_score = best_person_for_helmet(helmet_box, people)
+        available_people = [person for person in people if id(person) not in assigned_person_ids]
+        person, helmet_score = best_person_for_helmet(helmet_box, available_people)
         if person and helmet_score >= settings.min_helmet_person_score:
             motorcycle, motorcycle_score = best_motorcycle_for_person(person, motorcycles)
+            assigned_person_ids.add(id(person))
         else:
             person = None
             motorcycle, motorcycle_score = best_motorcycle_for_helmet(helmet_box, motorcycles)
@@ -756,7 +1035,7 @@ def associate_riders(
         if not motorcycle:
             continue
 
-        plate, plate_score = best_plate_for_motorcycle(motorcycle, plate_boxes, negative_vehicles)
+        plate, plate_score = plate_assignments.get(id(motorcycle), (None, 0.0))
 
         association_score = combined_score(
             helmet_box["confidence"],
@@ -780,15 +1059,79 @@ def associate_riders(
     return sorted(associations, key=lambda association: association["association_score"], reverse=True)
 
 
-def best_helmet_for_person(person: dict, helmet_detections: list[dict]) -> tuple[dict | None, float]:
-    best_detection = None
-    best_score = 0.0
-    for detection in helmet_detections:
-        score = score_helmet_to_person(detection["box"], person)
-        if score > best_score:
-            best_detection = detection
-            best_score = score
-    return best_detection, best_score
+def assign_plates_to_motorcycles(
+    plate_boxes: list[dict],
+    motorcycles: list[dict],
+    negative_vehicles: list[dict],
+) -> dict[int, tuple[dict, float]]:
+    """One-to-one plate-to-motorcycle assignment, keyed by id(motorcycle).
+
+    Each plate picks its single best motorcycle; ambiguous plates (runner-up
+    motorcycle within the assignment margin) and plates that fit a nearby
+    car/bus/truck better are dropped. Greedy assignment guarantees two riders
+    can never claim the same plate in one frame.
+    """
+    pairs = []
+    for plate_index, plate in enumerate(plate_boxes):
+        scored = []
+        for motorcycle_index, motorcycle in enumerate(motorcycles):
+            if not plausible_plate_for_motorcycle(plate, motorcycle):
+                continue
+            score = score_plate_to_motorcycle(plate, motorcycle)
+            if score < settings.min_plate_motorcycle_score:
+                continue
+            scored.append((score, motorcycle_index))
+        if not scored:
+            continue
+        scored.sort(reverse=True)
+        best_score, best_motorcycle_index = scored[0]
+        if len(scored) > 1 and best_score - scored[1][0] < settings.plate_assignment_margin:
+            continue
+        if plate_prefers_negative_vehicle(plate, best_score, negative_vehicles):
+            continue
+        pairs.append((best_score, plate_index, best_motorcycle_index))
+
+    pairs.sort(reverse=True)
+    assigned_plates: set[int] = set()
+    assigned_motorcycles: set[int] = set()
+    assignments: dict[int, tuple[dict, float]] = {}
+    for score, plate_index, motorcycle_index in pairs:
+        if plate_index in assigned_plates or motorcycle_index in assigned_motorcycles:
+            continue
+        assigned_plates.add(plate_index)
+        assigned_motorcycles.add(motorcycle_index)
+        assignments[id(motorcycles[motorcycle_index])] = (plate_boxes[plate_index], score)
+    return assignments
+
+
+def assign_helmets_to_people(
+    people: list[dict], helmet_detections: list[dict]
+) -> dict[int, tuple[dict, float]]:
+    """One-to-one helmet-to-person assignment, keyed by id(person).
+
+    On two-up motorcycles the driver's and passenger's heads are close together;
+    if each person independently picked their best helmet box, both could claim
+    the driver's helmet and the passenger's own no-helmet box would be orphaned
+    or mislabeled. Greedy one-to-one assignment gives every rider - driver and
+    passenger - their own helmet observation."""
+    pairs = []
+    for person_index, person in enumerate(people):
+        for detection_index, detection in enumerate(helmet_detections):
+            score = score_helmet_to_person(detection["box"], person)
+            if score >= settings.min_helmet_person_score:
+                pairs.append((score, person_index, detection_index))
+
+    pairs.sort(reverse=True)
+    assigned_people: set[int] = set()
+    assigned_detections: set[int] = set()
+    assignments: dict[int, tuple[dict, float]] = {}
+    for score, person_index, detection_index in pairs:
+        if person_index in assigned_people or detection_index in assigned_detections:
+            continue
+        assigned_people.add(person_index)
+        assigned_detections.add(detection_index)
+        assignments[id(people[person_index])] = (helmet_detections[detection_index], score)
+    return assignments
 
 
 def best_person_for_helmet(helmet_box: dict, people: list[dict]) -> tuple[dict | None, float]:
@@ -825,41 +1168,6 @@ def best_motorcycle_for_helmet(helmet_box: dict, motorcycles: list[dict]) -> tup
             best_motorcycle = motorcycle
             best_score = score
     return best_motorcycle, best_score
-
-
-def best_plate_for_motorcycle(
-    motorcycle: dict | None,
-    plate_boxes: list[dict],
-    negative_vehicles: list[dict],
-) -> tuple[dict | None, float]:
-    if not motorcycle:
-        return None, 0.0
-
-    best_plate = None
-    best_score = 0.0
-    for plate in plate_boxes:
-        if not plausible_plate_for_motorcycle(plate, motorcycle):
-            continue
-        score = score_plate_to_motorcycle(plate, motorcycle)
-        if score < settings.min_plate_motorcycle_score:
-            continue
-        if plate_prefers_negative_vehicle(plate, score, negative_vehicles):
-            continue
-        if score > best_score:
-            best_plate = plate
-            best_score = score
-    return best_plate, best_score
-
-
-def best_plate_for_helmet(helmet_box: dict, plate_boxes: list[dict]) -> tuple[dict | None, float]:
-    best_plate = None
-    best_score = 0.0
-    for plate in plate_boxes:
-        score = score_plate_to_helmet(plate, helmet_box)
-        if score > best_score:
-            best_plate = plate
-            best_score = score
-    return best_plate, best_score
 
 
 def combined_score(
@@ -957,10 +1265,12 @@ def plausible_plate_for_motorcycle(plate: dict, motorcycle: dict) -> bool:
         return False
     if not 0.0015 <= plate_area_ratio <= 0.20:
         return False
-    if not 0.45 <= plate_aspect <= 7.5:
+    # Thai motorcycle plates are near-square; Thai car plates are much wider,
+    # so the aspect gate rejects most car plates before scoring.
+    if not settings.plate_min_aspect <= plate_aspect <= settings.plate_max_aspect:
         return False
 
-    horizontal_slop = motorcycle_width * 0.28
+    horizontal_slop = motorcycle_width * settings.plate_horizontal_slop
     return mx1 - horizontal_slop <= px <= mx2 + horizontal_slop
 
 
@@ -986,21 +1296,6 @@ def plausible_plate_for_vehicle(plate: dict, vehicle: dict) -> bool:
     if not point_in_box((px, py), expanded_vehicle):
         return False
     return py >= y1 + height * 0.28
-
-
-def score_plate_to_helmet(plate: dict, helmet_box: dict) -> float:
-    plate_center = box_center(plate["xyxy"])
-    helmet_center = box_center(helmet_box["xyxy"])
-    vertical_gap = max(plate_center[1] - helmet_center[1], 0)
-    horizontal_gap = abs(plate_center[0] - helmet_center[0])
-    _, y1, _, y2 = helmet_box["xyxy"]
-    reference = max(y2 - y1, 1) * 8
-    if vertical_gap <= 0:
-        return 0.0
-    distance_score = max(0.0, 1.0 - (horizontal_gap / max(reference, 1))) * 0.55
-    vertical_score = min(vertical_gap / max(reference, 1), 1.0) * 0.25
-    confidence_score = plate["confidence"] * 0.20
-    return min(distance_score + vertical_score + confidence_score, 1.0)
 
 
 def annotate_analysis(frame, frame_number: int, analysis: dict, *, fresh_analysis: bool):
@@ -1161,14 +1456,6 @@ def box_iou(a: list[int], b: list[int]) -> float:
     return intersection / union
 
 
-def association_reference_box(association: dict) -> list[int]:
-    for key in ["motorcycle_box", "person_box", "helmet_box"]:
-        box = association.get(key)
-        if box:
-            return box["xyxy"]
-    return [0, 0, 0, 0]
-
-
 def association_track_score(association: dict) -> float:
     helmet_box = association.get("helmet_box") or {}
     confidence = float(helmet_box.get("confidence", 0.0))
@@ -1182,19 +1469,6 @@ def valid_no_helmet_association(association: dict) -> bool:
     if not association.get("helmet_box") or not association.get("motorcycle_box"):
         return False
     return float(association.get("association_score", 0.0)) >= settings.min_no_helmet_association_score
-
-
-def track_match_score(previous_xyxy: list[int], current_xyxy: list[int]) -> float:
-    iou_score = box_iou(previous_xyxy, current_xyxy)
-    previous_center = box_center(previous_xyxy)
-    current_center = box_center(current_xyxy)
-    previous_width = max(previous_xyxy[2] - previous_xyxy[0], 1)
-    previous_height = max(previous_xyxy[3] - previous_xyxy[1], 1)
-    normalized_distance = point_distance(previous_center, current_center) / max(
-        previous_width, previous_height
-    )
-    distance_score = max(0.0, 1.0 - normalized_distance)
-    return max(iou_score, distance_score * 0.70)
 
 
 def normalize_label(label: str) -> str:
@@ -1249,26 +1523,111 @@ def read_plate_text(crop) -> tuple[str | None, float | None]:
                 user_network_directory=str(settings.cache_dir / "easyocr"),
                 verbose=False,
             )
-        results = []
+        best_text = None
+        best_confidence = None
+        best_quality = 0.0
         for image in plate_ocr_variants(crop):
-            results.extend(_ocr_reader.readtext(image, detail=1, paragraph=False))
+            lines = _ocr_reader.readtext(image, detail=1, paragraph=False)
+            combined = combine_plate_lines(lines)
+            if combined and combined[2] > best_quality:
+                best_text, best_confidence, best_quality = combined
     except Exception:
         return None, None
 
-    if not results:
-        return None, None
+    return best_text, best_confidence
 
-    candidates = []
-    for result in results:
-        text = normalize_plate_text(str(result[1]))
-        if text:
-            candidates.append((text, float(result[2])))
 
-    if not candidates:
-        return None, None
+def combine_plate_lines(lines) -> tuple[str, float, float] | None:
+    """Combine OCR line results into one plate reading.
 
-    text, confidence = max(candidates, key=lambda candidate: candidate[1])
-    return text, confidence
+    Thai motorcycle plates are multi-line (registration prefix, province, digit
+    group), so lines are classified by shape and rejoined in top-to-bottom order
+    instead of trusting the single highest-confidence line. Returns
+    (text, confidence, quality) where quality ranks readings across OCR variants:
+    pattern-conforming readings beat raw high-confidence noise.
+    """
+    entries = []
+    for line in lines:
+        bbox, text, confidence = line[0], line[1], line[2]
+        normalized = normalize_plate_text(str(text))
+        compact = re.sub(r"\s+", "", normalized)
+        if not compact:
+            continue
+        top = min(point[1] for point in bbox)
+        entries.append(
+            {
+                "text": normalized,
+                "compact": compact,
+                "confidence": float(confidence),
+                "top": top,
+            }
+        )
+    if not entries:
+        return None
+
+    prefix = best_matching_entry(entries, PLATE_PREFIX_PATTERN, exclude=[])
+    digits = best_matching_entry(entries, PLATE_DIGITS_PATTERN, exclude=[prefix])
+    province = best_matching_entry(entries, PLATE_PROVINCE_PATTERN, exclude=[prefix, digits])
+
+    registration_parts = sorted(
+        [entry for entry in (prefix, digits) if entry], key=lambda entry: entry["top"]
+    )
+    if registration_parts:
+        used = registration_parts + ([province] if province else [])
+        text = " ".join(entry["compact"] for entry in registration_parts)
+        if province:
+            text = f"{text} {province['compact']}"
+        confidence = sum(entry["confidence"] for entry in used) / len(used)
+        quality = (
+            confidence
+            + (0.45 if prefix else 0.0)
+            + (0.25 if digits else 0.0)
+            + (0.15 if province else 0.0)
+        )
+        if len(re.sub(r"\s+", "", text)) < 2:
+            return None
+        return text, round(confidence, 4), quality
+
+    # No plate-shaped lines: fall back to the strongest raw line, heavily
+    # discounted so any pattern-conforming variant wins.
+    fallback = max(entries, key=lambda entry: entry["confidence"])
+    if len(fallback["compact"]) < 2:
+        return None
+    return fallback["text"], round(fallback["confidence"], 4), fallback["confidence"] * 0.40
+
+
+def best_matching_entry(entries: list[dict], pattern: re.Pattern, exclude: list) -> dict | None:
+    best = None
+    for entry in entries:
+        if any(entry is excluded for excluded in exclude if excluded):
+            continue
+        if not pattern.fullmatch(entry["compact"]):
+            continue
+        if best is None or entry["confidence"] > best["confidence"]:
+            best = entry
+    return best
+
+
+def vote_plate_text(reads: list[tuple[str, float]]) -> tuple[str, float] | None:
+    """Pick the plate text seen most consistently across a track's samples.
+
+    Readings are grouped by whitespace-normalized text and ranked by summed
+    confidence, so a plate read the same way in several samples beats a single
+    high-confidence misread."""
+    if not reads:
+        return None
+
+    groups: dict[str, dict] = {}
+    for text, confidence in reads:
+        key = re.sub(r"\s+", "", text)
+        group = groups.setdefault(key, {"total": 0.0, "best_text": text, "best_confidence": confidence})
+        group["total"] += max(confidence, 0.05)
+        if confidence > group["best_confidence"]:
+            group["best_text"] = text
+            group["best_confidence"] = confidence
+
+    best_group = max(groups.values(), key=lambda group: group["total"])
+    return best_group["best_text"], best_group["best_confidence"]
 
 
 def plate_ocr_variants(crop) -> list:

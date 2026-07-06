@@ -60,6 +60,7 @@ Main screens:
 - `/upload`: Analysis Console for upload, playback, overlays, telemetry, runtime settings, results, and evidence.
 - `/dashboard`: Job history and saved evidence overview.
 - `/violations`: Violation review table with plate crops, evidence inspector, CSV export, and review decisions.
+- `/jobs/{jobId}`: Completed-job replay page with video playback, synchronized overlays, and jump-to-violation controls.
 
 Important files:
 
@@ -213,6 +214,22 @@ GET /api/jobs/{job_id}/stream
 
 Returns MJPEG frames from the in-memory frame hub. This remains available, but the primary UI now uses native browser video playback with canvas overlays.
 
+The frame hub tracks active stream viewers. When nobody is watching, the pipeline skips MJPEG JPEG encoding and does not pace processing to real time, so jobs run at full hardware speed.
+
+### Review Metrics
+
+```http
+GET /api/metrics/review
+```
+
+Aggregates human review decisions into precision metrics:
+
+- `overall`: total / pending / confirmed / false_positive counts and precision.
+- `jobs`: the same buckets per job.
+- `confidence_bands`: the same buckets grouped by helmet confidence (`under_50`, `50_to_65`, `65_to_80`, `80_plus`).
+
+Precision is `confirmed / (confirmed + false_positive)`, i.e. how often a saved violation survives human review. It is `null` until at least one record has been reviewed.
+
 ### Violations
 
 ```http
@@ -283,6 +300,7 @@ Key columns:
 - `evidence_image`
 - `plate_image`
 - `frame_number`
+- `track_id`
 - `review_status`
 
 ## Filesystem Storage
@@ -318,18 +336,31 @@ User uploads video
     -> Background task starts
     -> OpenCV opens video
     -> Models are loaded lazily
+    -> Non-sampled frames are advanced with grab() (no decode cost)
     -> Frames are sampled based on sample_every_seconds
-    -> YOLO detects person, motorcycle, car/bus/truck context, helmet/no-helmet, and plate
+    -> Sampling densifies temporarily after any no-helmet detection (adaptive sampling)
+    -> YOLO detects person, motorcycle, and car/bus/truck context on the full frame
+    -> Helmet model runs on batched rider crops around each motorcycle
+    -> Plate detector runs on the full frame
+    -> Plates are assigned one-to-one to motorcycles (greedy, margin-gated)
+    -> Helmet boxes are assigned one-to-one to people (drivers and passengers)
     -> Rider association links person -> motorcycle -> helmet -> plate
     -> Hard gates reject weak no-helmet rider and implausible plate links
-    -> Detection metadata is appended to JSON
-    -> Preview frames are annotated and published/saved
+    -> Motorcycle boxes are tracked by the ByteTrack-style tracker
+    -> Helmet status votes accumulate per motorcycle track
+    -> Violations become eligible only after enough no-helmet votes
+    -> Detection metadata JSON is written at most once per second
+    -> Preview frames are annotated; MJPEG is published only when someone is watching
     -> No-helmet rider tracks are aggregated briefly for better plate crops
+    -> Plate crops must co-travel with the track across samples to be attached
+    -> OCR readings are voted across the track's samples
     -> Violations are written to SQLite and data/evidence
     -> Plate crops are written to data/plates
     -> Job telemetry is updated throughout processing
     -> Job completes with violations_detected or no_violations
 ```
+
+Processing runs at full hardware speed by default. Real-time pacing only applies while an MJPEG stream viewer is connected or when `REALTIME_PREVIEW=true` is set.
 
 ## Computer Vision Pipeline
 
@@ -351,27 +382,58 @@ Inference is controlled by runtime and config settings:
 - `helmet_confidence`
 - `plate_confidence`
 - `object_imgsz`
-- `helmet_imgsz`
+- `helmet_imgsz` (full-frame fallback mode)
+- `helmet_crop_inference` / `helmet_crop_imgsz`
 - `plate_imgsz`
 - `sample_every_seconds`
+- `adaptive_sampling` / `adaptive_sample_divisor` / `adaptive_hold_seconds`
 - `min_helmet_person_score`
 - `min_person_motorcycle_score`
 - `min_helmet_motorcycle_score`
 - `min_no_helmet_association_score`
 - `min_plate_motorcycle_score`
+- `min_no_helmet_votes`
+- `plate_min_aspect` / `plate_max_aspect` / `plate_horizontal_slop`
+- `plate_assignment_margin`
+- `plate_min_track_sightings`
 
-Rider association is geometry-based:
+### Helmet Crop Inference
 
-- match person to motorcycle
-- match helmet/no-helmet box to upper body
-- reject no-helmet evidence unless a plausible motorcycle is linked
-- match plate to lower motorcycle region only after location, size, aspect, and lower-region gates pass
-- reject plate candidates that score better against nearby car/bus/truck boxes
-- score associations and save no-helmet rider evidence only above the minimum association score
+The helmet model runs on rider-focused crops instead of the full frame. Each motorcycle box is expanded upward (rider heads sit above the box top), unioned with overlapping person boxes, merged with intersecting neighbor regions, and the resulting crops are batched into one helmet-model call. Detections are mapped back to frame coordinates and deduplicated across overlapping crops (higher confidence wins, label-agnostic, so one head can never be reported as both helmet and no-helmet).
 
-The plate-to-helmet fallback is not used for saved no-helmet rider associations because it can attach unrelated car or neighboring-motorcycle plates in dense scenes.
+This gives the helmet model several times more effective resolution on distant riders and skips helmet inference entirely on frames with no motorcycles. Set `HELMET_CROP_INFERENCE=false` to restore the old full-frame pass at `helmet_imgsz`.
 
-Rider associations are passed through a local ByteTrack-style tracker. The tracker matches high-confidence association boxes first, then uses lower-confidence boxes as a second-stage continuation pass. Stable `track_id` values are written into sampled detection metadata, evidence annotations, saved violation records, the violation detail modal, and CSV exports.
+### Plate Assignment
+
+Plates are assigned to motorcycles one-to-one per sampled frame before rider association runs:
+
+- Hard plausibility gates: plate center inside the expanded motorcycle box, in the lower region, plausible area ratio, near-square aspect ratio (`plate_min_aspect`-`plate_max_aspect`, tuned for Thai motorcycle plates vs the much wider car plates), and horizontal slop capped at `plate_horizontal_slop` of the motorcycle width.
+- Each plate picks its single best motorcycle. If the runner-up motorcycle scores within `plate_assignment_margin`, the plate is ambiguous and dropped for that frame.
+- Plates that fit a nearby car/bus/truck better than the motorcycle are rejected.
+- Greedy one-to-one assignment guarantees two riders can never claim the same plate in one frame.
+
+At violation time there is an additional temporal gate: the plate must have been sighted with the rider's track in at least `plate_min_track_sightings` samples (capped by the pending sample count), so a one-off plate from a passing vehicle is dropped rather than attached.
+
+### Passengers And Multi-Rider Motorcycles
+
+Helmet boxes are assigned to people one-to-one (greedy, by geometric score). On two-up motorcycles the driver's and passenger's heads sit close together; without exclusive assignment both person boxes could claim the driver's helmet and the passenger's own no-helmet box would be orphaned or mislabeled. With one-to-one assignment the driver and passenger each contribute their own helmet-status vote to the shared motorcycle track, so a helmeted driver with an unhelmeted passenger still produces a violation (the vote rule tolerates mixed tracks).
+
+### Adaptive Sampling
+
+Sampling normally follows `sample_every_seconds` (default 1 s). Whenever a sampled frame contains any no-helmet detection, sampling temporarily densifies to `adaptive_sample_divisor` times per interval (default 5x) for `adaptive_hold_seconds` (default 2.5 s), extended while no-helmet detections continue. This serves two purposes: short-lived riders — visible for only 1–2 seconds — accumulate enough helmet votes and plate sightings to be saved, and fast-moving bikes displace little enough between samples that the tracker can hold their identity. The dense-sampling cost is paid only around candidate violations. Disable with `ADAPTIVE_SAMPLING=false`.
+
+### Rider Identity Tracking And Helmet Voting
+
+The ByteTrack-style tracker runs on raw motorcycle detections, not on gated rider associations. Motorcycle boxes are the most stable detection in traffic scenes, so identities survive frames where the helmet model or association gates flicker. The tracker matches high-confidence detections first, then gives unmatched tracks a second chance with lower-confidence detections.
+
+Track ids propagate from motorcycle tracks onto rider associations, and each sampled association records a helmet-status vote for its track. A no-helmet violation becomes eligible only when the track has:
+
+- at least `min_no_helmet_votes` no-helmet observations, and
+- no-helmet observations that are not drowned out by with-helmet observations (`no_helmet * 2 >= with_helmet`).
+
+This suppresses single-frame helmet-model flickers on helmeted riders while still letting genuinely mixed tracks (helmeted driver, unhelmeted passenger) through to human review. Adaptive sampling densifies the sample rate as soon as a no-helmet detection appears, so even fast-crossing riders normally accumulate enough votes; lower `MIN_NO_HELMET_VOTES` to `1` if single-sample saving is ever needed.
+
+Stable `track_id` values are written into sampled detection metadata, evidence annotations, saved violation records, the violation detail modal, and CSV exports.
 
 Duplicate suppression is per-job and keyed by the tracked rider identity plus cooldown and plate aggregation windows.
 
@@ -435,6 +497,8 @@ Metrics:
 
 `processing_fps` is calculated as processed frames divided by elapsed processing time. `eta_seconds` is estimated from remaining frames and current processing FPS.
 
+Since real-time pacing was removed (2026-07-03), `processing_fps` reflects true hardware throughput. Before that change it was capped at the source video's own frame rate.
+
 ## Runtime Settings Design
 
 The Analysis page includes a runtime Settings panel. It updates backend process memory through `PATCH /api/settings`.
@@ -479,10 +543,11 @@ File deletion is restricted to known media roots for safety.
 - FastAPI background tasks are simple and demo-friendly, but not durable if the process exits mid-job.
 - SQLite is easy for local use, but not ideal for concurrent production workloads.
 - Local filesystem media is straightforward, but lacks retention policy, access control, or object storage semantics.
-- Detection is sampled, which improves performance but misses events between sampled frames.
-- Overlay metadata is stored as JSON files, which is simple but could become large for long videos.
+- Detection is sampled, which improves performance but misses events between sampled frames. The helmet vote requirement (`min_no_helmet_votes`, default 2) additionally means a rider must appear in at least two sampled frames to be saved — riders crossing the frame in under `2 * sample_every_seconds` are intentionally skipped in favor of precision.
+- Overlay metadata is stored as JSON files; writes are batched to once per second, but the file is still rewritten in full each time.
 - Runtime settings are convenient but currently not persisted.
-- Rider identity now uses ByteTrack-style tracking, but its thresholds still need tuning on real traffic clips.
+- Rider identity is anchored to motorcycle tracks, which is stable but means a rider who switches between detected motorcycles (dense occlusion) can still change identity.
+- Helmet crop inference only looks near detected motorcycles; helmet boxes away from any motorcycle are no longer detected or drawn (they could never become violations anyway).
 
 ## Security And Privacy Notes
 
@@ -495,6 +560,25 @@ Current MVP limitations:
 - The `/media` mount serves generated media directly from `data/`.
 
 For production, add authentication, authorization, retention policy, access-controlled media serving, and audit logging.
+
+## Evaluation
+
+Two measurement tools exist so threshold and pipeline changes can be validated instead of guessed:
+
+### Offline eval harness
+
+`scripts/evaluate.py` runs labeled clips through the real pipeline and reports event-level precision, recall, duplicate rate, plate capture rate, and OCR exact-match rate.
+
+```powershell
+python scripts/evaluate.py scripts/eval-labels.example.json
+python scripts/evaluate.py my-labels.json --json results.json --keep-jobs
+```
+
+The labels file lists clips with the frame ranges of real no-helmet riders (and optionally their plate text). Clips with an empty event list measure false positives on clean footage. Eval jobs run through the normal database and are deleted afterwards unless `--keep-jobs` is passed. Detection settings come from config/env, so threshold sweeps are done with environment variables.
+
+### Review-decision metrics
+
+`GET /api/metrics/review` turns the human decisions already collected on the Violations page into live precision metrics, overall, per job, and per helmet-confidence band. Confirmed and false-positive counts also identify which evidence images are worth exporting as fine-tuning data later.
 
 ## Model Improvement Plan
 
@@ -514,11 +598,37 @@ The helmet model currently depends on a public baseline that may not match Thai 
 ## Future Work
 
 - Persist runtime settings or add named tuning presets.
-- Add timeline markers and jump-to-violation playback controls.
-- Add debug export for sampled frames and rider crops.
-- Tune ByteTrack thresholds against dense and occluded real traffic clips.
-- Improve plate OCR for Thai motorcycle plates.
+- Add timeline markers on replay playback and refine violation navigation controls.
+- Add debug export for sampled frames and rider crops (confirmed/false-positive evidence export for fine-tuning).
+- Tune tracker, voting, and plate-gate thresholds against labeled clips using `scripts/evaluate.py`.
+- Adaptive sampling: densify the sample rate while a candidate violation track is active to recover fast-crossing riders.
+- Fine-tune the helmet model on local footage (see Model Improvement Plan).
+- Improve plate OCR further: character-level voting, dedicated Thai plate OCR model.
+- GPU inference and OCR (`ocr_gpu`, model device selection).
 - Add webcam and RTSP inputs.
 - Add PDF/HTML report generation.
-- Add metrics and evaluation dashboards.
+- Surface `/api/metrics/review` in the frontend as an accuracy dashboard.
 - Add authentication and production media access control.
+
+## Change Log
+
+### 2026-07-03 - Accuracy And Speed Overhaul
+
+Backend pipeline changes (see `progresslog.md` for full detail):
+
+1. Real-time pacing removed by default (`realtime_preview` now `false`); processing runs at hardware speed and only paces when an MJPEG viewer is connected.
+2. Added the offline eval harness (`scripts/evaluate.py`) and the `GET /api/metrics/review` endpoint.
+3. Plate association: near-square aspect gate, tighter horizontal slop, one-to-one greedy plate-to-motorcycle assignment with an ambiguity margin, and a temporal co-travel requirement before a plate is attached to a violation.
+4. Rider identity: the ByteTrack-style tracker now runs on raw motorcycle detections instead of gated associations, and helmet status is decided by per-track voting (`min_no_helmet_votes`).
+5. Helmet detection now runs on batched rider-focused crops (`helmet_crop_inference`) instead of the full frame.
+6. OCR: multi-line Thai plate combination, plate-format quality scoring across preprocess variants, and cross-sample text voting per track.
+7. Loop efficiency: `grab()` skipping for undecoded frames, detection-metadata writes batched to once per second, MJPEG encoding skipped when nobody is streaming.
+
+Measured on the same 62 s test clip (CPU): processing time 62.0 s -> 26.3 s, saved records 16 -> 3 with stable track identity and zero duplicates.
+
+### 2026-07-03 - Follow-up Fixes From Field Testing
+
+1. Passenger helmet detection: helmet boxes are now assigned one-to-one to people (`assign_helmets_to_people()`), so passengers get their own helmet observation instead of being shadowed by the driver's helmet; leftover no-helmet boxes can no longer re-claim an already-assigned person.
+2. Adaptive sampling (`adaptive_sampling`, default on): sampling densifies 5x for 2.5 s after any no-helmet detection, so riders visible for only 1-2 seconds accumulate enough helmet votes to be saved and fast-moving bikes stay trackable between samples.
+3. Spatial duplicate suppression: a violation whose motorcycle box overlaps (IoU >= 0.35) or lies within one bike-size of a violation saved within the cooldown window is skipped regardless of track id, so tracker identity churn on one motorcycle can no longer produce multiple records; suppressed saves still extend the dedup chain for moving riders.
+4. Fixed the violation evidence modal opening off-viewport: the page-enter animation kept a persisted `transform`, which made the page the containing block for the `position: fixed` modal; the animation is now opacity-only (`frontend/app/globals.css`).

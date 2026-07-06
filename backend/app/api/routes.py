@@ -17,6 +17,7 @@ from app.services.repository import (
     list_job_storage,
     list_jobs,
     list_violations,
+    review_metrics,
     update_violation_review,
 )
 from app.services.storage import delete_job_media, delete_violation_media, save_upload
@@ -124,6 +125,11 @@ def job_detections(job_id: str) -> dict:
     if not path.exists():
         return {"frames": []}
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+@router.get("/metrics/review")
+def get_review_metrics() -> dict:
+    return review_metrics()
 
 
 @router.get("/violations", response_model=list[Violation])

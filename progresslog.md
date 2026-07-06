@@ -1,5 +1,75 @@
 # SafeRide Progress Log
 
+## 2026-07-03 (later)
+
+### Field-Test Fixes: Passengers, Short Riders, Duplicates, Evidence Modal
+
+User testing on 5-6 clips surfaced three issues; all fixed.
+
+- Passenger helmet detection was weak:
+  - Root cause: each person independently picked its best helmet box, so on two-up motorcycles both the driver's and passenger's person boxes could claim the driver's helmet, orphaning or mislabeling the passenger's no-helmet box.
+  - Fix: `assign_helmets_to_people()` performs greedy one-to-one helmet-to-person assignment; the leftover no-helmet loop can no longer re-claim an already-assigned person. Verified on evidence frames: both riders of a two-up motorcycle now get separate no-helmet boxes.
+- Short 1-2 s no-helmet appearances produced no violation:
+  - Root cause: the vote gate (2 no-helmet samples) combined with 1 s sampling meant short-lived riders left the frame before accumulating votes.
+  - Fix: adaptive sampling (`adaptive_sampling = true`, `adaptive_sample_divisor = 5`, `adaptive_hold_seconds = 2.5`). After any no-helmet detection, sampling densifies 5x for 2.5 s (rolling), so short riders accumulate votes quickly and fast-moving bikes displace little enough between samples for the tracker to hold their identity. Cost is localized to moments with candidate violations.
+- Tracker identity churn could double-save the same rider:
+  - Detection metadata showed one fast-moving motorcycle displacing ~a full box-size per sampled frame, spawning a fresh track id each sample (tracks 28 -> 7 -> 45 across 20 frames); several of those churned tracks each passed the vote gate and saved.
+  - Fix 1: denser adaptive sampling (above) keeps per-sample displacement inside the tracker's match radius.
+  - Fix 2: spatial duplicate suppression in `RiderTrackManager` - a violation is skipped when its motorcycle box overlaps (IoU >= 0.35) or sits within 1.0 bike-size of a violation saved inside the cooldown window, regardless of track id. Suppressed saves still record their location, so a moving rider keeps extending the dedup chain.
+- Violation evidence modal appeared empty when expanded:
+  - Root cause: the page-enter CSS animation kept a persisted `transform` (fill-mode both), which per spec makes the page element the containing block for `position: fixed` descendants - the modal rendered at the top of the page instead of the viewport, off-screen for scrolled users. Media files themselves were verified serving HTTP 200.
+  - Fix: page-enter animation is opacity-only in `frontend/app/globals.css`.
+
+## 2026-07-03
+
+### CV Pipeline Accuracy And Speed Overhaul
+
+Implemented the top six items from the pipeline analysis (speed, evaluation, plate association, tracking, helmet accuracy, OCR).
+
+- Speed:
+  - Removed real-time pacing by default (`realtime_preview = false` in `backend/app/core/config.py`). Processing now runs at full hardware speed; pacing only applies while an MJPEG stream viewer is connected or `REALTIME_PREVIEW=true`.
+  - `FrameHub` (`backend/app/services/streaming.py`) now counts stream viewers; the pipeline skips MJPEG JPEG encoding when nobody is watching.
+  - Non-sampled frames are advanced with OpenCV `grab()` instead of `read()`, skipping decode cost.
+  - Detection metadata JSON writes are batched to once per second (`metadata_write_seconds`) instead of a full rewrite every sampled frame, plus a final write at completion.
+  - Removed redundant `frame.copy()` calls before model inference.
+- Evaluation:
+  - Added `scripts/evaluate.py`: an offline harness that runs labeled clips through the real pipeline and reports event-level precision, recall, duplicate rate, plate capture rate, and OCR exact-match rate. Example labels in `scripts/eval-labels.example.json`.
+  - Added `GET /api/metrics/review` (`review_metrics()` in `backend/app/services/repository.py`): precision from human review decisions, overall, per job, and per helmet-confidence band.
+- Plate association (wrong-plate fixes):
+  - Aspect-ratio gate tightened to near-square Thai motorcycle plates (`plate_min_aspect = 0.55`, `plate_max_aspect = 2.0`); wide car plates are rejected before scoring.
+  - Horizontal slop reduced from 0.28 to `plate_horizontal_slop = 0.22`.
+  - New one-to-one greedy plate-to-motorcycle assignment (`assign_plates_to_motorcycles()`): two riders can no longer claim the same plate, and a plate whose two candidate motorcycles score within `plate_assignment_margin = 0.04` is dropped as ambiguous.
+  - New co-travel gate: a plate is attached to a violation only if sighted with the rider's track in at least `plate_min_track_sightings = 2` samples (capped by pending sample count), so one-off plates from passing vehicles are dropped.
+  - Removed the dead plate-to-helmet fallback code paths.
+- Tracking consistency:
+  - `AssociationTracker` replaced by `RiderTrackManager`: the ByteTrack-style tracker now runs on raw motorcycle detections instead of gated rider associations, so identities survive helmet-model and association-gate flickers.
+  - Track ids propagate from motorcycle tracks onto rider associations.
+  - New helmet-status voting per track: a violation requires at least `min_no_helmet_votes = 2` no-helmet observations and `no_helmet * 2 >= with_helmet`, suppressing single-frame flickers while letting mixed driver/passenger tracks reach human review.
+- Helmet detection accuracy:
+  - Helmet inference now runs on batched rider-focused crops (`helmet_crop_inference = true`, `helmet_crop_imgsz = 640`): motorcycle boxes expanded upward for the rider's head, unioned with overlapping person boxes, merged when intersecting, then one batched model call. Detections are offset back to frame coordinates and deduplicated across overlapping crops.
+  - Frames with no motorcycles skip helmet inference entirely.
+  - `HELMET_CROP_INFERENCE=false` restores the old full-frame pass.
+- OCR quality:
+  - Multi-line Thai plate handling: OCR lines are classified by shape (registration prefix / digit group / province) and recombined top-to-bottom instead of trusting the single best line.
+  - Plate-format quality scoring picks the best reading across preprocess variants; pattern-conforming readings beat raw high-confidence noise, and 1-character junk reads are rejected.
+  - Cross-sample OCR voting per track (`vote_plate_text()`): the text read consistently across samples beats a single high-confidence misread.
+
+### Verification
+
+- `py_compile` across all changed backend modules.
+- Ran the eval harness end-to-end on the 62 s IMG_5631 clip (CPU):
+  - processing time 62.0 s -> 26.3 s (pacing removed; now compute-bound)
+  - `processing_fps` 29.9 -> 70.5
+  - saved records 16 -> 3, zero duplicates; two records at frames 1590/1710 share one track id (identity persisted 4 s, previously every record had a fresh id)
+  - OCR produced a plate-shaped digit-line read (`9903`) instead of junk (`1o`, `94`)
+- Smoke-tested `GET /api/metrics/review` against the live database (overall precision 0.6875 from 16 existing reviews).
+
+### Notes
+
+- Riders visible in fewer than two sampled frames are now intentionally skipped (precision over recall). Restore old behavior with `MIN_NO_HELMET_VOTES=1`, or catch faster riders by lowering `sample_every_seconds`.
+- All new gates default from `backend/app/core/config.py` and are env-overridable; tune them against labeled clips with `scripts/evaluate.py` instead of eyeballing.
+- Frontend required no changes; the API is backward compatible with one additive endpoint.
+
 ## 2026-06-30
 
 ### Hardened Rider-Motorcycle-Plate Association

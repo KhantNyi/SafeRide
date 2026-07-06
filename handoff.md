@@ -62,9 +62,9 @@ The project is still an MVP. The web app and backend workflow are functional, bu
   - Frontend at `http://127.0.0.1:3000`
   - Backend at `http://127.0.0.1:8000`
 - Clarified the current Live preview behavior:
-  - It is an MJPEG stream of annotated JPEG frames from the uploaded video.
-  - It is not native browser video playback and not a true camera/live feed yet.
-  - Detection is sampled, while preview frames reuse the latest analysis between sampled frames.
+  - The primary UI now plays the uploaded source video with synchronized canvas overlays.
+  - Detection is sampled, so overlay boxes update at sampled-frame cadence rather than every video frame.
+  - The backend MJPEG stream remains available as a legacy/API preview path, but it is not the main browser playback mode and not a true camera/live feed.
 - Enabled EasyOCR-based plate text reading by default.
 - Added OCR preprocessing for plate crops:
   - upscale
@@ -117,8 +117,8 @@ The project is still an MVP. The web app and backend workflow are functional, bu
 
 - Built a Next.js + TypeScript frontend under `frontend/`.
 - Added a main Analysis Console at `/upload`.
-- Added a Detection Review page at `/dashboard`.
-- Added a Violation Review page at `/violations`.
+- Added an Operations Dashboard page at `/dashboard`.
+- Added a Review Queue page at `/violations`.
 - Added a shared app shell/navigation component with active route states.
 - Added backend health indicator.
 - Added source/upload panel.
@@ -463,7 +463,7 @@ python -m uvicorn app.main:app --reload --reload-dir backend --app-dir backend -
 
 ## Suggested Next Session Plan
 
-1. Add timeline markers and jump-to-violation controls for completed video playback.
+1. Add timeline markers and refine jump-to-violation controls for completed video playback.
 2. Add a script or debug mode to export sampled frames and rider/helmet crops from uploaded videos into a local dataset folder.
 3. Label a first Thai motorcycle helmet dataset in YOLO format with `With Helmet` and `Without Helmet`.
 4. Fine-tune the helmet model from `models/helmet-yolov8n.pt` and compare validation metrics against the current baseline.

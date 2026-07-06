@@ -33,11 +33,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             return (
               <Link href={item.href} className={active ? "active" : ""} aria-current={active ? "page" : undefined} key={item.href}>
                 <Icon size={18} />
-                {item.label}
+                <span className="nav-text">{item.label}</span>
               </Link>
             );
           })}
         </nav>
+
+        <div className="sidebar-footer">Helmet violation detection and license plate evidence capture.</div>
       </aside>
 
       <main className="main-panel">{children}</main>
