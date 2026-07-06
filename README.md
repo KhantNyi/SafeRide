@@ -25,6 +25,35 @@ Install ML packages for real detection:
 pip install -r backend\requirements-ml.txt
 ```
 
+### GPU acceleration
+
+Inference device is picked automatically (`MODEL_DEVICE=auto`): CUDA on NVIDIA machines, MPS on Apple Silicon, CPU otherwise. OCR follows CUDA availability unless `OCR_GPU` is set explicitly.
+
+On Windows with an NVIDIA GPU, replace the default CPU PyTorch with the CUDA build (one-time, large download):
+
+```powershell
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130 --force-reinstall --no-deps
+```
+
+Force a specific device if needed:
+
+```powershell
+$env:MODEL_DEVICE="cpu"   # or cuda / mps
+```
+
+### macOS (Apple Silicon) setup
+
+The same code runs on M-series Macs. Use bash equivalents for setup:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r backend/requirements.txt -r backend/requirements-ml.txt
+python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000
+```
+
+YOLO inference auto-selects MPS (Apple GPU); OCR stays on CPU (EasyOCR's GPU path is CUDA-only). For webcam live sessions, grant camera permission to your terminal app when macOS prompts.
+
 Run the backend in stable inference mode:
 
 ```powershell
@@ -99,6 +128,10 @@ Open http://localhost:3000.
 4. The web app plays the uploaded video directly with synchronized canvas overlays, plus Results and Evidence tabs.
 5. If no no-helmet rider is found, the result shows "No violations detected."
 6. If a no-helmet rider is found, evidence and license plate crops are saved.
+
+## Live Ingestion
+
+The `/live` page analyzes a webcam or RTSP camera in real time. Pick Webcam (device index, usually `0`) or paste an RTSP URL, then Go Live. The annotated detection stream renders live, violations flow into the same review queue, and the whole session is recorded to `data/uploads` so it replays like an uploaded video. Sessions stop on demand, on source loss, or at the `LIVE_MAX_SECONDS` safety limit (default 900 s).
 
 ## Evaluation
 

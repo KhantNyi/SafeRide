@@ -216,7 +216,11 @@ helmet_crop_imgsz = 640        # inference size per rider crop
 adaptive_sampling = true       # densify sampling after a no-helmet detection
 adaptive_sample_divisor = 5    # dense mode samples 5x per interval
 adaptive_hold_seconds = 2.5    # how long dense mode holds after a detection
+tracker_appearance_weight = 0.30  # appearance vs motion blend in track matching
+live_max_seconds = 900         # safety limit for one live session
 realtime_preview = false       # no pacing; process at full speed
+model_device = auto            # cuda on NVIDIA, mps on Apple Silicon, else cpu
+ocr_gpu = (unset)              # follows CUDA availability; set true/false to force
 ```
 
 These defaults are tuned for a demo-style balance between recall and precision. They are not final accuracy settings. Validate any change with `scripts/evaluate.py` against labeled clips instead of eyeballing.

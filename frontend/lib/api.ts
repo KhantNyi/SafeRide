@@ -164,6 +164,31 @@ export async function deleteViolation(violationId: string): Promise<void> {
   }
 }
 
+export async function startLiveAnalysis(source: string): Promise<Job> {
+  const response = await fetch(`${API_BASE}/api/live/start`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ source })
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    throw new Error(error?.detail ?? "Could not start the live session");
+  }
+  return response.json();
+}
+
+export async function stopLiveAnalysis(jobId: string): Promise<Job> {
+  const response = await fetch(`${API_BASE}/api/live/${jobId}/stop`, { method: "POST" });
+  if (!response.ok) {
+    throw new Error("Could not stop the live session");
+  }
+  return response.json();
+}
+
+export function liveStreamUrl(jobId: string) {
+  return `${API_BASE}/api/jobs/${jobId}/stream`;
+}
+
 export async function reviewViolation(violationId: string, reviewStatus: "pending" | "confirmed" | "false_positive"): Promise<Violation> {
   const response = await fetch(`${API_BASE}/api/violations/${violationId}/review`, {
     method: "PATCH",

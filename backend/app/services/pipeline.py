@@ -1,7 +1,6 @@
 import os
 import json
 from pathlib import Path
-import re
 from time import monotonic, sleep
 from uuid import uuid4
 
@@ -10,6 +9,7 @@ import cv2
 from app.core.config import settings
 from app.core.database import utc_now
 from app.services.byte_tracker import ByteTrackDetection, ByteTracker
+from app.services.plate_ocr import read_plate_text, vote_plate_texts
 from app.services.repository import create_violation, update_job
 from app.services.streaming import frame_hub
 
@@ -24,16 +24,41 @@ NEGATIVE_VEHICLE_CLASS_IDS = {CAR_CLASS_ID, BUS_CLASS_ID, TRUCK_CLASS_ID}
 WITH_HELMET_LABEL = "with helmet"
 NO_HELMET_LABEL = "without helmet"
 
-# Thai plate line shapes: registration prefix ("1กข"), plain digit group ("1234"),
-# and a pure-Thai province line ("เชียงใหม่").
-PLATE_PREFIX_PATTERN = re.compile(r"^\d{0,2}[ก-ฮ]{1,3}\d{0,4}$")
-PLATE_DIGITS_PATTERN = re.compile(r"^\d{1,4}$")
-PLATE_PROVINCE_PATTERN = re.compile(r"^[ก-๙]{3,}$")
-
 _object_model = None
 _helmet_model = None
 _plate_model = None
-_ocr_reader = None
+_model_device: str | None = None
+
+
+def resolve_model_device() -> str:
+    """Pick the inference device once: CUDA on NVIDIA machines, MPS on Apple
+    Silicon, CPU otherwise. Override with MODEL_DEVICE=cpu/cuda/mps."""
+    global _model_device
+    if _model_device is not None:
+        return _model_device
+    if settings.model_device != "auto":
+        _model_device = settings.model_device
+        return _model_device
+    device = "cpu"
+    try:
+        import torch
+
+        if torch.cuda.is_available():
+            device = "cuda"
+        else:
+            mps = getattr(torch.backends, "mps", None)
+            if mps is not None and mps.is_available():
+                device = "mps"
+    except Exception:
+        device = "cpu"
+    _model_device = device
+    return device
+
+
+def predict_kwargs() -> dict:
+    device = resolve_model_device()
+    # FP16 halves inference time on CUDA; MPS and CPU stay FP32.
+    return {"device": device, "half": device == "cuda"}
 
 
 class RiderTrackManager:
@@ -63,18 +88,20 @@ class RiderTrackManager:
             new_track_threshold=settings.tracker_new_track_confidence,
             match_threshold=settings.tracker_match_threshold,
             max_time_lost=max_lost_frames,
+            appearance_weight=settings.tracker_appearance_weight,
         )
         self.violation_tracks: dict[int, dict] = {}
         self.helmet_votes: dict[int, dict] = {}
         self.recent_saves: list[dict] = []
 
-    def update(self, analysis: dict, frame_number: int) -> None:
+    def update(self, analysis: dict, frame_number: int, frame=None) -> None:
         motorcycles = analysis["motorcycles"]
         detections = [
             ByteTrackDetection(
                 xyxy=motorcycle["xyxy"],
                 score=motorcycle["confidence"],
                 metadata={"index": index},
+                feature=None if frame is None else appearance_feature(frame, motorcycle["xyxy"]),
             )
             for index, motorcycle in enumerate(motorcycles)
         ]
@@ -268,7 +295,7 @@ class RiderTrackManager:
         )
         if candidate and track["plate_sightings"] >= required_sightings:
             association["plate_box"] = candidate["plate_box"]
-            voted = vote_plate_text(track["ocr_reads"])
+            voted = vote_plate_texts(track["ocr_reads"])
             if voted:
                 candidate = dict(candidate)
                 candidate["plate_text"], candidate["plate_confidence"] = voted
@@ -428,7 +455,7 @@ def process_uploaded_video(job_id: str, source_path: str) -> None:
             if should_analyze:
                 sampled_count += 1
                 analysis = analyze_frame(frame, models)
-                rider_tracks.update(analysis, frame_number)
+                rider_tracks.update(analysis, frame_number, frame)
                 latest_analysis = analysis
                 if analysis["no_helmets"]:
                     dense_until_frame = frame_number + int(fps * settings.adaptive_hold_seconds)
@@ -579,6 +606,7 @@ def analyze_frame(frame, models) -> dict:
         conf=settings.object_confidence,
         imgsz=settings.object_imgsz,
         verbose=False,
+        **predict_kwargs(),
     )[0]
     object_boxes = extract_boxes(object_result)
     motorcycles = [box for box in object_boxes if box["class_id"] == MOTORCYCLE_CLASS_ID]
@@ -598,6 +626,7 @@ def analyze_frame(frame, models) -> dict:
         conf=settings.plate_confidence,
         imgsz=settings.plate_imgsz,
         verbose=False,
+        **predict_kwargs(),
     )[0]
     plate_boxes = extract_boxes(plate_result)
     associations = associate_riders(people, motorcycles, with_helmet_boxes, no_helmet_boxes, plate_boxes, negative_vehicles)
@@ -641,6 +670,7 @@ def detect_helmet_boxes(frame, helmet_model, motorcycles: list[dict], people: li
             conf=settings.helmet_confidence,
             imgsz=settings.helmet_imgsz,
             verbose=False,
+            **predict_kwargs(),
         )[0]
         return extract_boxes(result)
 
@@ -664,6 +694,7 @@ def detect_helmet_boxes(frame, helmet_model, motorcycles: list[dict], people: li
         conf=settings.helmet_confidence,
         imgsz=settings.helmet_crop_imgsz,
         verbose=False,
+        **predict_kwargs(),
     )
     boxes = []
     for region, result in zip(crop_regions, results):
@@ -938,6 +969,22 @@ def plate_candidate_score(
 def crop_sharpness(crop) -> float:
     gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
     return float(cv2.Laplacian(gray, cv2.CV_64F).var())
+
+
+def appearance_feature(frame, xyxy: list[int]):
+    """HSV color histogram of a crop, L1-normalized — a cheap appearance
+    descriptor the tracker blends with motion to keep rider identity when
+    sampled boxes barely overlap."""
+    crop = crop_box(frame, xyxy)
+    if crop is None or not crop.size:
+        return None
+    small = cv2.resize(crop, (48, 48), interpolation=cv2.INTER_AREA)
+    hsv = cv2.cvtColor(small, cv2.COLOR_BGR2HSV)
+    hist = cv2.calcHist([hsv], [0, 1], None, [16, 8], [0, 180, 0, 256]).flatten().astype("float64")
+    total = hist.sum()
+    if total <= 0:
+        return None
+    return hist / total
 
 
 def extract_boxes(result) -> list[dict]:
@@ -1507,152 +1554,5 @@ def status_message(sampled_count: int, violation_count: int, analysis: dict) -> 
     return ", ".join(parts)
 
 
-def read_plate_text(crop) -> tuple[str | None, float | None]:
-    if not settings.enable_ocr:
-        return None, None
-
-    global _ocr_reader
-    try:
-        if _ocr_reader is None:
-            import easyocr
-
-            _ocr_reader = easyocr.Reader(
-                settings.ocr_languages,
-                gpu=settings.ocr_gpu,
-                model_storage_directory=str(settings.cache_dir / "easyocr"),
-                user_network_directory=str(settings.cache_dir / "easyocr"),
-                verbose=False,
-            )
-        best_text = None
-        best_confidence = None
-        best_quality = 0.0
-        for image in plate_ocr_variants(crop):
-            lines = _ocr_reader.readtext(image, detail=1, paragraph=False)
-            combined = combine_plate_lines(lines)
-            if combined and combined[2] > best_quality:
-                best_text, best_confidence, best_quality = combined
-    except Exception:
-        return None, None
-
-    return best_text, best_confidence
-
-
-def combine_plate_lines(lines) -> tuple[str, float, float] | None:
-    """Combine OCR line results into one plate reading.
-
-    Thai motorcycle plates are multi-line (registration prefix, province, digit
-    group), so lines are classified by shape and rejoined in top-to-bottom order
-    instead of trusting the single highest-confidence line. Returns
-    (text, confidence, quality) where quality ranks readings across OCR variants:
-    pattern-conforming readings beat raw high-confidence noise.
-    """
-    entries = []
-    for line in lines:
-        bbox, text, confidence = line[0], line[1], line[2]
-        normalized = normalize_plate_text(str(text))
-        compact = re.sub(r"\s+", "", normalized)
-        if not compact:
-            continue
-        top = min(point[1] for point in bbox)
-        entries.append(
-            {
-                "text": normalized,
-                "compact": compact,
-                "confidence": float(confidence),
-                "top": top,
-            }
-        )
-    if not entries:
-        return None
-
-    prefix = best_matching_entry(entries, PLATE_PREFIX_PATTERN, exclude=[])
-    digits = best_matching_entry(entries, PLATE_DIGITS_PATTERN, exclude=[prefix])
-    province = best_matching_entry(entries, PLATE_PROVINCE_PATTERN, exclude=[prefix, digits])
-
-    registration_parts = sorted(
-        [entry for entry in (prefix, digits) if entry], key=lambda entry: entry["top"]
-    )
-    if registration_parts:
-        used = registration_parts + ([province] if province else [])
-        text = " ".join(entry["compact"] for entry in registration_parts)
-        if province:
-            text = f"{text} {province['compact']}"
-        confidence = sum(entry["confidence"] for entry in used) / len(used)
-        quality = (
-            confidence
-            + (0.45 if prefix else 0.0)
-            + (0.25 if digits else 0.0)
-            + (0.15 if province else 0.0)
-        )
-        if len(re.sub(r"\s+", "", text)) < 2:
-            return None
-        return text, round(confidence, 4), quality
-
-    # No plate-shaped lines: fall back to the strongest raw line, heavily
-    # discounted so any pattern-conforming variant wins.
-    fallback = max(entries, key=lambda entry: entry["confidence"])
-    if len(fallback["compact"]) < 2:
-        return None
-    return fallback["text"], round(fallback["confidence"], 4), fallback["confidence"] * 0.40
-
-
-def best_matching_entry(entries: list[dict], pattern: re.Pattern, exclude: list) -> dict | None:
-    best = None
-    for entry in entries:
-        if any(entry is excluded for excluded in exclude if excluded):
-            continue
-        if not pattern.fullmatch(entry["compact"]):
-            continue
-        if best is None or entry["confidence"] > best["confidence"]:
-            best = entry
-    return best
-
-
-def vote_plate_text(reads: list[tuple[str, float]]) -> tuple[str, float] | None:
-    """Pick the plate text seen most consistently across a track's samples.
-
-    Readings are grouped by whitespace-normalized text and ranked by summed
-    confidence, so a plate read the same way in several samples beats a single
-    high-confidence misread."""
-    if not reads:
-        return None
-
-    groups: dict[str, dict] = {}
-    for text, confidence in reads:
-        key = re.sub(r"\s+", "", text)
-        group = groups.setdefault(key, {"total": 0.0, "best_text": text, "best_confidence": confidence})
-        group["total"] += max(confidence, 0.05)
-        if confidence > group["best_confidence"]:
-            group["best_text"] = text
-            group["best_confidence"] = confidence
-
-    best_group = max(groups.values(), key=lambda group: group["total"])
-    return best_group["best_text"], best_group["best_confidence"]
-
-
-def plate_ocr_variants(crop) -> list:
-    variants = [crop]
-    height, width = crop.shape[:2]
-    if height <= 0 or width <= 0:
-        return variants
-
-    scale = max(2.0, min(4.0, 260 / max(width, 1)))
-    resized = cv2.resize(crop, None, fx=scale, fy=scale, interpolation=cv2.INTER_CUBIC)
-    gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
-    filtered = cv2.bilateralFilter(gray, 7, 45, 45)
-    threshold = cv2.adaptiveThreshold(
-        filtered,
-        255,
-        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        cv2.THRESH_BINARY,
-        31,
-        8,
-    )
-    variants.extend([resized, threshold])
-    return variants
-
-
-def normalize_plate_text(value: str) -> str:
-    text = re.sub(r"\s+", " ", value).strip()
-    text = re.sub(r"[^\wก-๙\-\s]", "", text, flags=re.UNICODE)
-    return text.strip(" -_")
+# OCR lives in app.services.plate_ocr; read_plate_text is re-exported above
+# for callers that import it from this module (scripts/backfill_plate_ocr.py).

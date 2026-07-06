@@ -40,6 +40,10 @@ class ReviewUpdate(BaseModel):
     review_status: str
 
 
+class LiveStartRequest(BaseModel):
+    source: str = Field(min_length=1, max_length=500)
+
+
 class DetectionSettings(BaseModel):
     object_confidence: float
     helmet_confidence: float

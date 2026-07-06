@@ -1,5 +1,50 @@
 # SafeRide Progress Log
 
+## 2026-07-06 (later)
+
+### GPU Acceleration (CUDA On Windows, MPS-Ready For macOS)
+
+- Discovered the Windows machine has an RTX 4070 SUPER but the venv carried CPU-only PyTorch; every prior benchmark ran on CPU.
+- Installed `torch 2.12.0+cu130` / `torchvision 0.27.0+cu130` in the venv (the backend must be stopped during the reinstall or pip hits locked DLLs and leaves `~orch`-style leftovers in site-packages).
+- Added `model_device = "auto"` (`backend/app/core/config.py`): resolved once per process in `resolve_model_device()` - CUDA when available (with FP16 via `half=True`), MPS on Apple Silicon, CPU otherwise. All four YOLO `predict()` calls now pass `device`/`half`.
+- OCR follows CUDA availability by default: `ocr_gpu` is now `bool | None`; unset means "use GPU when CUDA exists" (EasyOCR's GPU path is CUDA-only, so Macs stay on CPU).
+- README gained a GPU section (CUDA install command, `MODEL_DEVICE` override) and a macOS/Apple Silicon setup section (bash commands, MPS note, webcam permission note).
+- Benchmark clip on GPU: 27.4 s wall clock at 91% precision / 83% recall while analyzing more frames than the CPU runs (denser adaptive windows now essentially free). Per-inference is several times faster; remaining wall-clock cost is video decode and OCR, which benefits live sessions most - far more samples per real-time second.
+
+## 2026-07-06
+
+### Kalman/Appearance Tracking, Dedicated Thai Plate OCR, Live Ingestion
+
+Implemented three roadmap items in one pass.
+
+- Tracker (`backend/app/services/byte_tracker.py` rewritten):
+  - Per-track constant-velocity Kalman filter over (cx, cy, w, h) with dt-aware transitions, so predictions stay meaningful across irregular sampled/adaptive frame gaps. Noise scales with box height, ByteTrack-style.
+  - Appearance matching: motorcycle detections carry an HSV color-histogram feature (`appearance_feature()` in pipeline.py); tracks keep an EMA feature and the match score blends motion with appearance (`tracker_appearance_weight = 0.30`). A small motion floor prevents identity jumps across the frame between similar-looking bikes.
+  - Benchmark clip: recall 4/6 -> 5/6 events, 89% precision, all saved records distinct riders (verified by distinct plate texts), spawned track identities down from 111 to 64.
+- Dedicated Thai plate OCR (`backend/app/services/plate_ocr.py`, extracted from pipeline.py):
+  - EasyOCR restricted to a Thai + Arabic-digit allowlist - Latin junk reads ("allo", "1o") are impossible by construction.
+  - Multi-line classification/recombination retained; new character-level voting across a track's samples (`vote_plate_texts()`): per character position, weighted by confidence, so one misread character is outvoted by the samples that read it correctly.
+  - OCR confidences on the benchmark clip rose from the 0.25-0.28 range to 0.42-0.56.
+  - `read_plate_text` is re-exported from pipeline.py so `scripts/backfill_plate_ocr.py` keeps working.
+- Live ingestion (`backend/app/services/live.py` + `/live` frontend page):
+  - `POST /api/live/start` accepts a webcam device index or an RTSP URL (credentials stripped from the stored job name); `POST /api/live/{id}/stop` ends the session.
+  - Wall-clock sampling with the same RiderTrackManager/violation flow; adaptive densification kept, time-based.
+  - Every frame is recorded to `data/uploads/{job_id}.mp4` (avc1 with mp4v fallback) so live sessions replay like uploads; annotated frames publish to the MJPEG hub only while someone is watching.
+  - Sessions end on operator stop, source loss (60 consecutive read failures), the violation cap, or `live_max_seconds` (default 900).
+  - New Live Monitor page (`frontend/app/live`, `LiveClient.tsx`, nav item): webcam/RTSP source picker, Go Live/Stop, live annotated stream, session telemetry, latest evidence rail, replay link after the session.
+
+### Verification
+
+- Backend py_compile + import check across all changed modules; frontend `tsc --noEmit` and production build pass (new `/live` route present).
+- Eval harness on the 62 s benchmark clip: 89% precision, 83% recall (5/6 events) vs estimated labels; all records carry distinct plates - no churn duplicates.
+- Live loop tested end-to-end with a file source: session auto-completed on source end (426 frames, recording saved, replayable) and a second session stopped cleanly via the stop endpoint ("Stopped by operator").
+- `/live` page screenshot-verified against the running backend.
+
+### Notes
+
+- Live recording uses H.264 when an encoder is available; otherwise mp4v (still saved, but some browsers cannot play it inline).
+- Webcam capture opens with CAP_DSHOW on Windows for fast init.
+
 ## 2026-07-03 (later)
 
 ### Field-Test Fixes: Passengers, Short Riders, Duplicates, Evidence Modal

@@ -1,10 +1,19 @@
 import json
+from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
 
 from app.core.config import settings
-from app.schemas.models import DetectionSettings, DetectionSettingsUpdate, Job, ReviewUpdate, Violation
+from app.schemas.models import (
+    DetectionSettings,
+    DetectionSettingsUpdate,
+    Job,
+    LiveStartRequest,
+    ReviewUpdate,
+    Violation,
+)
+from app.services.live import live_display_name, process_live_stream, request_stop
 from app.services.pipeline import detection_metadata_path, process_uploaded_video
 from app.services.repository import (
     create_job,
@@ -68,6 +77,32 @@ async def upload_video(background_tasks: BackgroundTasks, file: UploadFile = Fil
     if not job:
         raise HTTPException(status_code=500, detail="Job was not created")
     return Job(**job)
+
+
+@router.post("/live/start", response_model=Job)
+def start_live(request: LiveStartRequest, background_tasks: BackgroundTasks) -> Job:
+    source = request.source.strip()
+    if not source:
+        raise HTTPException(status_code=400, detail="Provide a webcam index (e.g. 0) or an RTSP URL")
+
+    job_id = uuid4().hex
+    recording_path = settings.upload_dir / f"{job_id}.mp4"
+    create_job(job_id, live_display_name(source), str(recording_path))
+    background_tasks.add_task(process_live_stream, job_id, source)
+
+    job = get_job(job_id)
+    if not job:
+        raise HTTPException(status_code=500, detail="Live job was not created")
+    return Job(**job)
+
+
+@router.post("/live/{job_id}/stop", response_model=Job)
+def stop_live(job_id: str) -> Job:
+    record = get_job(job_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="Job not found")
+    request_stop(job_id)
+    return Job(**record)
 
 
 @router.get("/jobs", response_model=list[Job])

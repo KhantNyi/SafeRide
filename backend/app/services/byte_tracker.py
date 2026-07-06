@@ -1,11 +1,14 @@
 from dataclasses import dataclass, field
 
+import numpy as np
+
 
 @dataclass
 class ByteTrackDetection:
     xyxy: list[int]
     score: float
     metadata: dict = field(default_factory=dict)
+    feature: np.ndarray | None = None
 
 
 @dataclass
@@ -18,13 +21,89 @@ class TrackedDetection:
     hits: int
 
 
-class ByteTracker:
-    """Small ByteTrack-style tracker for sampled video detections.
+class KalmanBoxFilter:
+    """Constant-velocity Kalman filter over (cx, cy, w, h).
 
-    ByteTrack keeps identities by matching high-confidence detections first, then
-    giving still-unmatched tracks a second chance with lower-confidence detections.
-    This local version avoids optional native assignment dependencies while keeping
-    that two-stage behavior for SafeRide's rider association boxes.
+    State is [cx, cy, w, h, vcx, vcy, vw, vh]. Sampled video means irregular
+    frame gaps between updates, so the transition matrix is rebuilt per step
+    with the actual dt in frames. Noise scales with box height, following the
+    original ByteTrack weighting, so large near-camera boxes tolerate more
+    absolute movement than small distant ones.
+    """
+
+    STD_POSITION = 1 / 20
+    STD_VELOCITY = 1 / 160
+
+    def __init__(self, xyxy: list[int] | list[float]):
+        cx, cy, w, h = xyxy_to_cxcywh(xyxy)
+        self.x = np.array([cx, cy, w, h, 0.0, 0.0, 0.0, 0.0], dtype=np.float64)
+        std = [
+            2 * self.STD_POSITION * h,
+            2 * self.STD_POSITION * h,
+            2 * self.STD_POSITION * h,
+            2 * self.STD_POSITION * h,
+            10 * self.STD_VELOCITY * h,
+            10 * self.STD_VELOCITY * h,
+            10 * self.STD_VELOCITY * h,
+            10 * self.STD_VELOCITY * h,
+        ]
+        self.P = np.diag(np.square(std))
+
+    def predict_state(self, dt: float) -> np.ndarray:
+        transition = np.eye(8)
+        for i in range(4):
+            transition[i, i + 4] = dt
+        h = max(self.x[3], 1.0)
+        process_std = [
+            self.STD_POSITION * h,
+            self.STD_POSITION * h,
+            self.STD_POSITION * h,
+            self.STD_POSITION * h,
+            self.STD_VELOCITY * h,
+            self.STD_VELOCITY * h,
+            self.STD_VELOCITY * h,
+            self.STD_VELOCITY * h,
+        ]
+        process_noise = np.diag(np.square(process_std)) * max(dt, 1.0)
+        predicted_x = transition @ self.x
+        predicted_p = transition @ self.P @ transition.T + process_noise
+        return predicted_x, predicted_p, transition
+
+    def predict_box(self, dt: float) -> list[int]:
+        predicted_x, _p, _f = self.predict_state(dt)
+        return cxcywh_to_xyxy(predicted_x[:4])
+
+    def update(self, xyxy: list[int] | list[float], dt: float) -> None:
+        predicted_x, predicted_p, _f = self.predict_state(dt)
+        measurement = np.array(xyxy_to_cxcywh(xyxy), dtype=np.float64)
+        observation = np.zeros((4, 8))
+        observation[:4, :4] = np.eye(4)
+        h = max(predicted_x[3], 1.0)
+        measurement_std = [
+            self.STD_POSITION * h,
+            self.STD_POSITION * h,
+            self.STD_POSITION * h,
+            self.STD_POSITION * h,
+        ]
+        measurement_noise = np.diag(np.square(measurement_std))
+
+        innovation = measurement - observation @ predicted_x
+        innovation_cov = observation @ predicted_p @ observation.T + measurement_noise
+        gain = predicted_p @ observation.T @ np.linalg.inv(innovation_cov)
+        self.x = predicted_x + gain @ innovation
+        self.P = (np.eye(8) - gain @ observation) @ predicted_p
+
+
+class ByteTracker:
+    """ByteTrack-style tracker with Kalman motion and appearance cues.
+
+    Keeps ByteTrack's two-stage behavior: high-confidence detections are
+    matched first, then still-unmatched tracks get a second chance with
+    lower-confidence detections. Motion is predicted with a per-track Kalman
+    filter instead of a raw velocity EMA, and when detections carry an
+    appearance feature (a color histogram of the crop) the match score blends
+    motion with appearance similarity — so a rider keeps their identity even
+    when sampled boxes barely overlap.
     """
 
     def __init__(
@@ -35,12 +114,14 @@ class ByteTracker:
         new_track_threshold: float,
         match_threshold: float,
         max_time_lost: int,
+        appearance_weight: float = 0.30,
     ):
         self.high_threshold = high_threshold
         self.low_threshold = low_threshold
         self.new_track_threshold = new_track_threshold
         self.match_threshold = match_threshold
         self.max_time_lost = max(max_time_lost, 1)
+        self.appearance_weight = min(max(appearance_weight, 0.0), 0.9)
         self.next_track_id = 1
         self.tracks: list[dict] = []
 
@@ -61,7 +142,7 @@ class ByteTracker:
         live_tracks = [track for track in self.tracks if track["state"] != "removed"]
         tracked: list[TrackedDetection] = []
 
-        high_matches, unmatched_tracks, unmatched_high = match_tracks(
+        high_matches, unmatched_tracks, unmatched_high = self.match_tracks(
             live_tracks,
             high_detections,
             frame_number,
@@ -71,7 +152,7 @@ class ByteTracker:
             self.update_track(track, detection, frame_number)
             tracked.append(self.tracked_detection(track, detection))
 
-        low_matches, unmatched_tracks, _unmatched_low = match_tracks(
+        low_matches, unmatched_tracks, _unmatched_low = self.match_tracks(
             unmatched_tracks,
             low_detections,
             frame_number,
@@ -97,11 +178,67 @@ class ByteTracker:
         tracked.sort(key=lambda item: item.metadata.get("index", 0))
         return tracked
 
+    def match_tracks(
+        self,
+        tracks: list[dict],
+        detections: list[ByteTrackDetection],
+        frame_number: int,
+        threshold: float,
+    ) -> tuple[list[tuple[dict, ByteTrackDetection]], list[dict], list[ByteTrackDetection]]:
+        pairs = []
+        for track_index, track in enumerate(tracks):
+            dt = max(frame_number - track["last_frame"], 0)
+            predicted_box = track["kalman"].predict_box(dt)
+            for detection_index, detection in enumerate(detections):
+                motion = motion_match_score(predicted_box, detection.xyxy)
+                score = self.blend_appearance(motion, track, detection)
+                if score >= threshold:
+                    pairs.append((score, track_index, detection_index))
+
+        pairs.sort(reverse=True, key=lambda item: item[0])
+        matched_track_indexes: set[int] = set()
+        matched_detection_indexes: set[int] = set()
+        matches = []
+
+        for _score, track_index, detection_index in pairs:
+            if track_index in matched_track_indexes or detection_index in matched_detection_indexes:
+                continue
+            matched_track_indexes.add(track_index)
+            matched_detection_indexes.add(detection_index)
+            matches.append((tracks[track_index], detections[detection_index]))
+
+        unmatched_tracks = [
+            track for index, track in enumerate(tracks) if index not in matched_track_indexes
+        ]
+        unmatched_detections = [
+            detection
+            for index, detection in enumerate(detections)
+            if index not in matched_detection_indexes
+        ]
+        return matches, unmatched_tracks, unmatched_detections
+
+    def blend_appearance(self, motion: float, track: dict, detection: ByteTrackDetection) -> float:
+        track_feature = track.get("feature")
+        if (
+            self.appearance_weight <= 0
+            or track_feature is None
+            or detection.feature is None
+        ):
+            return motion
+        # Appearance can rescue a weak motion match (fast riders between
+        # samples) but never a hopeless one — a tiny motion floor prevents
+        # identity jumps across the whole frame between similar-looking bikes.
+        if motion < 0.02:
+            return motion
+        appearance = feature_similarity(track_feature, detection.feature)
+        return (1.0 - self.appearance_weight) * motion + self.appearance_weight * appearance
+
     def create_track(self, detection: ByteTrackDetection, frame_number: int) -> dict:
         track = {
             "id": self.next_track_id,
             "xyxy": [float(value) for value in detection.xyxy],
-            "velocity": [0.0, 0.0],
+            "kalman": KalmanBoxFilter(detection.xyxy),
+            "feature": None if detection.feature is None else detection.feature.copy(),
             "score": detection.score,
             "first_frame": frame_number,
             "last_frame": frame_number,
@@ -113,22 +250,20 @@ class ByteTracker:
         return track
 
     def update_track(self, track: dict, detection: ByteTrackDetection, frame_number: int) -> None:
-        previous_center = box_center(track["xyxy"])
-        current_center = box_center(detection.xyxy)
-        frame_gap = max(frame_number - track["last_frame"], 1)
-        measured_velocity = [
-            (current_center[0] - previous_center[0]) / frame_gap,
-            (current_center[1] - previous_center[1]) / frame_gap,
-        ]
-        track["velocity"] = [
-            0.70 * track["velocity"][0] + 0.30 * measured_velocity[0],
-            0.70 * track["velocity"][1] + 0.30 * measured_velocity[1],
-        ]
+        dt = max(frame_number - track["last_frame"], 1)
+        track["kalman"].update(detection.xyxy, dt)
         track["xyxy"] = [float(value) for value in detection.xyxy]
         track["score"] = detection.score
         track["last_frame"] = frame_number
         track["hits"] += 1
         track["state"] = "tracked"
+        if detection.feature is not None:
+            if track["feature"] is None:
+                track["feature"] = detection.feature.copy()
+            else:
+                blended = 0.8 * track["feature"] + 0.2 * detection.feature
+                total = blended.sum()
+                track["feature"] = blended / total if total > 0 else blended
 
     def tracked_detection(self, track: dict, detection: ByteTrackDetection) -> TrackedDetection:
         return TrackedDetection(
@@ -147,61 +282,11 @@ class ByteTracker:
         self.tracks = [track for track in self.tracks if track["state"] != "removed"]
 
 
-def match_tracks(
-    tracks: list[dict],
-    detections: list[ByteTrackDetection],
-    frame_number: int,
-    threshold: float,
-) -> tuple[list[tuple[dict, ByteTrackDetection]], list[dict], list[ByteTrackDetection]]:
-    pairs = []
-    for track_index, track in enumerate(tracks):
-        predicted_box = predict_box(track, frame_number)
-        for detection_index, detection in enumerate(detections):
-            score = detection_match_score(predicted_box, detection.xyxy)
-            if score >= threshold:
-                pairs.append((score, track_index, detection_index))
-
-    pairs.sort(reverse=True, key=lambda item: item[0])
-    matched_track_indexes: set[int] = set()
-    matched_detection_indexes: set[int] = set()
-    matches = []
-
-    for _score, track_index, detection_index in pairs:
-        if track_index in matched_track_indexes or detection_index in matched_detection_indexes:
-            continue
-        matched_track_indexes.add(track_index)
-        matched_detection_indexes.add(detection_index)
-        matches.append((tracks[track_index], detections[detection_index]))
-
-    unmatched_tracks = [
-        track for index, track in enumerate(tracks) if index not in matched_track_indexes
-    ]
-    unmatched_detections = [
-        detection
-        for index, detection in enumerate(detections)
-        if index not in matched_detection_indexes
-    ]
-    return matches, unmatched_tracks, unmatched_detections
-
-
-def predict_box(track: dict, frame_number: int) -> list[int]:
-    frame_gap = max(frame_number - track["last_frame"], 0)
-    dx = track["velocity"][0] * frame_gap
-    dy = track["velocity"][1] * frame_gap
-    x1, y1, x2, y2 = track["xyxy"]
-    return [
-        int(round(x1 + dx)),
-        int(round(y1 + dy)),
-        int(round(x2 + dx)),
-        int(round(y2 + dy)),
-    ]
-
-
 def valid_box(xyxy: list[int]) -> bool:
     return len(xyxy) == 4 and xyxy[2] > xyxy[0] and xyxy[3] > xyxy[1]
 
 
-def detection_match_score(previous_xyxy: list[int], current_xyxy: list[int]) -> float:
+def motion_match_score(previous_xyxy: list[int], current_xyxy: list[int]) -> float:
     iou_score = box_iou(previous_xyxy, current_xyxy)
     previous_center = box_center(previous_xyxy)
     current_center = box_center(current_xyxy)
@@ -212,6 +297,26 @@ def detection_match_score(previous_xyxy: list[int], current_xyxy: list[int]) -> 
     )
     distance_score = max(0.0, 1.0 - normalized_distance)
     return max(iou_score, distance_score * 0.65)
+
+
+def feature_similarity(a: np.ndarray, b: np.ndarray) -> float:
+    """Cosine similarity between L1-normalized histograms, mapped to [0, 1]."""
+    denom = float(np.linalg.norm(a) * np.linalg.norm(b))
+    if denom <= 0:
+        return 0.0
+    return float(np.clip(np.dot(a, b) / denom, 0.0, 1.0))
+
+
+def xyxy_to_cxcywh(xyxy: list[int] | list[float]) -> tuple[float, float, float, float]:
+    x1, y1, x2, y2 = xyxy
+    return ((x1 + x2) / 2, (y1 + y2) / 2, max(x2 - x1, 1.0), max(y2 - y1, 1.0))
+
+
+def cxcywh_to_xyxy(cxcywh) -> list[int]:
+    cx, cy, w, h = cxcywh
+    half_w = max(w, 1.0) / 2
+    half_h = max(h, 1.0) / 2
+    return [int(round(cx - half_w)), int(round(cy - half_h)), int(round(cx + half_w)), int(round(cy + half_h))]
 
 
 def box_center(xyxy: list[int] | list[float]) -> tuple[float, float]:

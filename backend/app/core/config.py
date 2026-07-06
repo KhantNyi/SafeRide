@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     tracker_new_track_confidence: float = 0.25
     tracker_match_threshold: float = 0.25
     tracker_max_lost_seconds: float = 3
+    tracker_appearance_weight: float = 0.30
+    live_max_seconds: int = 900
     min_helmet_person_score: float = 0.24
     min_person_motorcycle_score: float = 0.18
     min_helmet_motorcycle_score: float = 0.30
@@ -54,9 +56,10 @@ class Settings(BaseSettings):
     object_confidence: float = 0.35
     helmet_confidence: float = 0.35
     plate_confidence: float = 0.30
+    model_device: str = "auto"
     enable_ocr: bool = True
     ocr_languages: list[str] = ["th", "en"]
-    ocr_gpu: bool = False
+    ocr_gpu: bool | None = None
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

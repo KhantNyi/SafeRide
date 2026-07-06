@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { AlertTriangle, Camera, LayoutDashboard, Upload } from "lucide-react";
+import { AlertTriangle, Camera, LayoutDashboard, Radio, Upload } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/upload", label: "Analysis", icon: Upload },
+  { href: "/live", label: "Live", icon: Radio },
   { href: "/violations", label: "Violations", icon: AlertTriangle }
 ];
 

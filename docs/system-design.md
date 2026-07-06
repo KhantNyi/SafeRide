@@ -59,6 +59,7 @@ Main screens:
 
 - `/upload`: Analysis Console for upload, playback, overlays, telemetry, runtime settings, results, and evidence.
 - `/dashboard`: Job history and saved evidence overview.
+- `/live`: Live Monitor for webcam/RTSP ingestion with a real-time annotated stream, session telemetry, and latest evidence.
 - `/violations`: Violation review table with plate crops, evidence inspector, CSV export, and review decisions.
 - `/jobs/{jobId}`: Completed-job replay page with video playback, synchronized overlays, and jump-to-violation controls.
 
@@ -215,6 +216,17 @@ GET /api/jobs/{job_id}/stream
 Returns MJPEG frames from the in-memory frame hub. This remains available, but the primary UI now uses native browser video playback with canvas overlays.
 
 The frame hub tracks active stream viewers. When nobody is watching, the pipeline skips MJPEG JPEG encoding and does not pace processing to real time, so jobs run at full hardware speed.
+
+### Live Ingestion
+
+```http
+POST /api/live/start
+POST /api/live/{job_id}/stop
+```
+
+`start` takes `{"source": "0"}` (webcam device index) or `{"source": "rtsp://..."}` and creates a live job that runs the same detection/tracking/violation pipeline in real time. Every frame is recorded to an MP4 under `data/uploads` so completed sessions replay like uploaded jobs, and annotated frames are published to the MJPEG hub for the Live Monitor page. RTSP credentials are stripped from the stored job name.
+
+Live sessions end on operator stop, source loss, the per-session violation cap, or the `live_max_seconds` safety limit (default 900 s). Sampling is wall-clock based; progress/ETA stay at zero while running because the total length is unknown. Recording uses the H.264 (`avc1`) encoder when available and falls back to `mp4v` (which some browsers cannot play inline) otherwise.
 
 ### Review Metrics
 
@@ -376,8 +388,11 @@ The pipeline uses three model roles:
 - Plate detector:
   - detects `License_Plate`
 
+Inference device is selected once per process via `model_device` (default `auto`): CUDA on NVIDIA machines (with FP16), MPS on Apple Silicon, CPU otherwise. OCR follows CUDA availability unless `ocr_gpu` is forced.
+
 Inference is controlled by runtime and config settings:
 
+- `model_device`
 - `object_confidence`
 - `helmet_confidence`
 - `plate_confidence`
@@ -426,6 +441,11 @@ Sampling normally follows `sample_every_seconds` (default 1 s). Whenever a sampl
 
 The ByteTrack-style tracker runs on raw motorcycle detections, not on gated rider associations. Motorcycle boxes are the most stable detection in traffic scenes, so identities survive frames where the helmet model or association gates flicker. The tracker matches high-confidence detections first, then gives unmatched tracks a second chance with lower-confidence detections.
 
+Matching combines two cues:
+
+- **Kalman motion**: each track carries a constant-velocity Kalman filter over (cx, cy, w, h) whose transition step uses the actual frame gap between sampled updates, so predictions stay meaningful under irregular (adaptive) sampling. Noise scales with box height, ByteTrack-style.
+- **Appearance**: each motorcycle detection carries an HSV color-histogram feature of its crop; tracks keep an EMA of their feature, and the match score blends motion with appearance similarity (`tracker_appearance_weight`, default 0.30). Appearance can rescue a weak motion match on fast riders between samples, but a small motion floor prevents identity jumps across the frame between similar-looking bikes.
+
 Track ids propagate from motorcycle tracks onto rider associations, and each sampled association records a helmet-status vote for its track. A no-helmet violation becomes eligible only when the track has:
 
 - at least `min_no_helmet_votes` no-helmet observations, and
@@ -439,15 +459,21 @@ Duplicate suppression is per-job and keyed by the tracked rider identity plus co
 
 ## OCR Design
 
-EasyOCR is used for plate text extraction.
+Plate reading lives in a dedicated module, `backend/app/services/plate_ocr.py`, which specializes EasyOCR for Thai plates:
+
+- The recognizer is restricted to an **allowlist of Thai characters and Arabic digits**, so Latin junk reads ("allo", "1o") are impossible by construction.
+- OCR lines are classified by shape (registration prefix / digit group / province) and recombined top-to-bottom; a plate-format quality score ranks readings across three preprocess variants.
+- Across a rider's track, readings are **voted per character position**, weighted by confidence: "1กข 1234" read four times beats "1กข 1284" read once — a single misread character is outvoted instead of winning on one lucky confidence score.
 
 Plate OCR flow:
 
 ```text
 plate detected
-    -> crop plate image
-    -> preprocess crop
-    -> run EasyOCR if enable_ocr is true
+    -> crop plate image (best crop aggregated over the track)
+    -> preprocess crop (raw, upscaled, adaptive-threshold variants)
+    -> run EasyOCR with the Thai plate allowlist if enable_ocr is true
+    -> classify and recombine multi-line readings
+    -> vote text character-by-character across the track's samples
     -> save plate_text when readable
     -> display fallback wording if unreadable or missing
 ```
@@ -601,16 +627,21 @@ The helmet model currently depends on a public baseline that may not match Thai 
 - Add timeline markers on replay playback and refine violation navigation controls.
 - Add debug export for sampled frames and rider crops (confirmed/false-positive evidence export for fine-tuning).
 - Tune tracker, voting, and plate-gate thresholds against labeled clips using `scripts/evaluate.py`.
-- Adaptive sampling: densify the sample rate while a candidate violation track is active to recover fast-crossing riders.
 - Fine-tune the helmet model on local footage (see Model Improvement Plan).
-- Improve plate OCR further: character-level voting, dedicated Thai plate OCR model.
+- Train a dedicated Thai plate recognition model (current OCR is allowlisted + voted EasyOCR).
 - GPU inference and OCR (`ocr_gpu`, model device selection).
-- Add webcam and RTSP inputs.
+- Multi-camera live sessions and durable live-job recovery after backend restarts.
 - Add PDF/HTML report generation.
 - Surface `/api/metrics/review` in the frontend as an accuracy dashboard.
 - Add authentication and production media access control.
 
 ## Change Log
+
+### 2026-07-06 - Tracker, OCR, And Live Ingestion
+
+1. Tracker upgraded with per-track Kalman motion (dt-aware for sampled frames) and HSV-histogram appearance matching (`tracker_appearance_weight`); on the benchmark clip recall rose from 4/6 to 5/6 events with all-distinct saved riders and far fewer spawned identities.
+2. Plate OCR moved to a dedicated `plate_ocr.py` module: Thai + digit allowlist (no Latin misreads possible), multi-line recombination, and character-level voting across each track's samples.
+3. Live ingestion: `POST /api/live/start` / `POST /api/live/{id}/stop`, wall-clock sampled real-time pipeline, MP4 session recording for replay, MJPEG annotated live stream, and a new `/live` Live Monitor page in the frontend.
 
 ### 2026-07-03 - Accuracy And Speed Overhaul
 
