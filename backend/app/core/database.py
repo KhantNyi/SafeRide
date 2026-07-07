@@ -62,6 +62,9 @@ def init_db() -> None:
                 frame_number INTEGER,
                 track_id INTEGER,
                 review_status TEXT NOT NULL DEFAULT 'pending',
+                source TEXT NOT NULL DEFAULT 'detected',
+                note TEXT,
+                miss_reason TEXT,
                 FOREIGN KEY(job_id) REFERENCES jobs(id)
             )
             """
@@ -93,6 +96,9 @@ def migrate_violations_table(conn: sqlite3.Connection) -> None:
     migrations = {
         "review_status": "ALTER TABLE violations ADD COLUMN review_status TEXT NOT NULL DEFAULT 'pending'",
         "track_id": "ALTER TABLE violations ADD COLUMN track_id INTEGER",
+        "source": "ALTER TABLE violations ADD COLUMN source TEXT NOT NULL DEFAULT 'detected'",
+        "note": "ALTER TABLE violations ADD COLUMN note TEXT",
+        "miss_reason": "ALTER TABLE violations ADD COLUMN miss_reason TEXT",
     }
     for column, sql in migrations.items():
         if column not in columns:

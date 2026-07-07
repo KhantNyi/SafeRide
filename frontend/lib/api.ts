@@ -61,6 +61,9 @@ export type Violation = {
   frame_number: number | null;
   track_id: number | null;
   review_status: string;
+  source: "detected" | "manual";
+  note: string | null;
+  miss_reason: string | null;
 };
 
 export type DetectionSettings = {
@@ -187,6 +190,22 @@ export async function stopLiveAnalysis(jobId: string): Promise<Job> {
 
 export function liveStreamUrl(jobId: string) {
   return `${API_BASE}/api/jobs/${jobId}/stream`;
+}
+
+export async function reportMissedViolation(
+  jobId: string,
+  report: { timestamp: number; note?: string; plate_text?: string }
+): Promise<Violation> {
+  const response = await fetch(`${API_BASE}/api/jobs/${jobId}/violations/manual`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(report)
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => null);
+    throw new Error(error?.detail ?? "Could not report the missed violation");
+  }
+  return response.json();
 }
 
 export async function reviewViolation(violationId: string, reviewStatus: "pending" | "confirmed" | "false_positive"): Promise<Violation> {

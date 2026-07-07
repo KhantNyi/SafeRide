@@ -13,7 +13,7 @@ export function ViolationsClient() {
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState<Date | null>(null);
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "confirmed" | "false_positive">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "confirmed" | "false_positive" | "manual">("all");
   const [selectedViolation, setSelectedViolation] = useState<Violation | null>(null);
   const [selectedPlate, setSelectedPlate] = useState<Violation | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -59,8 +59,11 @@ export function ViolationsClient() {
           violation.helmet_status.toLowerCase().includes(normalizedQuery) ||
           violation.job_id.toLowerCase().includes(normalizedQuery) ||
           String(violation.track_id ?? "").includes(normalizedQuery) ||
+          (violation.note ?? "").toLowerCase().includes(normalizedQuery) ||
           formatRecordTime(violation.detected_at).toLowerCase().includes(normalizedQuery);
-        const matchesStatus = statusFilter === "all" || reviewState(violation) === statusFilter;
+        const matchesStatus =
+          statusFilter === "all" ||
+          (statusFilter === "manual" ? violation.source === "manual" : reviewState(violation) === statusFilter);
         return matchesQuery && matchesStatus;
       }),
     [jobsById, violations, query, statusFilter]
@@ -75,6 +78,22 @@ export function ViolationsClient() {
       }),
     [jobsById, rows]
   );
+
+  // Stable per-job numbering in frame order, computed over all records so it
+  // does not shift when search or status filters hide rows.
+  const sequenceById = useMemo(() => {
+    const map = new Map<string, number>();
+    const byJob = new Map<string, Violation[]>();
+    for (const violation of violations) {
+      const list = byJob.get(violation.job_id) ?? [];
+      list.push(violation);
+      byJob.set(violation.job_id, list);
+    }
+    for (const list of byJob.values()) {
+      [...list].sort(violationFrameOrder).forEach((violation, index) => map.set(violation.id, index + 1));
+    }
+    return map;
+  }, [violations]);
 
   return (
     <div className="history-page violations-page">
@@ -131,7 +150,7 @@ export function ViolationsClient() {
                 <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search plate, filename, date, status, job" />
               </label>
               <div className="violation-filter-chips" role="group" aria-label="Violation status filter">
-                {(["all", "pending", "confirmed", "false_positive"] as const).map((filter) => (
+                {(["all", "pending", "confirmed", "false_positive", "manual"] as const).map((filter) => (
                   <button className={statusFilter === filter ? "active" : ""} key={filter} type="button" onClick={() => setStatusFilter(filter)}>
                     {statusFilterLabel(filter)}
                   </button>
@@ -200,6 +219,7 @@ export function ViolationsClient() {
                               onInspectEvidence={setSelectedViolation}
                               onInspectPlate={setSelectedPlate}
                               onRemove={removeRecord}
+                              sequence={sequenceById.get(violation.id)}
                               violation={violation}
                             />
                           ))}
@@ -226,7 +246,10 @@ export function ViolationsClient() {
           <section className="evidence-modal-panel">
             <header>
               <div>
-                <h2>{plateLabel(selectedViolation)}</h2>
+                <h2>
+                  {sequenceById.has(selectedViolation.id) ? `#${sequenceById.get(selectedViolation.id)} - ` : ""}
+                  {plateLabel(selectedViolation)}
+                </h2>
                 <p>{formatRecordTime(selectedViolation.detected_at)}</p>
               </div>
               <button className="icon-button" type="button" onClick={() => setSelectedViolation(null)} aria-label="Close evidence inspector">
@@ -241,7 +264,7 @@ export function ViolationsClient() {
               </div>
               <div>
                 <dt>Confidence</dt>
-                <dd>{Math.round(selectedViolation.helmet_confidence * 100)}%</dd>
+                <dd>{selectedViolation.source === "manual" ? "Human report" : `${Math.round(selectedViolation.helmet_confidence * 100)}%`}</dd>
               </div>
               <div>
                 <dt>Frame</dt>
@@ -251,6 +274,18 @@ export function ViolationsClient() {
                 <dt>Track</dt>
                 <dd>{selectedViolation.track_id ?? "-"}</dd>
               </div>
+              {selectedViolation.source === "manual" ? (
+                <div>
+                  <dt>Miss Diagnosis</dt>
+                  <dd>{missReasonLabel(selectedViolation.miss_reason)}</dd>
+                </div>
+              ) : null}
+              {selectedViolation.note ? (
+                <div>
+                  <dt>Reviewer Note</dt>
+                  <dd>{selectedViolation.note}</dd>
+                </div>
+              ) : null}
               <div>
                 <dt>Plate Crop</dt>
                 <dd>{selectedViolation.plate_image ? "Captured below" : "Not captured"}</dd>
@@ -276,12 +311,16 @@ export function ViolationsClient() {
                 <PlayCircle size={16} />
                 Replay Moment
               </Link>
-              <button className="button secondary" type="button" onClick={() => applyReview(selectedViolation, "confirmed")}>
-                Confirm Violation
-              </button>
-              <button className="button secondary" type="button" onClick={() => applyReview(selectedViolation, "false_positive")}>
-                Mark False Positive
-              </button>
+              {selectedViolation.source !== "manual" ? (
+                <>
+                  <button className="button secondary" type="button" onClick={() => applyReview(selectedViolation, "confirmed")}>
+                    Confirm Violation
+                  </button>
+                  <button className="button secondary" type="button" onClick={() => applyReview(selectedViolation, "false_positive")}>
+                    Mark False Positive
+                  </button>
+                </>
+              ) : null}
               <button className="button danger" type="button" onClick={() => removeRecord(selectedViolation)}>
                 <Trash2 size={16} />
                 Delete Record
@@ -312,11 +351,11 @@ export function ViolationsClient() {
   );
 
   function exportCsv() {
-    downloadViolationCsv("saferide-violations.csv", rows, jobsById);
+    downloadViolationCsv("saferide-violations.csv", rows, jobsById, sequenceById);
   }
 
   function exportJobCsv(group: ViolationJobGroup) {
-    downloadViolationCsv(`saferide-${group.job?.filename ?? group.jobId}-violations.csv`, group.violations, jobsById);
+    downloadViolationCsv(`saferide-${group.job?.filename ?? group.jobId}-violations.csv`, group.violations, jobsById, sequenceById);
   }
 
   function toggleJobGroup(jobId: string) {
@@ -396,12 +435,22 @@ type ViolationJobGroup = {
   violations: Violation[];
 };
 
+function violationFrameOrder(a: Violation, b: Violation) {
+  const frameA = a.frame_number ?? Number.MAX_SAFE_INTEGER;
+  const frameB = b.frame_number ?? Number.MAX_SAFE_INTEGER;
+  if (frameA !== frameB) {
+    return frameA - frameB;
+  }
+  return new Date(a.detected_at).getTime() - new Date(b.detected_at).getTime();
+}
+
 function ViolationRow({
   deletingId,
   onApplyReview,
   onInspectEvidence,
   onInspectPlate,
   onRemove,
+  sequence,
   violation
 }: {
   deletingId: string | null;
@@ -409,12 +458,14 @@ function ViolationRow({
   onInspectEvidence: (violation: Violation) => void;
   onInspectPlate: (violation: Violation) => void;
   onRemove: (violation: Violation) => void;
+  sequence: number | undefined;
   violation: Violation;
 }) {
   return (
     <article className="violation-table-row" role="row">
       <button className="violation-snapshot" type="button" onClick={() => onInspectEvidence(violation)} aria-label="Inspect evidence snapshot">
         <img src={mediaUrl(violation.evidence_image)} alt="Violation evidence snapshot" />
+        {sequence !== undefined ? <span className="violation-seq-badge">#{sequence}</span> : null}
       </button>
       <span className={`plate-chip ${violation.plate_text ? "" : "pending"}`}>{plateLabel(violation)}</span>
       {violation.plate_image ? (
@@ -426,14 +477,18 @@ function ViolationRow({
       )}
       <span className="frame-cell">Frame {violation.frame_number ?? "-"}</span>
       <span className={`violation-status ${statusTone(violation)}`}>{statusLabel(violation)}</span>
-      <span className="review-actions">
-        <button type="button" onClick={() => onApplyReview(violation, "confirmed")} disabled={violation.review_status === "confirmed"}>
-          Confirm
-        </button>
-        <button type="button" onClick={() => onApplyReview(violation, "false_positive")} disabled={violation.review_status === "false_positive"}>
-          False positive
-        </button>
-      </span>
+      {violation.source === "manual" ? (
+        <span className="review-actions manual-report-cell">Human report</span>
+      ) : (
+        <span className="review-actions">
+          <button type="button" onClick={() => onApplyReview(violation, "confirmed")} disabled={violation.review_status === "confirmed"}>
+            Confirm
+          </button>
+          <button type="button" onClick={() => onApplyReview(violation, "false_positive")} disabled={violation.review_status === "false_positive"}>
+            False positive
+          </button>
+        </span>
+      )}
       <Link
         className="icon-button"
         href={`/jobs/${violation.job_id}${violation.frame_number === null ? "" : `?frame=${violation.frame_number}`}`}
@@ -463,14 +518,7 @@ function groupViolationsByJob(rows: Violation[], jobsById: Map<string, Job>): Vi
   }
 
   return [...groups.entries()].map(([jobId, groupViolations]) => {
-    const sorted = [...groupViolations].sort((a, b) => {
-      const frameA = a.frame_number ?? Number.MAX_SAFE_INTEGER;
-      const frameB = b.frame_number ?? Number.MAX_SAFE_INTEGER;
-      if (frameA !== frameB) {
-        return frameA - frameB;
-      }
-      return new Date(a.detected_at).getTime() - new Date(b.detected_at).getTime();
-    });
+    const sorted = [...groupViolations].sort(violationFrameOrder);
     return {
       jobId,
       job: jobsById.get(jobId) ?? null,
@@ -480,19 +528,23 @@ function groupViolationsByJob(rows: Violation[], jobsById: Map<string, Job>): Vi
   });
 }
 
-function downloadViolationCsv(filename: string, records: Violation[], jobsById: Map<string, Job>) {
-  const header = ["Job", "Job ID", "Plate OCR", "Detected At", "Status", "Confidence", "Frame", "Track", "Evidence Image"];
+function downloadViolationCsv(filename: string, records: Violation[], jobsById: Map<string, Job>, sequenceById: Map<string, number>) {
+  const header = ["No.", "Job", "Job ID", "Source", "Plate OCR", "Detected At", "Status", "Confidence", "Frame", "Track", "Miss Diagnosis", "Note", "Evidence Image"];
   const lines = records.map((violation) => {
     const job = jobsById.get(violation.job_id);
     return [
+      sequenceById.get(violation.id) ?? "",
       job?.filename ?? "",
       violation.job_id,
+      violation.source === "manual" ? "Reported miss" : "Detected",
       plateLabel(violation),
       formatRecordTime(violation.detected_at),
       statusLabel(violation),
-      Math.round(violation.helmet_confidence * 100),
+      violation.source === "manual" ? "" : Math.round(violation.helmet_confidence * 100),
       violation.frame_number ?? "",
       violation.track_id ?? "",
+      violation.source === "manual" ? missReasonLabel(violation.miss_reason) : "",
+      violation.note ?? "",
       mediaUrl(violation.evidence_image)
     ]
       .map(csvCell)
@@ -533,7 +585,22 @@ function plateConfidenceLabel(violation: Violation) {
   return violation.plate_confidence === null ? "-" : `${Math.round(violation.plate_confidence * 100)}%`;
 }
 
+const MISS_REASON_LABELS: Record<string, string> = {
+  not_sampled: "Moment was never sampled for analysis",
+  motorcycle_not_detected: "No motorcycle detected near the report",
+  helmet_model_miss: "Motorcycles seen but no no-helmet box found",
+  gated_or_undervoted: "Detections existed but were filtered before saving",
+  no_metadata: "Detection metadata unavailable"
+};
+
+function missReasonLabel(reason: string | null) {
+  return (reason && MISS_REASON_LABELS[reason]) || "Unknown";
+}
+
 function statusLabel(violation: Violation) {
+  if (violation.source === "manual") {
+    return "Reported miss";
+  }
   if (violation.review_status === "confirmed") {
     return "Confirmed violation";
   }
@@ -544,6 +611,9 @@ function statusLabel(violation: Violation) {
 }
 
 function statusTone(violation: Violation) {
+  if (violation.source === "manual") {
+    return "confirmed";
+  }
   if (violation.review_status === "confirmed") {
     return "confirmed";
   }
@@ -560,12 +630,13 @@ function reviewState(violation: Violation) {
   return "pending";
 }
 
-function statusFilterLabel(value: "all" | "pending" | "confirmed" | "false_positive") {
+function statusFilterLabel(value: "all" | "pending" | "confirmed" | "false_positive" | "manual") {
   return {
     all: "All",
     pending: "Pending",
     confirmed: "Confirmed",
-    false_positive: "False positive"
+    false_positive: "False positive",
+    manual: "Reported miss"
   }[value];
 }
 

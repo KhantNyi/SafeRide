@@ -35,6 +35,8 @@ class Settings(BaseSettings):
     tracker_max_lost_seconds: float = 3
     tracker_appearance_weight: float = 0.30
     live_max_seconds: int = 900
+    rider_dedupe_seconds: float = 12
+    rider_dedupe_match_threshold: float = 0.22
     min_helmet_person_score: float = 0.24
     min_person_motorcycle_score: float = 0.18
     min_helmet_motorcycle_score: float = 0.30

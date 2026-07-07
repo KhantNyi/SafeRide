@@ -3,9 +3,9 @@
 import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, Clock3, Eye, EyeOff, FileVideo, Pause, Play, RefreshCcw, SkipBack, SkipForward } from "lucide-react";
+import { ArrowLeft, Clock3, Eye, EyeOff, FileVideo, Flag, Pause, Play, RefreshCcw, SkipBack, SkipForward } from "lucide-react";
 
-import { DetectionBox, DetectionFrame, fetchDetections, fetchJob, fetchViolations, Job, mediaUrl, Violation } from "@/lib/api";
+import { DetectionBox, DetectionFrame, fetchDetections, fetchJob, fetchViolations, Job, mediaUrl, reportMissedViolation, Violation } from "@/lib/api";
 
 export function ReplayClient({ jobId }: { jobId: string }) {
   const searchParams = useSearchParams();
@@ -21,6 +21,12 @@ export function ReplayClient({ jobId }: { jobId: string }) {
   const [playing, setPlaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [missTimestamp, setMissTimestamp] = useState<number | null>(null);
+  const [missNote, setMissNote] = useState("");
+  const [missPlate, setMissPlate] = useState("");
+  const [missSubmitting, setMissSubmitting] = useState(false);
+  const [missFeedback, setMissFeedback] = useState<string | null>(null);
+  const [highlightTrackId, setHighlightTrackId] = useState<number | null>(null);
 
   const targetFrameParam = searchParams.get("frame");
   const targetFrame = targetFrameParam === null ? null : Number(targetFrameParam);
@@ -32,7 +38,13 @@ export function ReplayClient({ jobId }: { jobId: string }) {
       } as CSSProperties)
     : undefined;
 
-  const jobViolations = useMemo(() => violations.filter((violation) => violation.job_id === jobId), [violations, jobId]);
+  const jobViolations = useMemo(
+    () =>
+      violations
+        .filter((violation) => violation.job_id === jobId)
+        .sort((a, b) => (a.frame_number ?? Number.MAX_SAFE_INTEGER) - (b.frame_number ?? Number.MAX_SAFE_INTEGER)),
+    [violations, jobId]
+  );
   const currentViolation = useMemo(() => closestViolation(jobViolations, overlayFrame?.frame_number ?? null), [jobViolations, overlayFrame]);
 
   const loadReplay = useCallback(async () => {
@@ -111,7 +123,30 @@ export function ReplayClient({ jobId }: { jobId: string }) {
       drawAssociationLine(context, association.motorcycle_box ?? association.helmet_box, association.plate_box, frame, videoRect, "#1fd1d1");
       drawTrackLabel(context, association.track_id, association.helmet_box, frame, videoRect);
     });
-  }, [detections, overlayEnabled]);
+
+    if (highlightTrackId !== null) {
+      const target = frame.associations.find((association) => association.track_id === highlightTrackId);
+      const boxes = target
+        ? [target.person_box, target.motorcycle_box, target.helmet_box].filter((box): box is DetectionBox => box !== null)
+        : [];
+      if (boxes.length) {
+        const x1 = Math.min(...boxes.map((box) => box.xyxy[0]));
+        const y1 = Math.min(...boxes.map((box) => box.xyxy[1]));
+        const x2 = Math.max(...boxes.map((box) => box.xyxy[2]));
+        const y2 = Math.max(...boxes.map((box) => box.xyxy[3]));
+        const left = videoRect.x + (x1 / frame.width) * videoRect.width - 4;
+        const top = videoRect.y + (y1 / frame.height) * videoRect.height - 4;
+        const width = ((x2 - x1) / frame.width) * videoRect.width + 8;
+        const height = ((y2 - y1) / frame.height) * videoRect.height + 8;
+        context.strokeStyle = "#f050fa";
+        context.lineWidth = 4;
+        context.strokeRect(left, top, width, height);
+        context.font = "700 13px Aptos, Segoe UI, sans-serif";
+        context.fillStyle = "#f050fa";
+        context.fillText("VIOLATION", left + 2, Math.max(16, top - 8));
+      }
+    }
+  }, [detections, overlayEnabled, highlightTrackId]);
 
   useEffect(() => {
     loadReplay();
@@ -148,10 +183,16 @@ export function ReplayClient({ jobId }: { jobId: string }) {
       return;
     }
 
+    const targetViolation = violations.find(
+      (violation) => violation.job_id === jobId && violation.frame_number === targetFrame && violation.track_id !== null
+    );
+    if (targetViolation) {
+      setHighlightTrackId(targetViolation.track_id);
+    }
     video.currentTime = Math.max(timestamp - 0.75, 0);
     appliedTargetRef.current = targetKey;
     window.requestAnimationFrame(drawOverlay);
-  }, [detections, drawOverlay, jobId, targetFrame]);
+  }, [detections, drawOverlay, jobId, targetFrame, violations]);
 
   const videoUrl = job?.source_video ? mediaUrl(job.source_video) : null;
 
@@ -181,8 +222,45 @@ export function ReplayClient({ jobId }: { jobId: string }) {
     if (timestamp === null || !video) {
       return;
     }
+    setHighlightTrackId(violation.track_id);
     video.currentTime = Math.max(timestamp - 0.75, 0);
     window.requestAnimationFrame(drawOverlay);
+  }
+
+  function openMissReport() {
+    const video = videoRef.current;
+    if (!video) {
+      return;
+    }
+    video.pause();
+    setMissTimestamp(video.currentTime);
+    setMissNote("");
+    setMissPlate("");
+    setMissFeedback(null);
+  }
+
+  async function submitMissReport() {
+    if (missTimestamp === null) {
+      return;
+    }
+    setMissSubmitting(true);
+    setError(null);
+    try {
+      const report = await reportMissedViolation(jobId, {
+        timestamp: missTimestamp,
+        note: missNote.trim() || undefined,
+        plate_text: missPlate.trim() || undefined
+      });
+      setMissTimestamp(null);
+      setMissFeedback(
+        `Missed violation reported at ${formatVideoTime(missTimestamp)} - likely cause: ${missReasonLabel(report.miss_reason)}.`
+      );
+      await loadReplay();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not report the missed violation");
+    } finally {
+      setMissSubmitting(false);
+    }
   }
 
   function jumpDetection(direction: -1 | 1) {
@@ -224,6 +302,7 @@ export function ReplayClient({ jobId }: { jobId: string }) {
       </header>
 
       {error ? <div className="notice danger" role="alert">{error}</div> : null}
+      {missFeedback ? <div className="notice success" role="status">{missFeedback}</div> : null}
 
       <section className="replay-layout">
         <main className="replay-main">
@@ -294,6 +373,10 @@ export function ReplayClient({ jobId }: { jobId: string }) {
               {overlayEnabled ? <Eye size={16} /> : <EyeOff size={16} />}
               Boxes
             </button>
+            <button className="button secondary" type="button" onClick={openMissReport} disabled={!videoUrl}>
+              <Flag size={16} />
+              Report Miss
+            </button>
             <span className="replay-readout">
               {overlayFrame ? `Overlay frame ${overlayFrame.frame_number}` : "No frame overlay"} | {detections.length} analyzed frames
             </span>
@@ -301,6 +384,44 @@ export function ReplayClient({ jobId }: { jobId: string }) {
         </main>
 
         <aside className="replay-side">
+          {missTimestamp !== null ? (
+            <section className="replay-summary miss-report-panel">
+              <h2>Report Missed Violation</h2>
+              <p className="muted">
+                Saves a confirmed false negative at <strong>{formatVideoTime(missTimestamp)}</strong> with an evidence frame from the source video.
+              </p>
+              <label className="miss-report-field">
+                <span>Note (optional)</span>
+                <input
+                  type="text"
+                  value={missNote}
+                  maxLength={500}
+                  onChange={(event) => setMissNote(event.target.value)}
+                  placeholder="e.g. rider on the far left, partially occluded"
+                />
+              </label>
+              <label className="miss-report-field">
+                <span>Plate (optional)</span>
+                <input
+                  type="text"
+                  value={missPlate}
+                  maxLength={50}
+                  onChange={(event) => setMissPlate(event.target.value)}
+                  placeholder="Plate text if readable"
+                />
+              </label>
+              <div className="miss-report-actions">
+                <button className="button" type="button" onClick={submitMissReport} disabled={missSubmitting}>
+                  <Flag size={16} />
+                  {missSubmitting ? "Reporting" : "Submit Report"}
+                </button>
+                <button className="button secondary" type="button" onClick={() => setMissTimestamp(null)} disabled={missSubmitting}>
+                  Cancel
+                </button>
+              </div>
+            </section>
+          ) : null}
+
           <section className="replay-summary">
             <h2>Analysis</h2>
             <dl>
@@ -330,12 +451,15 @@ export function ReplayClient({ jobId }: { jobId: string }) {
             </div>
             {jobViolations.length ? (
               <div className="replay-evidence-list">
-                {jobViolations.map((violation) => (
+                {jobViolations.map((violation, index) => (
                   <button className="replay-evidence-item" type="button" key={violation.id} onClick={() => jumpToViolation(violation)}>
                     <img src={mediaUrl(violation.evidence_image)} alt="Violation evidence frame" />
                     <span>
-                      <strong>{plateLabel(violation)}</strong>
-                      <small>Frame {violation.frame_number ?? "-"} | Track {violation.track_id ?? "-"}</small>
+                      <strong>#{index + 1} - {plateLabel(violation)}</strong>
+                      <small>
+                        Frame {violation.frame_number ?? "-"} |{" "}
+                        {violation.source === "manual" ? "Reported miss" : `Track ${violation.track_id ?? "-"}`}
+                      </small>
                     </span>
                   </button>
                 ))}
@@ -501,4 +625,23 @@ function plateLabel(violation: Violation) {
     return text;
   }
   return violation.plate_image ? "Unreadable plate" : "Plate not captured";
+}
+
+function formatVideoTime(seconds: number) {
+  const whole = Math.max(seconds, 0);
+  const minutes = Math.floor(whole / 60);
+  const remainder = whole - minutes * 60;
+  return `${minutes}:${remainder.toFixed(1).padStart(4, "0")}`;
+}
+
+const MISS_REASON_LABELS: Record<string, string> = {
+  not_sampled: "the moment was never sampled for analysis",
+  motorcycle_not_detected: "no motorcycle was detected near the report",
+  helmet_model_miss: "motorcycles were seen but no no-helmet box was found",
+  gated_or_undervoted: "detections existed but were filtered before saving",
+  no_metadata: "detection metadata is unavailable for this job"
+};
+
+function missReasonLabel(reason: string | null) {
+  return (reason && MISS_REASON_LABELS[reason]) || "unknown";
 }

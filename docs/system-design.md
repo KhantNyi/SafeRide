@@ -61,7 +61,7 @@ Main screens:
 - `/dashboard`: Job history and saved evidence overview.
 - `/live`: Live Monitor for webcam/RTSP ingestion with a real-time annotated stream, session telemetry, and latest evidence.
 - `/violations`: Violation review table with plate crops, evidence inspector, CSV export, and review decisions.
-- `/jobs/{jobId}`: Completed-job replay page with video playback, synchronized overlays, and jump-to-violation controls.
+- `/jobs/{jobId}`: Completed-job replay page with video playback, synchronized overlays, jump-to-violation controls, and a Report Miss action for filing violations the pipeline did not save.
 
 Important files:
 
@@ -234,13 +234,13 @@ Live sessions end on operator stop, source loss, the per-session violation cap, 
 GET /api/metrics/review
 ```
 
-Aggregates human review decisions into precision metrics:
+Aggregates human review decisions into precision and recall metrics:
 
-- `overall`: total / pending / confirmed / false_positive counts and precision.
+- `overall`: total / pending / confirmed / false_positive / manual counts, precision, and recall.
 - `jobs`: the same buckets per job.
 - `confidence_bands`: the same buckets grouped by helmet confidence (`under_50`, `50_to_65`, `65_to_80`, `80_plus`).
 
-Precision is `confirmed / (confirmed + false_positive)`, i.e. how often a saved violation survives human review. It is `null` until at least one record has been reviewed.
+Precision is `confirmed / (confirmed + false_positive)` over pipeline-detected records only, i.e. how often a saved violation survives human review. Recall is `confirmed / (confirmed + manual)`, where `manual` counts reviewer-reported misses (false negatives). Reviewers only report misses they notice, so recall is an upper bound on true recall. Both are `null` until the relevant records exist.
 
 ### Violations
 
@@ -255,6 +255,28 @@ Review statuses:
 - `pending`
 - `confirmed`
 - `false_positive`
+
+Each violation carries a `source`: `detected` (saved by the pipeline) or `manual` (reviewer-reported miss).
+
+### Manual Violation Reports (False Negatives)
+
+```http
+POST /api/jobs/{job_id}/violations/manual
+```
+
+Input: `timestamp` (seconds) and/or `frame_number`, plus optional `note` and `plate_text`.
+
+Files a violation the pipeline missed. The backend seeks the stored source video to the reported moment, saves an annotated evidence frame under `data/evidence/`, and creates a violation with `source = 'manual'` and `review_status = 'confirmed'` (a human just witnessed it). Manual records are excluded from precision and instead drive the recall metric.
+
+Each report also gets a `miss_reason` diagnosed from the sampled detection metadata around the reported moment:
+
+- `not_sampled`: no frame near the report was sampled for analysis.
+- `motorcycle_not_detected`: nearby sampled frames contained no motorcycle boxes.
+- `helmet_model_miss`: motorcycles were detected but no no-helmet box was found (fine-tuning candidate).
+- `gated_or_undervoted`: no-helmet detections existed nearby but association gates, vote thresholds, or duplicate suppression filtered them out (tuning candidate).
+- `no_metadata`: detection metadata is unavailable for the job.
+
+This tells you whether a miss points at sampling, the helmet model, or pipeline thresholds. The frontend surfaces reporting from the replay page (`/jobs/{jobId}`), where the reviewer is already watching the original video.
 
 ## Data Model
 
@@ -314,6 +336,9 @@ Key columns:
 - `frame_number`
 - `track_id`
 - `review_status`
+- `source` (`detected` or `manual`)
+- `note` (reviewer note on manual reports)
+- `miss_reason` (diagnosed cause on manual reports)
 
 ## Filesystem Storage
 
@@ -456,7 +481,7 @@ This suppresses single-frame helmet-model flickers on helmeted riders while stil
 Stable `track_id` values are written into sampled detection metadata, evidence annotations, saved violation records, the violation detail modal, and CSV exports.
 
 Duplicate suppression is per-job and keyed by the tracked rider identity plus cooldown and plate aggregation windows.
-
+  
 ## OCR Design
 
 Plate reading lives in a dedicated module, `backend/app/services/plate_ocr.py`, which specializes EasyOCR for Thai plates:
@@ -606,6 +631,10 @@ The labels file lists clips with the frame ranges of real no-helmet riders (and 
 
 `GET /api/metrics/review` turns the human decisions already collected on the Violations page into live precision metrics, overall, per job, and per helmet-confidence band. Confirmed and false-positive counts also identify which evidence images are worth exporting as fine-tuning data later.
 
+### Reviewer-reported misses (false negatives)
+
+The replay page's Report Miss action closes the other half of the review loop: precision comes from judging saved records, recall from reporting missed ones. Each report captures real evidence from the stored video, is auto-diagnosed with a `miss_reason` (see Manual Violation Reports above), and feeds the recall metric in `/api/metrics/review`. Reported misses are also the most valuable fine-tuning examples — by definition the current model fails on them.
+
 ## Model Improvement Plan
 
 The helmet model currently depends on a public baseline that may not match Thai motorcycle footage. The recommended accuracy path is:
@@ -636,6 +665,21 @@ The helmet model currently depends on a public baseline that may not match Thai 
 - Add authentication and production media access control.
 
 ## Change Log
+
+### 2026-07-07 - Per-Record Violation Highlighting And Numbering
+
+1. Evidence screenshots now call out the specific rider: `save_violation()` draws a thick magenta outline around the record's rider (union of person/motorcycle/helmet boxes) with a `VIOLATION track N` tag on that record's own copy of the annotated frame. Multiple violations in one frame previously produced identical screenshots with no way to tell which rider each record referred to.
+2. Review UI numbers violations `#1, #2, ...` per job in frame order (snapshot badge, evidence modal title, replay evidence list, and a `No.` CSV column). Numbering is computed at display time over all records, so it stays stable under search/status filters.
+3. Jumping to a violation on the replay page (evidence list or `?frame=` deep link) highlights that record's track on the overlay in the same magenta style.
+4. Only newly saved violations get highlighted screenshots; existing evidence images are unchanged.
+
+### 2026-07-07 - False Negative Reporting
+
+1. New `POST /api/jobs/{job_id}/violations/manual` endpoint: reviewers can file violations the pipeline missed. The backend extracts an annotated evidence frame from the stored source video and saves the record with `source = 'manual'`, `review_status = 'confirmed'`.
+2. Each report is auto-diagnosed against the sampled detection metadata into a `miss_reason` (`not_sampled`, `motorcycle_not_detected`, `helmet_model_miss`, `gated_or_undervoted`), pointing at sampling, the helmet model, or gating thresholds respectively.
+3. `GET /api/metrics/review` now reports recall (`confirmed / (confirmed + manual)`) alongside precision; precision and confidence bands are computed over detected records only.
+4. Frontend: Report Miss button + form on the replay page (`/jobs/{jobId}`); Violations page shows reported misses with their diagnosis, a dedicated filter chip, and Source/Miss Diagnosis/Note columns in CSV export.
+5. Job `result` stays untouched by manual reports (it describes what the pipeline concluded); `violation_count` includes them since it counts violation records.
 
 ### 2026-07-06 - Tracker, OCR, And Live Ingestion
 

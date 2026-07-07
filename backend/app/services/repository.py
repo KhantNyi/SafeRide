@@ -147,15 +147,18 @@ def delete_all_jobs() -> int:
     return count
 
 
+VIOLATION_COLUMNS = (
+    "id, job_id, detected_at, helmet_status, helmet_confidence, plate_text, plate_confidence, "
+    "evidence_image, plate_image, frame_number, track_id, review_status, source, note, miss_reason"
+)
+
+
 def create_violation(record: dict) -> None:
     with get_connection() as conn:
         conn.execute(
-            """
-            INSERT INTO violations (
-                id, job_id, detected_at, helmet_status, helmet_confidence,
-                plate_text, plate_confidence, evidence_image, plate_image, frame_number, track_id, review_status
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            f"""
+            INSERT INTO violations ({VIOLATION_COLUMNS})
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 record["id"],
@@ -170,6 +173,9 @@ def create_violation(record: dict) -> None:
                 record.get("frame_number"),
                 record.get("track_id"),
                 record.get("review_status", "pending"),
+                record.get("source", "detected"),
+                record.get("note"),
+                record.get("miss_reason"),
             ),
         )
 
@@ -177,9 +183,8 @@ def create_violation(record: dict) -> None:
 def list_violations(limit: int = 50) -> list[dict]:
     with get_connection() as conn:
         rows = conn.execute(
-            """
-            SELECT id, job_id, detected_at, helmet_status, helmet_confidence,
-                   plate_text, plate_confidence, evidence_image, plate_image, frame_number, track_id, review_status
+            f"""
+            SELECT {VIOLATION_COLUMNS}
             FROM violations
             ORDER BY detected_at DESC
             LIMIT ?
@@ -187,6 +192,14 @@ def list_violations(limit: int = 50) -> list[dict]:
             (limit,),
         ).fetchall()
     return [dict(row) for row in rows]
+
+
+def increment_job_violation_count(job_id: str) -> None:
+    with get_connection() as conn:
+        conn.execute(
+            "UPDATE jobs SET violation_count = violation_count + 1, updated_at = ? WHERE id = ?",
+            (utc_now(), job_id),
+        )
 
 
 def update_violation_review(violation_id: str, review_status: str) -> dict | None:
@@ -203,9 +216,8 @@ def update_violation_review(violation_id: str, review_status: str) -> dict | Non
         if not cursor.rowcount:
             return None
         row = conn.execute(
-            """
-            SELECT id, job_id, detected_at, helmet_status, helmet_confidence,
-                   plate_text, plate_confidence, evidence_image, plate_image, frame_number, track_id, review_status
+            f"""
+            SELECT {VIOLATION_COLUMNS}
             FROM violations
             WHERE id = ?
             """,
@@ -251,36 +263,44 @@ def get_violation_job_id(conn, violation_id: str) -> str | None:
 
 
 def review_metrics() -> dict:
-    """Aggregate human review decisions into precision metrics.
+    """Aggregate human review decisions into precision and recall metrics.
 
-    Precision here is confirmed / (confirmed + false_positive), i.e. how often a
-    saved violation survived human review. Pending records are excluded from
-    precision but counted, so the metric is only meaningful once reviews exist.
+    Precision is confirmed / (confirmed + false_positive) over pipeline-detected
+    records only, i.e. how often a saved violation survived human review.
+    Pending records are excluded from precision but counted.
+
+    Manual records (reviewer-reported misses) are counted separately and drive
+    recall: confirmed / (confirmed + manual). Reviewers only report misses they
+    notice, so this is an upper bound on true recall.
     """
     with get_connection() as conn:
         rows = conn.execute(
             """
-            SELECT v.job_id, v.review_status, v.helmet_confidence, j.filename
+            SELECT v.job_id, v.review_status, v.helmet_confidence, v.source, j.filename
             FROM violations v
             LEFT JOIN jobs j ON j.id = v.job_id
             """
         ).fetchall()
 
     def empty_bucket() -> dict:
-        return {"total": 0, "pending": 0, "confirmed": 0, "false_positive": 0}
+        return {"total": 0, "pending": 0, "confirmed": 0, "false_positive": 0, "manual": 0}
 
     overall = empty_bucket()
     jobs: dict[str, dict] = {}
     bands = {band: empty_bucket() for band in CONFIDENCE_BANDS}
 
     for row in rows:
-        status = row["review_status"]
-        if status not in ("confirmed", "false_positive"):
-            status = "pending"
         job_bucket = jobs.setdefault(
             row["job_id"],
             {"job_id": row["job_id"], "filename": row["filename"], **empty_bucket()},
         )
+        if row["source"] == "manual":
+            overall["manual"] += 1
+            job_bucket["manual"] += 1
+            continue
+        status = row["review_status"]
+        if status not in ("confirmed", "false_positive"):
+            status = "pending"
         band_bucket = bands[confidence_band(row["helmet_confidence"])]
         for bucket in (overall, job_bucket, band_bucket):
             bucket["total"] += 1
@@ -288,10 +308,11 @@ def review_metrics() -> dict:
 
     for bucket in [overall, *jobs.values(), *bands.values()]:
         bucket["precision"] = review_precision(bucket)
+        bucket["recall"] = review_recall(bucket)
 
     return {
         "overall": overall,
-        "jobs": sorted(jobs.values(), key=lambda job: job["total"], reverse=True),
+        "jobs": sorted(jobs.values(), key=lambda job: job["total"] + job["manual"], reverse=True),
         "confidence_bands": bands,
     }
 
@@ -315,3 +336,10 @@ def review_precision(bucket: dict) -> float | None:
     if reviewed == 0:
         return None
     return round(bucket["confirmed"] / reviewed, 4)
+
+
+def review_recall(bucket: dict) -> float | None:
+    known_events = bucket["confirmed"] + bucket["manual"]
+    if known_events == 0:
+        return None
+    return round(bucket["confirmed"] / known_events, 4)

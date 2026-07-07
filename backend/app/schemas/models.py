@@ -34,10 +34,20 @@ class Violation(BaseModel):
     frame_number: int | None = None
     track_id: int | None = None
     review_status: str = "pending"
+    source: str = "detected"
+    note: str | None = None
+    miss_reason: str | None = None
 
 
 class ReviewUpdate(BaseModel):
     review_status: str
+
+
+class ManualViolationRequest(BaseModel):
+    timestamp: float | None = Field(default=None, ge=0)
+    frame_number: int | None = Field(default=None, ge=0)
+    note: str | None = Field(default=None, max_length=500)
+    plate_text: str | None = Field(default=None, max_length=50)
 
 
 class LiveStartRequest(BaseModel):

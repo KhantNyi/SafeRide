@@ -10,10 +10,12 @@ from app.schemas.models import (
     DetectionSettingsUpdate,
     Job,
     LiveStartRequest,
+    ManualViolationRequest,
     ReviewUpdate,
     Violation,
 )
 from app.services.live import live_display_name, process_live_stream, request_stop
+from app.services.manual_report import ManualReportError, create_manual_violation
 from app.services.pipeline import detection_metadata_path, process_uploaded_video
 from app.services.repository import (
     create_job,
@@ -160,6 +162,27 @@ def job_detections(job_id: str) -> dict:
     if not path.exists():
         return {"frames": []}
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+@router.post("/jobs/{job_id}/violations/manual", response_model=Violation, status_code=201)
+def report_missed_violation(job_id: str, request: ManualViolationRequest) -> Violation:
+    if request.timestamp is None and request.frame_number is None:
+        raise HTTPException(status_code=400, detail="Provide a timestamp or frame_number for the missed violation")
+    record = get_job_storage(job_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="Job not found")
+    try:
+        violation = create_manual_violation(
+            job_id,
+            record.get("source_path"),
+            timestamp=request.timestamp,
+            frame_number=request.frame_number,
+            note=request.note,
+            plate_text=request.plate_text,
+        )
+    except ManualReportError as error:
+        raise HTTPException(status_code=422, detail=str(error))
+    return Violation(**violation)
 
 
 @router.get("/metrics/review")

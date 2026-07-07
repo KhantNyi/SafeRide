@@ -78,10 +78,12 @@ class RiderTrackManager:
         aggregation_frames: int,
         min_samples: int,
         max_lost_frames: int,
+        dedupe_frames: int,
     ):
         self.cooldown_frames = cooldown_frames
         self.aggregation_frames = aggregation_frames
         self.min_samples = max(min_samples, 1)
+        self.dedupe_frames = max(dedupe_frames, max_lost_frames, cooldown_frames)
         self.tracker = ByteTracker(
             high_threshold=settings.tracker_high_confidence,
             low_threshold=settings.tracker_low_confidence,
@@ -93,6 +95,8 @@ class RiderTrackManager:
         self.violation_tracks: dict[int, dict] = {}
         self.helmet_votes: dict[int, dict] = {}
         self.recent_saves: list[dict] = []
+        self.saved_track_ids: set[int] = set()
+        self.saved_violation_signatures: list[dict] = []
 
     def update(self, analysis: dict, frame_number: int, frame=None) -> None:
         motorcycles = analysis["motorcycles"]
@@ -164,6 +168,11 @@ class RiderTrackManager:
 
             track = self.violation_track(track_id, frame_number)
             track["last_frame"] = frame_number
+            duplicate_signature = self.saved_duplicate_signature(association, frame_number)
+            if duplicate_signature:
+                self.mark_duplicate_track(track, duplicate_signature, association, frame_number)
+                continue
+
             if frame_number - track["last_saved_frame"] < self.cooldown_frames:
                 continue
 
@@ -172,12 +181,13 @@ class RiderTrackManager:
                 continue
 
             payload = self.violation_payload(track)
-            track["last_saved_frame"] = frame_number
-            self.clear_pending(track)
+            frame_number = payload["frame_number"]
             duplicate = self.is_duplicate_save(payload["association"], frame_number)
             # Record the location either way so a moving rider keeps extending
             # the dedup chain even while its saves are being suppressed.
             self.record_save(payload["association"], frame_number)
+            self.mark_track_saved(track, payload["association"], frame_number)
+            self.clear_pending(track)
             if duplicate:
                 continue
             ready.append(payload)
@@ -316,16 +326,88 @@ class RiderTrackManager:
         for track in self.violation_tracks.values():
             if track["pending_started_frame"] is None:
                 continue
-            payload = self.violation_payload(track)
+
+            association = track["pending_association"]
             frame_number = track["pending_frame_number"]
-            track["last_saved_frame"] = frame_number
-            self.clear_pending(track)
+            duplicate_signature = self.saved_duplicate_signature(association, frame_number)
+            if duplicate_signature:
+                self.mark_duplicate_track(track, duplicate_signature, association, frame_number)
+                continue
+
+            payload = self.violation_payload(track)
+            frame_number = payload["frame_number"]
             duplicate = self.is_duplicate_save(payload["association"], frame_number)
             self.record_save(payload["association"], frame_number)
+            self.mark_track_saved(track, payload["association"], frame_number)
+            self.clear_pending(track)
             if duplicate:
                 continue
             ready.append(payload)
         return ready
+
+    def saved_duplicate_signature(self, association: dict, frame_number: int) -> dict | None:
+        track_id = association.get("track_id")
+        if track_id in self.saved_track_ids:
+            return self.saved_signature_for_track(track_id)
+
+        for signature in self.saved_violation_signatures:
+            if track_id in signature["track_ids"]:
+                return signature
+
+        for signature in self.saved_violation_signatures:
+            if frame_number - signature["frame_number"] > self.dedupe_frames:
+                continue
+            if association_signature_score(signature, association) >= settings.rider_dedupe_match_threshold:
+                return signature
+        return None
+
+    def mark_track_saved(self, track: dict, association: dict, frame_number: int) -> None:
+        track_id = track["id"]
+        track["last_saved_frame"] = frame_number
+        self.saved_track_ids.add(track_id)
+
+        signature = self.saved_signature_for_track(track_id)
+        if signature:
+            self.update_saved_signature(signature, association, frame_number)
+            return
+
+        self.saved_violation_signatures.append(
+            {
+                "track_ids": {track_id},
+                "frame_number": frame_number,
+                "reference_box": copy_xyxy(association_reference_box(association)),
+                "motorcycle_box": association_box_xyxy(association, "motorcycle_box"),
+                "person_box": association_box_xyxy(association, "person_box"),
+                "helmet_box": association_box_xyxy(association, "helmet_box"),
+                "plate_box": association_box_xyxy(association, "plate_box"),
+            }
+        )
+
+    def mark_duplicate_track(
+        self, track: dict, signature: dict, association: dict, frame_number: int
+    ) -> None:
+        track_id = track["id"]
+        track["last_saved_frame"] = frame_number
+        self.saved_track_ids.add(track_id)
+        signature["track_ids"].add(track_id)
+        self.update_saved_signature(signature, association, frame_number)
+        self.clear_pending(track)
+
+    def saved_signature_for_track(self, track_id: int) -> dict | None:
+        for signature in self.saved_violation_signatures:
+            if track_id in signature["track_ids"]:
+                return signature
+        return None
+
+    def update_saved_signature(
+        self, signature: dict, association: dict, frame_number: int
+    ) -> None:
+        signature["frame_number"] = frame_number
+        signature["reference_box"] = copy_xyxy(association_reference_box(association))
+        signature["motorcycle_box"] = association_box_xyxy(association, "motorcycle_box")
+        signature["person_box"] = association_box_xyxy(association, "person_box")
+        signature["helmet_box"] = association_box_xyxy(association, "helmet_box")
+        signature["plate_box"] = association_box_xyxy(association, "plate_box")
 
     def clear_pending(self, track: dict) -> None:
         track["pending_started_frame"] = None
@@ -400,6 +482,7 @@ def process_uploaded_video(job_id: str, source_path: str) -> None:
     cooldown_frames = max(int(fps * settings.violation_cooldown_seconds), analysis_interval)
     aggregation_frames = max(int(fps * settings.plate_aggregation_seconds), analysis_interval)
     max_lost_frames = max(int(fps * settings.tracker_max_lost_seconds), analysis_interval)
+    dedupe_frames = max(int(fps * settings.rider_dedupe_seconds), max_lost_frames)
     frame_number = 0
     sampled_count = 0
     violation_count = 0
@@ -408,6 +491,7 @@ def process_uploaded_video(job_id: str, source_path: str) -> None:
         aggregation_frames,
         settings.plate_aggregation_min_samples,
         max_lost_frames,
+        dedupe_frames,
     )
     latest_analysis = empty_analysis()
     latest_preview_url = None
@@ -886,7 +970,7 @@ def save_violation(job_id: str, payload: dict) -> None:
     plate_candidate = payload.get("plate_candidate")
     violation_id = uuid4().hex
     evidence_path = settings.evidence_dir / f"{job_id}_{frame_number}_{violation_id[:8]}.jpg"
-    cv2.imwrite(str(evidence_path), annotated)
+    cv2.imwrite(str(evidence_path), highlight_violation_rider(annotated, association))
 
     plate_path = None
     plate_text = None
@@ -923,6 +1007,51 @@ def save_violation(job_id: str, payload: dict) -> None:
             "track_id": association.get("track_id"),
         }
     )
+
+
+VIOLATION_HIGHLIGHT_COLOR = (250, 80, 240)
+
+
+def highlight_violation_rider(annotated, association: dict):
+    """Copy of the annotated frame with this record's rider called out.
+
+    Several violations can share one frame; without a per-record highlight
+    their evidence images are identical and reviewers cannot tell which rider
+    a record refers to, especially when plates are unreadable.
+    """
+    highlighted = annotated.copy()
+    xyxys = [
+        association[key]["xyxy"]
+        for key in ("person_box", "motorcycle_box", "helmet_box")
+        if association.get(key)
+    ]
+    if not xyxys:
+        return highlighted
+
+    height, width = highlighted.shape[:2]
+    pad = 8
+    x1 = max(int(min(box[0] for box in xyxys)) - pad, 0)
+    y1 = max(int(min(box[1] for box in xyxys)) - pad, 0)
+    x2 = min(int(max(box[2] for box in xyxys)) + pad, width - 1)
+    y2 = min(int(max(box[3] for box in xyxys)) + pad, height - 1)
+    cv2.rectangle(highlighted, (x1, y1), (x2, y2), VIOLATION_HIGHLIGHT_COLOR, 4)
+
+    track_id = association.get("track_id")
+    label = f"VIOLATION track {track_id}" if track_id is not None else "VIOLATION"
+    (text_width, text_height), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.65, 2)
+    tag_top = max(y1 - text_height - baseline - 10, 0)
+    cv2.rectangle(highlighted, (x1, tag_top), (x1 + text_width + 14, tag_top + text_height + baseline + 10), VIOLATION_HIGHLIGHT_COLOR, -1)
+    cv2.putText(
+        highlighted,
+        label,
+        (x1 + 7, tag_top + text_height + 5),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.65,
+        (255, 255, 255),
+        2,
+        cv2.LINE_AA,
+    )
+    return highlighted
 
 
 def build_plate_candidate(frame, association: dict) -> dict | None:
@@ -1503,11 +1632,79 @@ def box_iou(a: list[int], b: list[int]) -> float:
     return intersection / union
 
 
+def association_reference_box(association: dict) -> list[int]:
+    for key in ["motorcycle_box", "person_box", "helmet_box"]:
+        box = association.get(key)
+        if box:
+            return box["xyxy"]
+    return [0, 0, 0, 0]
+
+
+def association_box_xyxy(association: dict, key: str) -> list[int] | None:
+    box = association.get(key)
+    if not box:
+        return None
+    return copy_xyxy(box["xyxy"])
+
+
+def copy_xyxy(xyxy: list[int]) -> list[int]:
+    return [int(value) for value in xyxy]
+
+
+def association_signature_score(signature: dict, association: dict) -> float:
+    candidates = [
+        (
+            signature.get("reference_box"),
+            association_reference_box(association),
+            1.0,
+        ),
+        (
+            signature.get("motorcycle_box"),
+            association_box_xyxy(association, "motorcycle_box"),
+            1.08,
+        ),
+        (
+            signature.get("person_box"),
+            association_box_xyxy(association, "person_box"),
+            0.92,
+        ),
+        (
+            signature.get("helmet_box"),
+            association_box_xyxy(association, "helmet_box"),
+            0.82,
+        ),
+        (
+            signature.get("plate_box"),
+            association_box_xyxy(association, "plate_box"),
+            1.12,
+        ),
+    ]
+    scores = [
+        min(track_match_score(previous, current) * weight, 1.0)
+        for previous, current, weight in candidates
+        if previous and current
+    ]
+    return max(scores, default=0.0)
+
+
 def association_track_score(association: dict) -> float:
     helmet_box = association.get("helmet_box") or {}
     confidence = float(helmet_box.get("confidence", 0.0))
     association_score = float(association.get("association_score", 0.0))
     return max(confidence * 0.55 + association_score * 0.45, association_score)
+
+
+def track_match_score(previous_xyxy: list[int], current_xyxy: list[int]) -> float:
+    iou_score = box_iou(previous_xyxy, current_xyxy)
+    previous_center = box_center(previous_xyxy)
+    current_center = box_center(current_xyxy)
+    previous_width = max(previous_xyxy[2] - previous_xyxy[0], 1)
+    previous_height = max(previous_xyxy[3] - previous_xyxy[1], 1)
+    normalized_distance = point_distance(previous_center, current_center) / max(
+        previous_width, previous_height
+    )
+    distance_score = max(0.0, 1.0 - normalized_distance)
+    return max(iou_score, distance_score * 0.70)
 
 
 def valid_no_helmet_association(association: dict) -> bool:
