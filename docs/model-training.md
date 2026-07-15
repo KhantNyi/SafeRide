@@ -1,5 +1,7 @@
 # Model Training — Fine-Tuning Round 1
 
+> **Round 2 (July 15, 2026) is documented in [model-training-round2.md](model-training-round2.md)** — retrained on 3× the data and benchmarked against the production models.
+
 **Date:** July 11, 2026
 **Hardware:** NVIDIA GeForce RTX 4070 SUPER (12 GB), CUDA, Ultralytics 8.3.52, PyTorch 2.12
 **Staged weights:** `training/runs/helmet-v1/weights/best.pt`, `training/runs/plate-v1/weights/best.pt`

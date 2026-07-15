@@ -20,8 +20,8 @@ get an empty label file and act as background (teaches the model what NOT
 to detect). The train/val split is decided once per image so both datasets
 hold out the same frames.
 
-Usage:
-    python training/prepare_dataset.py --src "C:/Users/ADMIN/Downloads/train-data"
+Usage (one or more export folders; filenames must be unique across them):
+    python training/prepare_dataset.py --src train-data train-data2
 """
 import argparse
 import random
@@ -55,14 +55,24 @@ def remap_label_lines(label_path: Path, mapping: dict) -> list[str]:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--src", required=True, help="Label Studio export dir (images/, labels/, classes.txt)")
+    ap.add_argument("--src", required=True, nargs="+", help="Label Studio export dir(s) (images/, labels/, classes.txt)")
     ap.add_argument("--val-ratio", type=float, default=0.2)
     ap.add_argument("--seed", type=int, default=42)
     args = ap.parse_args()
 
-    src = Path(args.src)
-    images = {p.stem: p for p in (src / "images").iterdir() if p.suffix.lower() in IMG_EXTS}
-    labels = {p.stem: p for p in (src / "labels").glob("*.txt")}
+    images: dict[str, Path] = {}
+    labels: dict[str, Path] = {}
+    for src_dir in args.src:
+        src = Path(src_dir)
+        for p in (src / "images").iterdir():
+            if p.suffix.lower() in IMG_EXTS:
+                if p.stem in images:
+                    raise SystemExit(f"Duplicate image stem across exports: {p.stem} ({images[p.stem]} vs {p})")
+                images[p.stem] = p
+        for p in (src / "labels").glob("*.txt"):
+            if p.stem in labels:
+                raise SystemExit(f"Duplicate label stem across exports: {p.stem} ({labels[p.stem]} vs {p})")
+            labels[p.stem] = p
 
     paired = sorted(set(images) & set(labels))
     missing_img = sorted(set(labels) - set(images))

@@ -7,15 +7,16 @@ datasets, runs, and weights are git-ignored via `training/.gitignore`.
 
 ## Workflow
 
-**0. Prerequisite** — the Label Studio export at
-`C:/Users/ADMIN/Downloads/train-data` must have its `images/` folder
-populated (re-export from Label Studio with images included; filenames must
-match the label files).
+**0. Prerequisite** — each Label Studio export folder (e.g. `train-data/`,
+`train-data2/` in the repo root) must have its `images/` folder populated
+(re-export from Label Studio with images included; filenames must match the
+label files).
 
-**1. Build the per-model datasets** (from the repo root):
+**1. Build the per-model datasets** (from the repo root; pass every export
+folder — filenames must be unique across them):
 
 ```
-python training/prepare_dataset.py --src "C:/Users/ADMIN/Downloads/train-data"
+python training/prepare_dataset.py --src train-data train-data2
 ```
 
 Creates `training/datasets/helmet` (with helmet / without helmet) and

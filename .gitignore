@@ -25,4 +25,7 @@ models/*.pt
 models/*.onnx
 
 # Raw labeled training images (large; keep out of git)
-train-data/
+train-data*/
+
+# Auto-downloaded by ultralytics AMP check
+/yolo11n.pt
