@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SafeRide — How the System Works</title>
+<style>
+  :root {
+    --ink: #10141b;
+    --ink-2: #161c25;
+    --raise: #1a2029;
+    --line: #2a3341;
+    --line-soft: #222a36;
+    --text: #edf1f7;
+    --muted: #95a0b0;
+    --faint: #6b7686;
+    --amber: #f0a828;
+    --amber-soft: rgba(240, 168, 40, 0.14);
+    --red: #e05543;
+    --green: #35b578;
+    --teal: #2fa7b0;
+    --blue: #5b8def;
+    /* data-series colors (validated against --ink surface) */
+    --s-amber: #bd7e18;
+    --s-teal: #2fa7b0;
+    --s-blue: #5b8def;
+    --sans: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --mono: "Cascadia Mono", Consolas, "SF Mono", monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; }
+
+  body {
+    background: var(--ink);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: clamp(14px, 1.3vw, 18px);
+    line-height: 1.55;
+    overflow: hidden;
+  }
+
+  /* ---------- deck chrome ---------- */
+  #progress {
+    position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+    background: var(--amber); z-index: 50;
+    transition: width 0.25s ease;
+  }
+  #hud {
+    position: fixed; bottom: 18px; right: 20px; z-index: 50;
+    display: flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 12px; color: var(--faint);
+  }
+  #hud button {
+    width: 34px; height: 34px; border: 1px solid var(--line);
+    border-radius: 6px; background: var(--ink-2); color: var(--muted);
+    font-family: var(--mono); font-size: 14px; cursor: pointer;
+  }
+  #hud button:hover { border-color: var(--amber); color: var(--amber); }
+  #hud button:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+  #counter { min-width: 52px; text-align: center; font-variant-numeric: tabular-nums; }
+  .hint {
+    position: fixed; bottom: 22px; left: 22px; z-index: 50;
+    font-family: var(--mono); font-size: 11px; color: var(--faint);
+  }
+
+  /* ---------- slides ---------- */
+  .slide {
+    display: none;
+    position: fixed; inset: 0;
+    overflow-y: auto;
+    padding: clamp(28px, 5vh, 64px) clamp(24px, 6vw, 96px) 84px;
+  }
+  .slide.active { display: flex; flex-direction: column; justify-content: center; animation: enter 0.35s ease both; }
+  @keyframes enter { from { opacity: 0; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .slide.active { animation: none; }
+    #progress { transition: none; }
+  }
+  .wrap { width: min(1160px, 100%); margin: 0 auto; }
+
+  .kicker {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--amber); margin-bottom: 14px;
+  }
+  h1 { font-size: clamp(34px, 4.6vw, 62px); line-height: 1.08; letter-spacing: -0.02em; }
+  h2 { font-size: clamp(24px, 2.9vw, 40px); line-height: 1.15; letter-spacing: -0.015em; margin-bottom: 22px; }
+  .sub { color: var(--muted); max-width: 66ch; margin-top: 16px; font-size: 1.05em; }
+  .footnote { color: var(--faint); font-size: 0.82em; margin-top: 26px; }
+  strong { color: var(--text); }
+  .accent { color: var(--amber); }
+
+  .cols { display: grid; gap: 18px; }
+  .cols.two { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .cols.three { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+  .card {
+    background: var(--ink-2); border: 1px solid var(--line-soft);
+    border-radius: 12px; padding: 20px 22px;
+  }
+  .card h3 { font-size: 1.02em; margin-bottom: 8px; }
+  .card p, .card li { color: var(--muted); font-size: 0.92em; }
+  .card ul { padding-left: 18px; display: grid; gap: 6px; margin-top: 8px; }
+  .tag {
+    display: inline-block; font-family: var(--mono); font-size: 11px;
+    padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line);
+    color: var(--muted); margin-bottom: 10px;
+  }
+  .tag.ok { color: var(--green); border-color: rgba(53, 181, 120, 0.4); }
+  .tag.warn { color: var(--amber); border-color: rgba(240, 168, 40, 0.4); }
+  .tag.info { color: var(--blue); border-color: rgba(91, 141, 239, 0.4); }
+
+  code, .mono { font-family: var(--mono); font-size: 0.88em; }
+  .codeblock {
+    background: var(--ink-2); border: 1px solid var(--line-soft); border-radius: 10px;
+    padding: 14px 18px; font-family: var(--mono); font-size: 0.8em; color: var(--muted);
+    overflow-x: auto; white-space: pre; margin-top: 14px;
+  }
+  .codeblock .c { color: var(--faint); }
+  .codeblock .a { color: var(--amber); }
+
+  /* stat tiles */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin: 8px 0 24px; }
+  .tile {
+    background: var(--ink-2); border: 1px solid var(--line-soft); border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .tile .num {
+    font-size: clamp(34px, 3.6vw, 52px); font-weight: 650; letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums; line-height: 1.05;
+  }
+  .tile .lbl { color: var(--muted); font-size: 0.86em; margin-top: 6px; }
+  .tile .ctx { color: var(--faint); font-size: 0.74em; font-family: var(--mono); margin-top: 4px; }
+
+  /* metric table */
+  table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+  th, td { padding: 9px 14px; text-align: right; font-variant-numeric: tabular-nums; }
+  th:first-child, td:first-child { text-align: left; }
+  th { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); border-bottom: 1px solid var(--line); font-weight: 500; }
+  td { color: var(--muted); border-bottom: 1px solid var(--line-soft); font-size: 0.92em; }
+  td.best { color: var(--green); font-weight: 600; }
+  .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; vertical-align: baseline; }
+
+  /* steps */
+  .steps { counter-reset: step; display: grid; gap: 14px; margin-top: 8px; }
+  .step { display: grid; grid-template-columns: 40px 1fr; gap: 14px; align-items: start; }
+  .step::before {
+    counter-increment: step; content: counter(step);
+    width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center;
+    background: var(--amber-soft); color: var(--amber); font-family: var(--mono); font-weight: 600;
+  }
+  .step p { color: var(--muted); font-size: 0.94em; }
+  .step strong { display: block; color: var(--text); margin-bottom: 2px; font-size: 1.02rem; }
+
+  /* architecture flow */
+  .flow { display: grid; gap: 10px; margin-top: 10px; }
+  .flow .node {
+    background: var(--ink-2); border: 1px solid var(--line-soft); border-radius: 10px;
+    padding: 12px 18px; display: grid; grid-template-columns: 190px 1fr; gap: 14px; align-items: baseline;
+  }
+  .flow .node b { color: var(--text); font-size: 0.95em; }
+  .flow .node span { color: var(--muted); font-size: 0.86em; }
+  .flow .arrow { text-align: center; color: var(--faint); font-family: var(--mono); font-size: 12px; }
+
+  /* legend for box colors */
+  .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-top: 10px; }
+  .legend .key {
+    background: var(--ink-2); border: 1px solid var(--line-soft); border-radius: 10px;
+    padding: 12px 16px; font-size: 0.88em; color: var(--muted);
+  }
+  .legend .chip {
+    display: inline-block; width: 30px; height: 14px; border-radius: 3px;
+    border: 2px solid; margin-right: 10px; vertical-align: middle; background: transparent;
+  }
+
+  /* Q&A list */
+  .qa { display: grid; gap: 12px; margin-top: 8px; }
+  .qa .item {
+    background: var(--ink-2); border: 1px solid var(--line-soft); border-radius: 10px;
+    padding: 14px 18px;
+  }
+  .qa .q { color: var(--amber); font-weight: 600; font-size: 0.95em; margin-bottom: 4px; }
+  .qa .a { color: var(--muted); font-size: 0.9em; }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+
+<!-- 1 · TITLE -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">SafeRide · System Walkthrough</div>
+    <h1>How SafeRide works<br><span class="accent">from pixels to violations</span></h1>
+    <p class="sub">A full walkthrough of the detection pipeline: the three YOLO models, the
+    rider–motorcycle–helmet association logic, tracking and voting, evidence capture, and the
+    web app wrapped around it. Built as the reference for the presentation and Q&amp;A.</p>
+    <p class="footnote mono">Next.js · FastAPI · Ultralytics YOLO · ByteTrack · EasyOCR · SQLite</p>
+  </div>
+</section>
+
+<!-- 2 · WHAT IT DOES -->
+<section class="slide">
+  <div class="wrap">
+    <h2>What the system does, in one sentence</h2>
+    <p class="sub" style="margin-top:0">SafeRide watches traffic footage — uploaded videos, a webcam,
+    or an RTSP camera — and automatically finds <strong>motorcycle riders without helmets</strong>,
+    capturing an annotated evidence photo, the rider's <strong>license plate crop</strong>, and the
+    <strong>OCR-read plate text</strong> for every violation, queued for human review.</p>
+    <div class="tiles">
+      <div class="tile"><div class="num">3</div><div class="lbl">YOLO models per frame</div><div class="ctx">objects · helmets · plates</div></div>
+      <div class="tile"><div class="num">1<span style="font-size:0.5em">/s</span></div><div class="lbl">sampled analysis rate</div><div class="ctx">5×/s burst near violations</div></div>
+      <div class="tile"><div class="num">2+</div><div class="lbl">confirmations required</div><div class="ctx">votes per rider track before saving</div></div>
+      <div class="tile"><div class="num">100%</div><div class="lbl">local &amp; offline</div><div class="ctx">no cloud APIs, all data on-machine</div></div>
+    </div>
+    <p class="sub">Key design choice: the system is a <strong>review assistant, not a judge</strong> —
+    every saved violation lands in a human review queue where an officer confirms it or marks it
+    a false positive.</p>
+  </div>
+</section>
+
+<!-- 3 · ARCHITECTURE -->
+<section class="slide">
+  <div class="wrap">
+    <h2>Architecture — four layers, all local</h2>
+    <div class="flow">
+      <div class="node"><b>Next.js frontend</b><span>React + TypeScript · Analysis Console, Live Monitor, Dashboard, Review Queue · polls job status, plays video with canvas overlays</span></div>
+      <div class="arrow">↓ &nbsp; REST + media files + detection metadata JSON &nbsp; ↓</div>
+      <div class="node"><b>FastAPI backend</b><span>Python · upload/live/job/violation/settings endpoints · runs analysis as background tasks · serves MJPEG live stream</span></div>
+      <div class="arrow">↓ &nbsp; frames in, detections out &nbsp; ↓</div>
+      <div class="node"><b>Vision pipeline</b><span>3 YOLO models on CUDA · rider association scoring · ByteTrack identity · helmet voting · plate aggregation + EasyOCR</span></div>
+      <div class="arrow">↓ &nbsp; records + images &nbsp; ↓</div>
+      <div class="node"><b>Storage</b><span>SQLite (jobs, violations, review status) · filesystem (uploads, evidence JPEGs, plate crops, previews, per-frame metadata)</span></div>
+    </div>
+    <p class="footnote">Everything runs on one machine. The frontend never touches the models —
+    it only talks HTTP to the backend, so either side can be swapped independently.</p>
+  </div>
+</section>
+
+<!-- 4 · MODELS -->
+<section class="slide">
+  <div class="wrap">
+    <h2>The three models — each does one job</h2>
+    <div class="cols three">
+      <div class="card">
+        <span class="tag info">detector 1</span>
+        <h3>Object model · YOLO11s</h3>
+        <ul>
+          <li>COCO-pretrained, untouched</li>
+          <li>Finds <strong>person, motorcycle</strong> + car/bus/truck as negative context</li>
+          <li>Anchors association &amp; tracking</li>
+          <li>Inference at 960&nbsp;px</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag ok">detector 2 · fine-tuned</span>
+        <h3>Helmet model · YOLOv8n</h3>
+        <ul>
+          <li>Two classes: <strong>With Helmet / Without Helmet</strong></li>
+          <li>Fine-tuned on 325 labeled frames of our Thai footage (round-2 weights staged, promotion after A/B)</li>
+          <li>Runs on <strong>rider-focused crops</strong>, not the full frame</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag ok">detector 3 · fine-tuned</span>
+        <h3>Plate model · YOLO11n</h3>
+        <ul>
+          <li>One class: <strong>License_Plate</strong></li>
+          <li>Fine-tuned on Thai near-square motorcycle plates (round-2 weights staged)</li>
+          <li>Crops feed EasyOCR (Thai + English) for plate text</li>
+        </ul>
+      </div>
+    </div>
+    <p class="sub">Device is auto-selected: <strong>CUDA with FP16</strong> on the RTX 4070 SUPER
+    (falls back to Apple MPS or CPU). Models load once and stay in memory; a full 3-model pass takes
+    well under 200&nbsp;ms on GPU.</p>
+  </div>
+</section>
+
+<!-- 5 · PIPELINE STEPS -->
+<section class="slide">
+  <div class="wrap">
+    <h2>What happens to every sampled frame</h2>
+    <div class="steps">
+      <div class="step"><p><strong>Sample</strong>
+        One frame per second is fully analyzed (wall-clock for live, frame-count for files). Skipped
+        frames are only decoded when someone is watching the stream.</p></div>
+      <div class="step"><p><strong>Detect objects</strong>
+        YOLO11s finds people, motorcycles, and cars/buses/trucks (the latter only as "not a
+        motorcycle" context for plate assignment).</p></div>
+      <div class="step"><p><strong>Detect helmets on crops</strong>
+        A region is built above each motorcycle (heads sit ~1 bike-height above the box top), merged
+        with overlapping person boxes, and the helmet model runs on those crops — several times more
+        pixels on distant heads than a full-frame pass.</p></div>
+      <div class="step"><p><strong>Detect plates + associate</strong>
+        The plate model runs full-frame; then geometry scoring links helmet→person→motorcycle→plate
+        into per-rider associations.</p></div>
+      <div class="step"><p><strong>Track &amp; vote</strong>
+        ByteTrack keeps a stable ID per motorcycle across frames; each association casts a
+        helmet / no-helmet vote for its track.</p></div>
+      <div class="step"><p><strong>Confirm &amp; save</strong>
+        Tracks that pass the vote gate wait ~2&nbsp;s collecting plate crops, then save one violation:
+        annotated evidence JPEG, best plate crop, OCR text, DB record.</p></div>
+    </div>
+    <p class="footnote">Adaptive burst: the moment any no-helmet box appears, sampling density
+    jumps 5× (every 0.2&nbsp;s) for 2.5&nbsp;s — short-lived riders still accumulate enough votes.</p>
+  </div>
+</section>
+
+<!-- 6 · ASSOCIATION -->
+<section class="slide">
+  <div class="wrap">
+    <h2>Association — linking a head to a bike to a plate</h2>
+    <p class="sub" style="margin-top:0; margin-bottom:18px">A no-helmet head alone is not a violation.
+    It must belong to a <strong>person on a motorcycle</strong> — pure geometry scoring, no extra ML:</p>
+    <div class="cols three">
+      <div class="card">
+        <h3>Helmet → person</h3>
+        <p>The helmet box must sit in the person's <strong>upper 62%</strong> ("head zone"). Score =
+        in-zone bonus + overlap + distance to head position. Assignment is greedy
+        <strong>one-to-one</strong>, so on a two-up bike the passenger can't steal the driver's helmet.</p>
+      </div>
+      <div class="card">
+        <h3>Person → motorcycle</h3>
+        <p>The person's <strong>lower body</strong> (hips down) must sit inside/near the motorcycle
+        box. Without a plausible motorcycle, a no-helmet person is <strong>discarded</strong> — that's
+        what stops pedestrians from becoming violations.</p>
+      </div>
+      <div class="card">
+        <h3>Plate → motorcycle</h3>
+        <p>Hard gates first: plate center in the bike's <strong>lower region</strong>, sane area ratio,
+        and <strong>near-square aspect</strong> (Thai bike plates ≈ square, car plates are wide). If a
+        nearby car/bus/truck fits the plate better, the bike loses it. One-to-one: two riders can never
+        claim the same plate.</p>
+      </div>
+    </div>
+    <div class="codeblock"><span class="c"># final association score (0–1), gated at ≥ 0.38 for no-helmet saves</span>
+score = <span class="a">0.30</span>·helmet_confidence + <span class="a">0.30</span>·helmet↔person + <span class="a">0.25</span>·person↔motorcycle + <span class="a">0.15</span>·plate↔motorcycle</div>
+  </div>
+</section>
+
+<!-- 7 · TRACKING & VOTING -->
+<section class="slide">
+  <div class="wrap">
+    <h2>Tracking &amp; voting — why one bad frame can't create a violation</h2>
+    <div class="cols two">
+      <div class="card">
+        <span class="tag info">identity</span>
+        <h3>ByteTrack on motorcycle boxes</h3>
+        <ul>
+          <li>Motorcycle detections are the most stable signal, so <strong>tracks anchor to bikes</strong>, not heads or people.</li>
+          <li>Two-pass matching: high-confidence boxes match first, low-confidence ones rescue occluded tracks.</li>
+          <li>Motion (IoU) blended with an <strong>HSV color histogram</strong> appearance feature — identity survives the 1&nbsp;s gaps between samples.</li>
+          <li>A track survives ~3&nbsp;s of being lost before it's dropped.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag ok">confirmation</span>
+        <h3>Helmet voting per track</h3>
+        <ul>
+          <li>Every sampled frame, each rider association casts a <strong>helmet or no-helmet vote</strong> for its track.</li>
+          <li>Save requires <strong>≥ 2 no-helmet votes</strong>, and no-helmet×2 ≥ with-helmet — a single model flicker never fires.</li>
+          <li>A genuinely mixed track (helmeted driver, bare-headed passenger) still reaches human review.</li>
+          <li><strong>4&nbsp;s cooldown</strong> per track + spatial dedup (same bike location under a churned track ID is suppressed).</li>
+        </ul>
+      </div>
+    </div>
+    <p class="sub">Before saving, a violation <strong>waits ~2&nbsp;s</strong> collecting plate crops.
+    Each crop is scored by detector confidence, size, sharpness, and OCR result; the best one wins, and
+    OCR reads across the window are <strong>voted</strong> into the final plate text. A plate must also
+    co-travel with the track across samples — a passing car's plate is dropped, not attached.</p>
+  </div>
+</section>
+
+<!-- 8 · DRAWING BOXES -->
+<section class="slide">
+  <div class="wrap">
+    <h2>How the boxes get drawn</h2>
+    <div class="cols two">
+      <div class="card">
+        <span class="tag info">backend · OpenCV</span>
+        <h3>Annotated frames (live stream + evidence)</h3>
+        <p>For the MJPEG live stream and every evidence JPEG, the backend draws with OpenCV directly
+        on the frame: one colored rectangle + label per detection, a status banner on top
+        (<span class="mono">SCANNING</span> / red <span class="mono">VIOLATION</span>), and for each
+        no-helmet rider an <strong>association line</strong>: white dot on the head → white line to the
+        motorcycle center → yellow line to the plate, plus the track ID. Reviewers can see exactly
+        <em>which</em> helmet, bike, and plate were linked.</p>
+      </div>
+      <div class="card">
+        <span class="tag info">frontend · canvas</span>
+        <h3>Replay overlays (uploaded video playback)</h3>
+        <p>For playback, the browser plays the <strong>original untouched video</strong> in a
+        <code>&lt;video&gt;</code> tag. The backend writes per-sampled-frame detection metadata (boxes
+        + timestamps) to JSON; the frontend fetches it and draws boxes on a <code>&lt;canvas&gt;</code>
+        synchronized to playback time, scaling coordinates from source resolution to the displayed
+        size. Boxes update at sampling cadence — the video itself never has burned-in graphics.</p>
+      </div>
+    </div>
+    <div class="legend">
+      <div class="key"><span class="chip" style="border-color:#50b4dc"></span>person</div>
+      <div class="key"><span class="chip" style="border-color:#ff7d2d"></span>motorcycle</div>
+      <div class="key"><span class="chip" style="border-color:#46af28"></span>helmet</div>
+      <div class="key"><span class="chip" style="border-color:#e62323"></span>no helmet</div>
+      <div class="key"><span class="chip" style="border-color:#dcaa1e"></span>license plate</div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 · BACKEND / FRONTEND -->
+<section class="slide">
+  <div class="wrap">
+    <h2>Backend &amp; frontend — how the app hangs together</h2>
+    <div class="cols two">
+      <div class="card">
+        <h3>FastAPI backend</h3>
+        <ul>
+          <li><code>POST /api/videos/upload</code> and <code>POST /api/live/start</code> create a job and kick off a <strong>background task</strong> — the API stays responsive while analysis runs.</li>
+          <li><code>GET /api/jobs/{id}</code> — progress, frame counts, FPS, ETA, violation count.</li>
+          <li><code>GET /api/jobs/{id}/stream</code> — MJPEG (<code>multipart/x-mixed-replace</code>), annotated frames at up to 12&nbsp;fps, only rendered while someone is watching.</li>
+          <li><code>GET /api/jobs/{id}/detections</code> — per-frame box metadata for canvas overlays.</li>
+          <li><code>GET/PATCH /api/settings</code> — runtime tuning of confidences, sample rate, OCR.</li>
+          <li><code>PATCH /api/violations/{id}/review</code> — confirm / false-positive decisions.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Next.js frontend</h3>
+        <ul>
+          <li><strong>Analysis Console</strong> (<code>/upload</code>) — drag &amp; drop upload, playback with overlays, telemetry, settings panel.</li>
+          <li><strong>Live Monitor</strong> (<code>/live</code>) — webcam index or RTSP URL, MJPEG viewer, live evidence sidebar.</li>
+          <li><strong>Dashboard</strong> (<code>/dashboard</code>) — job history, search, reopen replays.</li>
+          <li><strong>Review Queue</strong> (<code>/violations</code>) — evidence inspector, plate crops, review decisions, CSV export.</li>
+          <li>Simple polling model: job status every 1.5&nbsp;s while processing — no WebSockets needed at this scale.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 · LIVE MODE -->
+<section class="slide">
+  <div class="wrap">
+    <h2>Live mode — same brain, different input</h2>
+    <div class="cols three">
+      <div class="card">
+        <span class="tag info">input</span>
+        <h3>Webcam or RTSP</h3>
+        <p>OpenCV opens device index 0 (DirectShow) or any <code>rtsp://</code> URL with a 1-frame
+        buffer so analysis stays near-live. Credentials are stripped from saved job names.</p>
+      </div>
+      <div class="card">
+        <span class="tag ok">identical pipeline</span>
+        <h3>Zero duplicated logic</h3>
+        <p>Live sessions call the <em>exact same</em> detection, association, tracking, and violation
+        functions as uploads. Only sampling differs: wall-clock timed instead of frame-counted, since
+        a camera delivers frames at its own pace.</p>
+      </div>
+      <div class="card">
+        <span class="tag warn">safety rails</span>
+        <h3>Bounded sessions</h3>
+        <p>Every frame is recorded to MP4 for replay. A session ends on operator stop, source loss
+        (~3&nbsp;s of failed reads), the 25-violation cap, or a 15-minute safety limit.</p>
+      </div>
+    </div>
+    <p class="sub">Because live recordings are saved as normal jobs, a live session is
+    <strong>replayable and reviewable</strong> afterwards exactly like an uploaded video — same
+    evidence flow, same review queue.</p>
+  </div>
+</section>
+
+<!-- 11 · ACCURACY -->
+<section class="slide">
+  <div class="wrap">
+    <h2>Accuracy — measured, not guessed</h2>
+    <p class="sub" style="margin-top:0; margin-bottom:16px">We labeled <strong>325 frames</strong> of our
+    own Thai traffic footage (Label Studio, 260 train / 65 held-out val) and fine-tuned the two
+    specialist models. Both old and new weights were validated on the identical 65 held-out images:</p>
+    <div class="cols two">
+      <div class="card">
+        <h3>Detector quality, baseline vs fine-tuned (mAP50)</h3>
+        <table>
+          <thead><tr><th>model</th><th>precision</th><th>recall</th><th>mAP50</th></tr></thead>
+          <tbody>
+            <tr><td>helmet · baseline</td><td>0.52</td><td>0.46</td><td>0.39</td></tr>
+            <tr><td>helmet · <strong>fine-tuned</strong></td><td class="best">0.84</td><td class="best">0.82</td><td class="best">0.86</td></tr>
+            <tr><td>plate · baseline</td><td>0.58</td><td>0.70</td><td>0.56</td></tr>
+            <tr><td>plate · <strong>fine-tuned</strong></td><td class="best">0.93</td><td class="best">0.83</td><td class="best">0.94</td></tr>
+          </tbody>
+        </table>
+        <p style="margin-top:10px">"Without Helmet" — the class that triggers violations — improved
+        most: AP50 <strong>0.33 → 0.89</strong>.</p>
+      </div>
+      <div class="card">
+        <h3>What the numbers mean (and don't)</h3>
+        <ul>
+          <li><strong>mAP50</strong>: detection quality where a box counts as correct at ≥50% overlap with ground truth — the standard detector metric.</li>
+          <li>These are <strong>detector metrics</strong>, not end-to-end violation accuracy — voting and association filter further downstream.</li>
+          <li>Plate <strong>OCR reads ~70%</strong> in rough testing; motorcycle plates are harder than car plates (smaller, blurrier, more tilted).</li>
+          <li>Val set is our own footage = the deployment distribution; night, rain, and new angles remain unproven.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 · NUMBERS TO REMEMBER -->
+<section class="slide">
+  <div class="wrap">
+    <h2>Numbers to remember</h2>
+    <div class="tiles">
+      <div class="tile"><div class="num">0.86</div><div class="lbl">helmet mAP50 after fine-tuning</div><div class="ctx">was 0.39 · 65 held-out frames</div></div>
+      <div class="tile"><div class="num">0.94</div><div class="lbl">plate mAP50 after fine-tuning</div><div class="ctx">was 0.56</div></div>
+      <div class="tile"><div class="num">~70%</div><div class="lbl">plate OCR read rate</div><div class="ctx">EasyOCR · thai + english</div></div>
+      <div class="tile"><div class="num">325</div><div class="lbl">frames labeled by us</div><div class="ctx">label studio · 2 rounds</div></div>
+    </div>
+    <div class="tiles">
+      <div class="tile"><div class="num">960px</div><div class="lbl">inference resolution</div><div class="ctx">640px on helmet crops</div></div>
+      <div class="tile"><div class="num">0.35</div><div class="lbl">confidence thresholds</div><div class="ctx">object &amp; helmet · plate 0.30</div></div>
+      <div class="tile"><div class="num">&lt;200ms</div><div class="lbl">full 3-model pass</div><div class="ctx">RTX 4070 SUPER · FP16</div></div>
+      <div class="tile"><div class="num">12fps</div><div class="lbl">MJPEG live view</div><div class="ctx">boxes refresh at sample rate</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 · LIMITS -->
+<section class="slide">
+  <div class="wrap">
+    <h2>Honest limitations — say them before they're asked</h2>
+    <div class="cols three">
+      <div class="card">
+        <span class="tag warn">detection</span>
+        <h3>Sampled, not every frame</h3>
+        <p>Analysis runs ~1×/s (5×/s in bursts). A rider crossing the frame in under a second could
+        be missed. Trade-off is deliberate: real-time throughput on one GPU.</p>
+      </div>
+      <div class="card">
+        <span class="tag warn">conditions</span>
+        <h3>Trained on our footage</h3>
+        <p>Night, heavy rain, and camera angles absent from the 325 labeled frames are unproven.
+        Detector metrics also aren't end-to-end violation-event metrics — that A/B evaluation is the
+        next step.</p>
+      </div>
+      <div class="card">
+        <span class="tag warn">scope</span>
+        <h3>MVP boundaries</h3>
+        <p>No authentication or roles yet. Runtime settings reset on restart. OCR misses small or
+        blurred bike plates. Association is geometry-based and tuned by hand, not learned.</p>
+      </div>
+    </div>
+    <p class="sub">Mitigations already built in: every violation carries visual evidence with the
+    association drawn on it, and a human makes the final call — the system's errors are
+    <strong>reviewable, never silent</strong>.</p>
+  </div>
+</section>
+
+<!-- 14 · Q&A CHEAT SHEET I -->
+<section class="slide">
+  <div class="wrap">
+    <h2>Q&amp;A cheat sheet — design questions</h2>
+    <div class="qa">
+      <div class="item">
+        <div class="q">Why three separate models instead of one?</div>
+        <div class="a">Each solves a different problem at a different scale. COCO YOLO11s is already excellent at people/vehicles — no data needed. Helmets and Thai plates need specialist training. Separate models can be fine-tuned, swapped, and evaluated independently — we replaced two of them without touching a line of pipeline code.</div>
+      </div>
+      <div class="item">
+        <div class="q">Why track motorcycles instead of people or heads?</div>
+        <div class="a">Motorcycle boxes are the most stable detection across frames — heads are tiny and people overlap each other in traffic. Rider identity is anchored to the bike, and helmet observations vote onto that track.</div>
+      </div>
+      <div class="item">
+        <div class="q">How do you avoid false violations?</div>
+        <div class="a">Five stacked gates: confidence thresholds → geometric association (a no-helmet head must belong to a person on a motorcycle, score ≥ 0.38) → ≥2 no-helmet votes per track with votes not drowned out by with-helmet votes → per-track cooldown + spatial dedup → human review as the final decision.</div>
+      </div>
+      <div class="item">
+        <div class="q">What stops a car's plate being attached to a rider?</div>
+        <div class="a">Three defenses: Thai bike plates are near-square while car plates are wide (aspect gate); car/bus/truck detections compete for the plate and win if they fit better; and the plate must co-travel with the rider's track across multiple samples.</div>
+      </div>
+      <div class="item">
+        <div class="q">What about a passenger without a helmet when the driver has one?</div>
+        <div class="a">Helmet-to-person assignment is one-to-one, so the passenger gets their own no-helmet observation, and the mixed track still passes the vote gate (no-helmet×2 ≥ with-helmet) into human review.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 15 · Q&A CHEAT SHEET II -->
+<section class="slide">
+  <div class="wrap">
+    <h2>Q&amp;A cheat sheet — practical questions</h2>
+    <div class="qa">
+      <div class="item">
+        <div class="q">Is it real-time?</div>
+        <div class="a">Yes for the video feed; detection boxes refresh once per second (five per second near a suspected violation). A full 3-model pass takes under 200 ms on the GPU, so the cadence is a design choice for headroom, not a hardware limit — it's one config value.</div>
+      </div>
+      <div class="item">
+        <div class="q">What hardware does it need?</div>
+        <div class="a">Developed on an RTX 4070 SUPER with CUDA FP16. The device is auto-selected — it also runs on Apple Silicon (MPS) or CPU, just with slower sampling. Nothing requires the cloud.</div>
+      </div>
+      <div class="item">
+        <div class="q">How accurate is it really?</div>
+        <div class="a">Fine-tuned detectors: helmet mAP50 0.86, plate 0.94 on 65 held-out frames of our footage — up from 0.39 and 0.56 for the public baselines. OCR reads ~70% of plates. End-to-end violation-event accuracy is the next measurement, via a labeled-clip A/B script.</div>
+      </div>
+      <div class="item">
+        <div class="q">What about privacy?</div>
+        <div class="a">Everything is processed and stored locally — no cloud upload, no third-party APIs. Only flagged violation frames are kept as evidence; RTSP credentials are stripped from job names; records can be deleted from the UI.</div>
+      </div>
+      <div class="item">
+        <div class="q">What would you do next?</div>
+        <div class="a">1) End-to-end A/B evaluation to promote the round-2 weights with confidence. 2) Label night/rain/new-angle footage — the known blind spots. 3) Thai-plate-specific OCR post-processing. 4) Auth + persisted settings for a real deployment, and PDF violation reports.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 16 · CLOSE -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">SafeRide</div>
+    <h1>One pipeline, five gates,<br><span class="accent">and a human makes the call</span></h1>
+    <p class="sub">Detect → associate → track → vote → review. Every violation the system saves
+    arrives with its evidence photo, its reasoning drawn on the frame, and a plate — and a person
+    decides what happens next.</p>
+    <p class="footnote mono">deck: presentation/system-deck.html · training report: presentation/training-deck.html</p>
+  </div>
+</section>
+
+<div id="hud">
+  <button id="prev" aria-label="Previous slide">‹</button>
+  <span id="counter">1 / 16</span>
+  <button id="next" aria-label="Next slide">›</button>
+</div>
+<div class="hint">← → · space · click arrows</div>
+
+<script>
+  const slides = [...document.querySelectorAll(".slide")];
+  const counter = document.getElementById("counter");
+  const progress = document.getElementById("progress");
+  let index = Math.min(Math.max(parseInt(location.hash.slice(1), 10) - 1 || 0, 0), slides.length - 1);
+
+  function show(i) {
+    index = Math.min(Math.max(i, 0), slides.length - 1);
+    slides.forEach((s, n) => s.classList.toggle("active", n === index));
+    counter.textContent = `${index + 1} / ${slides.length}`;
+    progress.style.width = `${((index + 1) / slides.length) * 100}%`;
+    history.replaceState(null, "", `#${index + 1}`);
+  }
+
+  document.getElementById("prev").addEventListener("click", () => show(index - 1));
+  document.getElementById("next").addEventListener("click", () => show(index + 1));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); show(index + 1); }
+    if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); show(index - 1); }
+    if (e.key === "Home") show(0);
+    if (e.key === "End") show(slides.length - 1);
+  });
+  show(index);
+</script>
+
+</body>
+</html>
