@@ -75,7 +75,7 @@ models/
   license-plate-yolo11n.pt
 ```
 
-By default OCR is enabled so plate crops are read with EasyOCR during analysis. Disable it for a faster demo or to avoid OCR model initialization:
+By default OCR is enabled. SafeRide cheaply ranks plate crops across each motorcycle's visible track, keeps only the strongest five, and runs EasyOCR on at most the best three when the violation is finalized. This preserves brief readable views without running OCR on every sampled frame. Disable OCR for a faster demo or to avoid OCR model initialization:
 
 ```powershell
 $env:ENABLE_OCR="false"
@@ -107,6 +107,9 @@ Violation quality gates (see `docs/confidence-settings.md` for the full list):
 ```powershell
 $env:MIN_NO_HELMET_VOTES="2"        # no-helmet samples required per tracked rider
 $env:PLATE_MIN_TRACK_SIGHTINGS="2"  # plate must co-travel with the rider's track
+$env:PLATE_COLLECTION_SECONDS="6"   # maximum whole-track plate collection window
+$env:PLATE_CANDIDATE_LIMIT="5"      # strongest cheap-ranked crops retained
+$env:PLATE_OCR_CANDIDATE_LIMIT="3"  # strongest crops sent to EasyOCR
 $env:ADAPTIVE_SAMPLING="true"       # densify sampling after a no-helmet detection
 ```
 
@@ -127,7 +130,7 @@ Open http://localhost:3000.
 3. YOLO samples detection frames while the backend writes detection metadata and annotated previews.
 4. The web app plays the uploaded video directly with synchronized canvas overlays, plus Results and Evidence tabs.
 5. If no no-helmet rider is found, the result shows "No violations detected."
-6. If a no-helmet rider is found, evidence and license plate crops are saved.
+6. If a no-helmet rider is confirmed, plate crops continue accumulating across the motorcycle track for up to six seconds; the best crop, OCR vote, and violation evidence are then saved.
 
 ## Live Ingestion
 

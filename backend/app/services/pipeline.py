@@ -75,14 +75,12 @@ class RiderTrackManager:
     def __init__(
         self,
         cooldown_frames: int,
-        aggregation_frames: int,
-        min_samples: int,
+        collection_frames: int,
         max_lost_frames: int,
         dedupe_frames: int,
     ):
         self.cooldown_frames = cooldown_frames
-        self.aggregation_frames = aggregation_frames
-        self.min_samples = max(min_samples, 1)
+        self.collection_frames = max(collection_frames, 1)
         self.dedupe_frames = max(dedupe_frames, max_lost_frames, cooldown_frames)
         self.tracker = ByteTracker(
             high_threshold=settings.tracker_high_confidence,
@@ -115,6 +113,21 @@ class RiderTrackManager:
             motorcycle = motorcycles[tracked_detection.metadata["index"]]
             motorcycle["track_id"] = tracked_detection.track_id
             motorcycle["track_hits"] = tracked_detection.hits
+
+            # Buffer a few strong plate crops for every motorcycle track. If
+            # the no-helmet vote confirms later, early readable views are still
+            # available; collection then continues even through helmet-model
+            # flicker. Plate detection already ran, so this is cheap scoring.
+            violation_track = self.violation_track(
+                tracked_detection.track_id, frame_number
+            )
+            violation_track["last_frame"] = frame_number
+            self.collect_plate_candidate(
+                violation_track,
+                motorcycle.get("plate_box"),
+                frame_number,
+                frame,
+            )
 
         for association in analysis["associations"]:
             motorcycle = association.get("motorcycle_box")
@@ -168,29 +181,25 @@ class RiderTrackManager:
 
             track = self.violation_track(track_id, frame_number)
             track["last_frame"] = frame_number
-            duplicate_signature = self.saved_duplicate_signature(association, frame_number)
-            if duplicate_signature:
-                self.mark_duplicate_track(track, duplicate_signature, association, frame_number)
-                continue
+            if track["pending_started_frame"] is None:
+                duplicate_signature = self.saved_duplicate_signature(association, frame_number)
+                if duplicate_signature:
+                    self.mark_duplicate_track(
+                        track, duplicate_signature, association, frame_number
+                    )
+                    continue
 
-            if frame_number - track["last_saved_frame"] < self.cooldown_frames:
-                continue
+                if frame_number - track["last_saved_frame"] < self.cooldown_frames:
+                    continue
 
             self.update_pending_violation(track, association, frame_number, frame, annotated)
+
+        for track in list(self.violation_tracks.values()):
             if not self.pending_ready(track, frame_number):
                 continue
-
-            payload = self.violation_payload(track)
-            frame_number = payload["frame_number"]
-            duplicate = self.is_duplicate_save(payload["association"], frame_number)
-            # Record the location either way so a moving rider keeps extending
-            # the dedup chain even while its saves are being suppressed.
-            self.record_save(payload["association"], frame_number)
-            self.mark_track_saved(track, payload["association"], frame_number)
-            self.clear_pending(track)
-            if duplicate:
-                continue
-            ready.append(payload)
+            payload = self.finalize_pending_track(track)
+            if payload:
+                ready.append(payload)
         return ready
 
     def is_duplicate_save(self, association: dict, frame_number: int) -> bool:
@@ -245,9 +254,9 @@ class RiderTrackManager:
             "pending_frame_number": None,
             "pending_frame": None,
             "pending_annotated": None,
-            "best_plate_candidate": None,
+            "plate_candidates": [],
             "plate_sightings": 0,
-            "ocr_reads": [],
+            "last_plate_frame": None,
         }
         self.violation_tracks[track_id] = track
         return track
@@ -258,9 +267,6 @@ class RiderTrackManager:
         if track["pending_started_frame"] is None:
             track["pending_started_frame"] = frame_number
             track["pending_samples"] = 0
-            track["best_plate_candidate"] = None
-            track["plate_sightings"] = 0
-            track["ocr_reads"] = []
 
         track["pending_samples"] += 1
         track["pending_association"] = association.copy()
@@ -268,44 +274,53 @@ class RiderTrackManager:
         track["pending_frame"] = frame.copy()
         track["pending_annotated"] = annotated.copy()
 
-        if association.get("plate_box"):
-            track["plate_sightings"] += 1
+        self.collect_plate_candidate(
+            track, association.get("plate_box"), frame_number, frame
+        )
 
-        candidate = build_plate_candidate(frame, association)
+    def collect_plate_candidate(
+        self,
+        track: dict,
+        plate_box: dict | None,
+        frame_number: int,
+        frame,
+    ) -> None:
+        if not plate_box or frame is None:
+            return
+        if track.get("last_plate_frame") == frame_number:
+            return
+
+        track["last_plate_frame"] = frame_number
+        track["plate_sightings"] += 1
+        candidate = build_plate_candidate(frame, plate_box, run_ocr=False)
         if not candidate:
             return
 
-        if candidate.get("plate_text"):
-            track["ocr_reads"].append(
-                (candidate["plate_text"], candidate.get("plate_confidence") or 0.0)
-            )
-
-        best_candidate = track.get("best_plate_candidate")
-        if not best_candidate or candidate["score"] > best_candidate["score"]:
-            track["best_plate_candidate"] = candidate
+        candidates = track["plate_candidates"]
+        candidates.append(candidate)
+        candidates.sort(key=lambda item: item["score"], reverse=True)
+        del candidates[max(settings.plate_candidate_limit, 1):]
 
     def pending_ready(self, track: dict, frame_number: int) -> bool:
         if track["pending_started_frame"] is None:
             return False
-        waited_long_enough = (
-            frame_number - track["pending_started_frame"] >= self.aggregation_frames
+        collection_expired = (
+            frame_number - track["pending_started_frame"] >= self.collection_frames
         )
-        sampled_enough = track["pending_samples"] >= self.min_samples
-        return waited_long_enough or sampled_enough
+        track_ended = track["id"] not in self.tracker.active_track_ids()
+        return collection_expired or track_ended
 
     def violation_payload(self, track: dict) -> dict:
         association = track["pending_association"].copy()
-        candidate = track.get("best_plate_candidate")
+        candidate, ocr_reads = finalize_plate_candidates(track["plate_candidates"])
 
         # Co-travel gate: the plate must have been seen with this track in enough
         # samples, otherwise a one-off plate (a passing car's) is dropped rather
         # than attached to the rider.
-        required_sightings = min(
-            settings.plate_min_track_sightings, max(track["pending_samples"], 1)
-        )
+        required_sightings = max(settings.plate_min_track_sightings, 1)
         if candidate and track["plate_sightings"] >= required_sightings:
             association["plate_box"] = candidate["plate_box"]
-            voted = vote_plate_texts(track["ocr_reads"])
+            voted = vote_plate_texts(ocr_reads)
             if voted:
                 candidate = dict(candidate)
                 candidate["plate_text"], candidate["plate_confidence"] = voted
@@ -323,27 +338,31 @@ class RiderTrackManager:
 
     def pending_violations_to_save(self) -> list[dict]:
         ready = []
-        for track in self.violation_tracks.values():
+        for track in list(self.violation_tracks.values()):
             if track["pending_started_frame"] is None:
                 continue
-
-            association = track["pending_association"]
-            frame_number = track["pending_frame_number"]
-            duplicate_signature = self.saved_duplicate_signature(association, frame_number)
-            if duplicate_signature:
-                self.mark_duplicate_track(track, duplicate_signature, association, frame_number)
-                continue
-
-            payload = self.violation_payload(track)
-            frame_number = payload["frame_number"]
-            duplicate = self.is_duplicate_save(payload["association"], frame_number)
-            self.record_save(payload["association"], frame_number)
-            self.mark_track_saved(track, payload["association"], frame_number)
-            self.clear_pending(track)
-            if duplicate:
-                continue
-            ready.append(payload)
+            payload = self.finalize_pending_track(track)
+            if payload:
+                ready.append(payload)
         return ready
+
+    def finalize_pending_track(self, track: dict) -> dict | None:
+        association = track["pending_association"]
+        frame_number = track["pending_frame_number"]
+        duplicate_signature = self.saved_duplicate_signature(association, frame_number)
+        if duplicate_signature:
+            self.mark_duplicate_track(track, duplicate_signature, association, frame_number)
+            return None
+
+        payload = self.violation_payload(track)
+        frame_number = payload["frame_number"]
+        duplicate = self.is_duplicate_save(payload["association"], frame_number)
+        # Record the location either way so a moving rider keeps extending the
+        # dedup chain even while its saves are being suppressed.
+        self.record_save(payload["association"], frame_number)
+        self.mark_track_saved(track, payload["association"], frame_number)
+        self.clear_pending(track)
+        return None if duplicate else payload
 
     def saved_duplicate_signature(self, association: dict, frame_number: int) -> dict | None:
         track_id = association.get("track_id")
@@ -416,9 +435,9 @@ class RiderTrackManager:
         track["pending_frame_number"] = None
         track["pending_frame"] = None
         track["pending_annotated"] = None
-        track["best_plate_candidate"] = None
+        track["plate_candidates"] = []
         track["plate_sightings"] = 0
-        track["ocr_reads"] = []
+        track["last_plate_frame"] = None
 
     def prune(self, frame_number: int) -> None:
         max_age = max(self.cooldown_frames * 2, 1)
@@ -480,7 +499,7 @@ def process_uploaded_video(job_id: str, source_path: str) -> None:
     dense_until_frame = -1
     preview_interval = preview_interval_for_fps(fps)
     cooldown_frames = max(int(fps * settings.violation_cooldown_seconds), analysis_interval)
-    aggregation_frames = max(int(fps * settings.plate_aggregation_seconds), analysis_interval)
+    collection_frames = max(int(fps * settings.plate_collection_seconds), analysis_interval)
     max_lost_frames = max(int(fps * settings.tracker_max_lost_seconds), analysis_interval)
     dedupe_frames = max(int(fps * settings.rider_dedupe_seconds), max_lost_frames)
     frame_number = 0
@@ -488,8 +507,7 @@ def process_uploaded_video(job_id: str, source_path: str) -> None:
     violation_count = 0
     rider_tracks = RiderTrackManager(
         cooldown_frames,
-        aggregation_frames,
-        settings.plate_aggregation_min_samples,
+        collection_frames,
         max_lost_frames,
         dedupe_frames,
     )
@@ -713,7 +731,14 @@ def analyze_frame(frame, models) -> dict:
         **predict_kwargs(),
     )[0]
     plate_boxes = extract_boxes(plate_result)
-    associations = associate_riders(people, motorcycles, with_helmet_boxes, no_helmet_boxes, plate_boxes, negative_vehicles)
+    associations = associate_riders(
+        people,
+        motorcycles,
+        with_helmet_boxes,
+        no_helmet_boxes,
+        plate_boxes,
+        negative_vehicles,
+    )
     no_helmet_associations = [
         association for association in associations if association["helmet_status"] == "no_helmet"
     ]
@@ -1054,16 +1079,12 @@ def highlight_violation_rider(annotated, association: dict):
     return highlighted
 
 
-def build_plate_candidate(frame, association: dict) -> dict | None:
-    plate_box = association.get("plate_box")
-    if not plate_box:
-        return None
-
+def build_plate_candidate(frame, plate_box: dict, *, run_ocr: bool = True) -> dict | None:
     crop = crop_box(frame, plate_box["xyxy"], padding=8)
     if crop is None or not crop.size:
         return None
 
-    plate_text, plate_confidence = read_plate_text(crop)
+    plate_text, plate_confidence = read_plate_text(crop) if run_ocr else (None, None)
     return {
         "crop": crop.copy(),
         "plate_box": plate_box,
@@ -1071,6 +1092,29 @@ def build_plate_candidate(frame, association: dict) -> dict | None:
         "plate_confidence": plate_confidence,
         "score": plate_candidate_score(crop, plate_box, plate_text, plate_confidence),
     }
+
+
+def finalize_plate_candidates(candidates: list[dict]) -> tuple[dict | None, list[tuple[str, float]]]:
+    if not candidates:
+        return None, []
+
+    finalized = []
+    ocr_reads = []
+    ocr_limit = max(settings.plate_ocr_candidate_limit, 1)
+    for candidate in candidates[:ocr_limit]:
+        item = dict(candidate)
+        plate_text, plate_confidence = read_plate_text(item["crop"])
+        item["plate_text"] = plate_text
+        item["plate_confidence"] = plate_confidence
+        item["score"] = plate_candidate_score(
+            item["crop"], item["plate_box"], plate_text, plate_confidence
+        )
+        finalized.append(item)
+        if plate_text:
+            ocr_reads.append((plate_text, plate_confidence or 0.0))
+
+    finalized.sort(key=lambda item: item["score"], reverse=True)
+    return finalized[0], ocr_reads
 
 
 def plate_candidate_score(
@@ -1146,6 +1190,10 @@ def associate_riders(
     negative_vehicles: list[dict],
 ) -> list[dict]:
     plate_assignments = assign_plates_to_motorcycles(plate_boxes, motorcycles, negative_vehicles)
+    for motorcycle in motorcycles:
+        plate, plate_score = plate_assignments.get(id(motorcycle), (None, 0.0))
+        motorcycle["plate_box"] = plate
+        motorcycle["plate_score"] = plate_score
     helmet_detections = [
         {"box": box, "status": "with_helmet"} for box in with_helmet_boxes
     ] + [{"box": box, "status": "no_helmet"} for box in no_helmet_boxes]

@@ -1,5 +1,16 @@
 # SafeRide Progress Log
 
+## 2026-08-26
+
+### Whole-Track Plate Capture With Deferred OCR
+
+- Replaced the early 3-sample plate save with collection across the motorcycle's visible track, capped at 6 seconds.
+- Plate crops are buffered before helmet confirmation and continue to be collected after confirmation even when helmet detection flickers.
+- Each track retains only its five strongest crops using detector confidence, crop size, and sharpness, bounding memory use.
+- EasyOCR is deferred until finalization and runs on at most the best three crops; character-level voting remains unchanged.
+- Violations finalize when the track ends, the collection window expires, or the video/live session stops. Database and API formats are unchanged.
+- Added `plate_collection_seconds`, `plate_candidate_limit`, and `plate_ocr_candidate_limit` configuration knobs.
+
 ## 2026-07-06 (later)
 
 ### GPU Acceleration (CUDA On Windows, MPS-Ready For macOS)

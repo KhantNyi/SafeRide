@@ -124,13 +124,14 @@ def process_live_stream(job_id: str, source: str) -> None:
 
     analysis_interval = max(int(round(fps * settings.sample_every_seconds)), 1)
     cooldown_frames = max(int(fps * settings.violation_cooldown_seconds), analysis_interval)
-    aggregation_frames = max(int(fps * settings.plate_aggregation_seconds), analysis_interval)
+    collection_frames = max(int(fps * settings.plate_collection_seconds), analysis_interval)
     max_lost_frames = max(int(fps * settings.tracker_max_lost_seconds), analysis_interval)
+    dedupe_frames = max(int(fps * settings.rider_dedupe_seconds), max_lost_frames)
     rider_tracks = RiderTrackManager(
         cooldown_frames,
-        aggregation_frames,
-        settings.plate_aggregation_min_samples,
+        collection_frames,
         max_lost_frames,
+        dedupe_frames,
     )
 
     dense_interval_seconds = settings.sample_every_seconds / max(settings.adaptive_sample_divisor, 1)

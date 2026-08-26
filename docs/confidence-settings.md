@@ -164,7 +164,8 @@ Beyond geometry, a violation now also requires temporal consistency:
 - Each sampled frame records a helmet-status vote for the track.
 - A violation is saved only when the track has at least `min_no_helmet_votes` (default 2) no-helmet votes and they are not drowned out by with-helmet votes.
 - A plate is attached only if it was sighted with the track in at least `plate_min_track_sightings` (default 2) samples.
-- Plate OCR text is voted across all of the track's samples, so a plate read consistently the same way beats a single high-confidence misread.
+- Plate crops are buffered from the full motorcycle track, including frames before helmet confirmation and later frames where helmet detection flickers.
+- Only the strongest bounded set of crops is kept. OCR runs on the best few at finalization, and their text is voted character by character.
 
 Practical effect: a rider must be observed without a helmet in at least two sampled frames to produce a violation. Adaptive sampling makes this easy to satisfy — as soon as any no-helmet detection appears, sampling densifies (`adaptive_sample_divisor` times per interval for `adaptive_hold_seconds`), so even a rider visible for 1-2 seconds accumulates several votes. Lower `MIN_NO_HELMET_VOTES` to `1` (env var) only if very brief single-frame appearances must be saved.
 
@@ -211,6 +212,9 @@ plate_max_aspect = 2.0         # rejects wide car plates
 plate_horizontal_slop = 0.22   # max plate offset vs motorcycle width
 plate_assignment_margin = 0.04 # ambiguity margin between candidate motorcycles
 plate_min_track_sightings = 2  # plate must co-travel with the track
+plate_collection_seconds = 6   # maximum whole-track crop collection window
+plate_candidate_limit = 5      # cheap-ranked crops retained per motorcycle
+plate_ocr_candidate_limit = 3  # strongest crops OCR-read at finalization
 helmet_crop_inference = true   # helmet model runs on rider crops
 helmet_crop_imgsz = 640        # inference size per rider crop
 adaptive_sampling = true       # densify sampling after a no-helmet detection
@@ -319,7 +323,7 @@ Expected effect:
 - Detection confidence and OCR confidence are separate concepts.
 - Plate detection confidence says the crop may contain a plate.
 - OCR confidence says EasyOCR is confident in the text it read from the crop.
-- The final violation decision depends on detection confidence, association geometry, tracking, cooldown, and plate aggregation.
+- The final violation decision depends on detection confidence, association geometry, tracking, cooldown, and whole-track plate collection.
 
 ## Recommended Future Improvements
 

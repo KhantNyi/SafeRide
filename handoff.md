@@ -2,9 +2,22 @@
 
 ## Current Status
 
-SafeRide is now a local full-stack computer vision web app for uploaded-video helmet violation analysis. The app supports video upload, YOLO-based frame analysis, ByteTrack-style rider identity tracking, real video playback with detection overlays, job progress tracking, processing timing telemetry, runtime detection settings, result summaries, evidence persistence, and a cleaner operations-console UI.
+SafeRide is now a local full-stack computer vision web app for uploaded-video and live webcam/RTSP helmet violation analysis. The app supports YOLO-based frame analysis, ByteTrack-style rider identity tracking, real video playback with detection overlays, job progress tracking, processing timing telemetry, runtime detection settings, result summaries, evidence persistence, and a cleaner operations-console UI.
 
-The project is still an MVP. The web app and backend workflow are functional, but model accuracy, OCR quality, tracker tuning, and production hardening remain future work.
+The project is still an MVP. The web app and backend workflow are functional, but out-of-domain model accuracy, OCR quality, tracker tuning, and production hardening remain future work.
+
+## Progress Log - 2026-08-26
+
+### Whole-Track Plate Capture
+
+- Replaced early three-sample plate finalization with collection across the motorcycle's visible track, capped at six seconds.
+- Buffers plate crops before helmet confirmation and continues after confirmation even when the helmet detector flickers.
+- Keeps only the five strongest crops per track using detector confidence, crop size, and sharpness.
+- Defers EasyOCR until finalization and processes at most the strongest three crops before character-level voting.
+- Finalizes when the track ends, the collection window expires, or the uploaded/live session stops.
+- Preserved the existing database, API, evidence, and frontend formats.
+- Added config/env knobs: `plate_collection_seconds`, `plate_candidate_limit`, and `plate_ocr_candidate_limit`.
+- Added focused regression tests under `backend/tests/test_plate_collection.py`.
 
 ## Progress Log - 2026-06-21
 
@@ -241,10 +254,11 @@ The project is still an MVP. The web app and backend workflow are functional, bu
 - Added ByteTrack-style rider association tracking during each video job so repeated no-helmet detections are suppressed by stable rider track IDs instead of by a single global cooldown.
 - Added association guide lines to annotated frames for no-helmet riders so reviewer/debugging evidence shows which helmet, motorcycle, and plate were linked.
 - Added `track_id` to sampled detection metadata, evidence annotations, saved violation records, the violation detail modal, and CSV exports.
-- Added multi-frame plate aggregation per no-helmet rider association:
-  - pending violations wait briefly before saving
-  - multiple plate crops can be scored during that window
-  - saved records use the best crop/OCR result found for that rider
+- Added bounded whole-track plate collection per motorcycle:
+  - crops are buffered before and after no-helmet confirmation
+  - cheap quality scoring retains only the strongest five candidates
+  - OCR runs on at most the best three when the track finalizes
+  - saved records use the best crop and character-voted OCR result
 - Hardened rider association against common false matches:
   - no-helmet violations now require a plausible motorcycle association before saving
   - weak no-helmet associations are rejected by a minimum association score
@@ -390,9 +404,8 @@ python -m uvicorn app.main:app --reload --reload-dir backend --app-dir backend -
 - OCR is enabled by default, but plate text can still be missing when the crop is too small, blurry, angled, or partially occluded.
 - Helmet detection accuracy depends heavily on the public baseline model.
 - Rider-to-motorcycle-to-plate association now exists, but it is still geometry based and should be tuned against labeled real traffic clips.
-- Plate selection now prefers the best scored crop seen during a short aggregation window for the matched motorcycle, but small/blurred/occluded motorcycle plates can still be missed.
+- Plate selection now searches the full visible motorcycle track for up to six seconds and OCR-reads only the strongest candidates, but plates that remain small, blurred, occluded, or badly angled can still be unreadable.
 - Duplicate suppression now uses ByteTrack-style rider identities within each job, but tracker thresholds still need tuning against real traffic clips.
-- No webcam or RTSP support yet.
 - No authentication or role-based access.
 - CSV export exists for violations. No PDF/report generator yet.
 - No formal evaluation dataset or metrics dashboard yet.
@@ -423,8 +436,8 @@ python -m uvicorn app.main:app --reload --reload-dir backend --app-dir backend -
 
 - Improve EasyOCR accuracy for motorcycle plate crops.
 - Consider PaddleOCR or a plate-specialized OCR model as an alternative baseline.
-- Tune the multi-frame crop/OCR aggregation window against real clips.
-- Score plate crop candidates by size, sharpness, and angle before OCR.
+- Evaluate the six-second collection window and top-candidate limits against labeled clips.
+- Add perspective/angle quality to the existing size, sharpness, and detector-confidence crop ranking.
 - Add Thai plate post-processing.
 - Save OCR confidence and raw text.
 - Compare local OCR against an API baseline if needed.

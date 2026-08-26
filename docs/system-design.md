@@ -358,7 +358,7 @@ flowchart TB
     M --> N["Per-track helmet-status voting"]
     N --> O{"≥ min_no_helmet_votes and<br/>no_helmet × 2 ≥ with_helmet?"}
     O -- no --> P["Metadata JSON write (≤1/s)<br/>+ preview / MJPEG if watched"] --> C
-    O -- yes --> Q["Aggregate track briefly for best plate crop<br/>(plate must co-travel ≥ plate_min_track_sightings)"]
+    O -- yes --> Q["Collect best plate crops across track (max 6 s)<br/>(plate must co-travel ≥ plate_min_track_sightings)"]
     Q --> R["OCR: vote readings across track samples"]
     R --> S{"Duplicate?<br/>track cooldown, IoU ≥ 0.35,<br/>within 1 bike-size in window"}
     S -- yes --> P
@@ -450,12 +450,13 @@ Plate reading lives in `backend/app/services/plate_ocr.py`, specializing EasyOCR
 
 - The recognizer is restricted to an **allowlist of Thai characters and Arabic digits** — Latin junk reads ("allo", "1o") are impossible by construction.
 - OCR lines are classified by shape (registration prefix / digit group / province) and recombined top-to-bottom; a plate-format quality score ranks readings across three preprocess variants (raw, upscaled, adaptive-threshold).
-- Across a rider's track, readings are **voted per character position**, weighted by confidence: "1กข 1234" read four times beats "1กข 1284" read once.
+- Plate crops are collected for the full visible track (up to `plate_collection_seconds`), including frames before helmet confirmation and later frames where helmet detection flickers. Only a bounded top-quality set is retained.
+- OCR is deferred until finalization and runs on only the strongest `plate_ocr_candidate_limit` crops. Their readings are then **voted per character position**, weighted by confidence: "1กข 1234" read four times beats "1กข 1284" read once.
 
 ```mermaid
 flowchart TB
-    A["Plate detected on sampled frame"] --> B["Best crop aggregated over track<br/>(confidence, size, sharpness, OCR score)"]
-    B --> C["Preprocess variants:<br/>raw / upscaled / adaptive-threshold"]
+    A["Plate detected on sampled frame"] --> B["Keep bounded top crops over the track<br/>(confidence, size, sharpness)"]
+    B --> C["At track end: OCR top candidates<br/>raw / upscaled / adaptive-threshold"]
     C --> D["EasyOCR with Thai + digit allowlist"]
     D --> E["Classify lines: prefix / digits / province<br/>and recombine top-to-bottom"]
     E --> F["Plate-format quality score picks best variant"]
@@ -631,8 +632,9 @@ All settings live in `backend/app/core/config.py` (pydantic `BaseSettings`); eve
 | `plate_horizontal_slop` | 0.22 | Max horizontal offset (× moto width) |
 | `plate_assignment_margin` | 0.04 | Ambiguity margin → drop plate |
 | `plate_min_track_sightings` | 2 | Co-travel samples before attach |
-| `plate_aggregation_seconds` | 2 | Wait window for a better crop |
-| `plate_aggregation_min_samples` | 3 | Min samples in the window |
+| `plate_collection_seconds` | 6 | Maximum whole-track crop collection window |
+| `plate_candidate_limit` | 5 | Maximum cheap-ranked crops retained per track |
+| `plate_ocr_candidate_limit` | 3 | Strongest crops OCR-read at finalization |
 
 ### Tracker
 
@@ -717,7 +719,12 @@ timeline
     2026-07-07 : Per-record evidence highlighting + stable numbering : Reviewer Report Miss workflow + recall metrics
     2026-07-11 : Fine-tuning round 1 (111 frames)
     2026-07-15 : Fine-tuning round 2 (325 frames, v2 staged — helmet mAP50 0.39 to 0.86)
+    2026-08-26 : Whole-track plate collection : Bounded top-crop retention : Deferred OCR
 ```
+
+### 2026-08-26 — Whole-track plate capture
+
+Plate crops now accumulate from the beginning of each motorcycle track and continue after no-helmet confirmation, even when later helmet detections flicker. Each track retains only five cheap-ranked crops; when the track ends or the six-second cap is reached, EasyOCR runs on at most the strongest three and character-level voting selects the stored text. This replaces the early three-sample save while keeping memory and OCR work bounded.
 
 ### 2026-07-15 — Fine-tuning round 2
 

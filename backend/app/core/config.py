@@ -26,8 +26,9 @@ class Settings(BaseSettings):
     realtime_preview: bool = False
     metadata_write_seconds: float = 1.0
     violation_cooldown_seconds: int = 4
-    plate_aggregation_seconds: float = 2
-    plate_aggregation_min_samples: int = 3
+    plate_collection_seconds: float = 6
+    plate_candidate_limit: int = 5
+    plate_ocr_candidate_limit: int = 3
     tracker_high_confidence: float = 0.25
     tracker_low_confidence: float = 0.10
     tracker_new_track_confidence: float = 0.25
