@@ -1,4 +1,6 @@
 __pycache__/
+.ultralytics/
+round3/
 datasets/
 runs/
 *.pt

@@ -18,6 +18,7 @@ class Settings(BaseSettings):
     helmet_model_path: Path = project_root / "models" / "helmet-yolov8n.pt"
     plate_model_path: Path = project_root / "models" / "license-plate-yolo11n.pt"
     allowed_origins: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    video_orientation_auto: bool = True
     sample_every_seconds: float = 1
     adaptive_sampling: bool = True
     adaptive_sample_divisor: int = 5

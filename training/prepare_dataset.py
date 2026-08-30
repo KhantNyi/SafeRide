@@ -1,7 +1,8 @@
 """Build per-model training datasets from the Label Studio YOLO export.
 
-Everything is written inside training/datasets/ - nothing in the main
-project is read or modified except the export folder you point --src at.
+Everything is written inside training/datasets/ by default (or the directory
+passed via --output-dir) - nothing in the main project is read or modified
+except the export folder you point --src at.
 
 The export has 5 classes (classes.txt):
     0 Helmet, 1 License Plate, 2 Motorcycle, 3 No Helmet, 4 No License Plate
@@ -56,6 +57,12 @@ def remap_label_lines(label_path: Path, mapping: dict) -> list[str]:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", required=True, nargs="+", help="Label Studio export dir(s) (images/, labels/, classes.txt)")
+    ap.add_argument(
+        "--output-dir",
+        type=Path,
+        default=TRAINING_DIR / "datasets",
+        help="Destination for the helmet/ and plate/ datasets (default: training/datasets)",
+    )
     ap.add_argument("--val-ratio", type=float, default=0.2)
     ap.add_argument("--seed", type=int, default=42)
     args = ap.parse_args()
@@ -87,7 +94,7 @@ def main():
     splits = {"val": paired[:n_val], "train": paired[n_val:]}
 
     for subset, mapping in SUBSETS.items():
-        out = TRAINING_DIR / "datasets" / subset
+        out = args.output_dir.resolve() / subset
         if out.exists():
             shutil.rmtree(out)
         object_counts = {name: 0 for _, name in mapping.values()}

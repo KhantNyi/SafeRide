@@ -33,12 +33,17 @@ import {
 } from "@/lib/api";
 
 type ConsoleTab = "live" | "results" | "evidence";
-type NumericSettingKey = Exclude<keyof DetectionSettings, "enable_ocr">;
+type NumericSettingKey = Exclude<
+  keyof DetectionSettings,
+  "enable_ocr" | "helmet_crop_inference" | "video_orientation_auto"
+>;
 const MAX_UPLOAD_MB = 500;
 const DEFAULT_SETTINGS: DetectionSettings = {
   object_confidence: 0.35,
   helmet_confidence: 0.35,
   plate_confidence: 0.3,
+  helmet_crop_inference: false,
+  video_orientation_auto: true,
   sample_every_seconds: 1,
   max_violations_per_video: 25,
   enable_ocr: true
@@ -97,7 +102,7 @@ export function UploadClient() {
     try {
       const settings = await updateSettings(settingsDraft);
       setSettingsDraft(settings);
-      setSettingsStatus("Settings saved.");
+      setSettingsStatus("Settings applied for this backend session.");
     } catch (error) {
       setSettingsStatus(error instanceof Error ? error.message : "Could not update settings");
     } finally {
@@ -414,6 +419,40 @@ function SettingsPanel({
         </div>
       </div>
 
+      <div className="setting-control">
+        <label htmlFor="helmet-inference-mode">Helmet inference</label>
+        <select
+          id="helmet-inference-mode"
+          value={draft.helmet_crop_inference ? "crop" : "full"}
+          onChange={(event) =>
+            onChange({ ...draft, helmet_crop_inference: event.target.value === "crop" })
+          }
+          disabled={disabled}
+        >
+          <option value="full">Full frame</option>
+          <option value="crop">Rider crops</option>
+        </select>
+        <small className="source-hint">Full frame favors street-level views; crops help small, distant riders.</small>
+      </div>
+
+      <div className="setting-control">
+        <label htmlFor="video-orientation">Uploaded video orientation</label>
+        <select
+          id="video-orientation"
+          value={draft.video_orientation_auto ? "auto" : "encoded"}
+          onChange={(event) =>
+            onChange({ ...draft, video_orientation_auto: event.target.value === "auto" })
+          }
+          disabled={disabled}
+        >
+          <option value="auto">Auto from metadata</option>
+          <option value="encoded">Keep encoded orientation</option>
+        </select>
+        <small className="source-hint">
+          Auto keeps phone videos upright when their rotation is stored as metadata.
+        </small>
+      </div>
+
       <div className="setting-grid">
         <label>
           <span>Sample interval</span>
@@ -456,6 +495,7 @@ function SettingsPanel({
         Apply Settings
       </button>
       {status ? <span className="settings-status">{status}</span> : null}
+      <span className="settings-status">Changes reset from .env/defaults when the backend restarts.</span>
     </section>
   );
 }

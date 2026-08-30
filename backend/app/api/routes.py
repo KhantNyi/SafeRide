@@ -47,6 +47,8 @@ def current_detection_settings() -> DetectionSettings:
         object_confidence=settings.object_confidence,
         helmet_confidence=settings.helmet_confidence,
         plate_confidence=settings.plate_confidence,
+        helmet_crop_inference=settings.helmet_crop_inference,
+        video_orientation_auto=settings.video_orientation_auto,
         sample_every_seconds=settings.sample_every_seconds,
         max_violations_per_video=settings.max_violations_per_video,
         enable_ocr=settings.enable_ocr,

@@ -7,6 +7,7 @@ Downloaded model weights live in this folder, but `.pt` and `.onnx` files are ig
 - `models/yolo11s.pt` - COCO-pretrained Ultralytics YOLO11s for `person`, `motorcycle`, and general objects.
 - `models/helmet-yolov8n.pt` - YOLOv8n helmet/no-helmet detector from Hugging Face `iam-tsr/yolov8n-helmet-detection`.
 - `models/license-plate-yolo11n.pt` - YOLO11n license plate detector from Hugging Face `morsetechlab/yolov11-license-plate-detection`.
+- `models/helmet-yolo11m-community.pt` - inactive evaluation candidate from Hugging Face `nnsohamnn/helmet-detection-yolo11`; it performed substantially worse than SafeRide helmet-v2 on the street-level tripod evaluation and is not selected by `.env`.
 
 ## Notes
 

@@ -984,7 +984,7 @@ def publish_stream_frame(job_id: str, annotated) -> None:
 def enable_capture_orientation_auto(capture) -> None:
     orientation_auto = getattr(cv2, "CAP_PROP_ORIENTATION_AUTO", None)
     if orientation_auto is not None:
-        capture.set(orientation_auto, 1)
+        capture.set(orientation_auto, 1 if settings.video_orientation_auto else 0)
 
 
 def save_violation(job_id: str, payload: dict) -> None:

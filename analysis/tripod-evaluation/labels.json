@@ -1,0 +1,87 @@
+{
+  "frame_tolerance": 15,
+  "clips": [
+    {
+      "video": "C:/Users/ADMIN/Downloads/SP data with tripod/IMG_6834.MOV",
+      "events": []
+    },
+    {
+      "video": "C:/Users/ADMIN/Downloads/SP data with tripod/IMG_6835.MOV",
+      "events": [
+        {
+          "id": "IMG_6835_A",
+          "frame_start": 30,
+          "frame_end": 120
+        },
+        {
+          "id": "IMG_6835_B",
+          "frame_start": 174,
+          "frame_end": 222
+        }
+      ]
+    },
+    {
+      "video": "C:/Users/ADMIN/Downloads/SP data with tripod/IMG_6836.MOV",
+      "events": [
+        {
+          "id": "IMG_6836_A",
+          "frame_start": 300,
+          "frame_end": 360
+        },
+        {
+          "id": "IMG_6836_B",
+          "frame_start": 1470,
+          "frame_end": 1590
+        }
+      ]
+    },
+    {
+      "video": "C:/Users/ADMIN/Downloads/SP data with tripod/IMG_6837.MOV",
+      "events": [
+        {
+          "id": "IMG_6837_A",
+          "frame_start": 1050,
+          "frame_end": 1140
+        }
+      ]
+    },
+    {
+      "video": "C:/Users/ADMIN/Downloads/SP data with tripod/IMG_6838.MOV",
+      "events": [
+        {
+          "id": "IMG_6838_A",
+          "frame_start": 180,
+          "frame_end": 270
+        }
+      ]
+    },
+    {
+      "video": "C:/Users/ADMIN/Downloads/SP data with tripod/IMG_6839.MOV",
+      "events": []
+    },
+    {
+      "video": "C:/Users/ADMIN/Downloads/SP data with tripod/IMG_6840.MOV",
+      "events": [
+        {
+          "id": "IMG_6840_A",
+          "frame_start": 150,
+          "frame_end": 240
+        }
+      ]
+    },
+    {
+      "video": "C:/Users/ADMIN/Downloads/SP data with tripod/IMG_6841.MOV",
+      "events": []
+    },
+    {
+      "video": "C:/Users/ADMIN/Downloads/SP data with tripod/IMG_6842.MOV",
+      "events": [
+        {
+          "id": "IMG_6842_A",
+          "frame_start": 180,
+          "frame_end": 240
+        }
+      ]
+    }
+  ]
+}

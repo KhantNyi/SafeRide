@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Clock3, Download, PlayCircle, RefreshCcw, Search, Trash2, X } from "lucide-react";
+import { ChevronDown, Clock3, Download, PlayCircle, RefreshCcw, Search, ShieldCheck, Trash2, X } from "lucide-react";
 
 import { clearJobs, deleteViolation, fetchJobs, fetchViolations, Job, mediaUrl, reviewViolation, Violation } from "@/lib/api";
+
+type ReviewFilter = "all" | "pending" | "confirmed" | "false_positive" | "manual" | "no_violations";
 
 export function ViolationsClient() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -13,7 +15,7 @@ export function ViolationsClient() {
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState<Date | null>(null);
   const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "confirmed" | "false_positive" | "manual">("all");
+  const [statusFilter, setStatusFilter] = useState<ReviewFilter>("all");
   const [selectedViolation, setSelectedViolation] = useState<Violation | null>(null);
   const [selectedPlate, setSelectedPlate] = useState<Violation | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -53,30 +55,50 @@ export function ViolationsClient() {
         const job = jobsById.get(violation.job_id);
         const matchesQuery =
           !normalizedQuery ||
+          jobMatchesQuery(job, normalizedQuery) ||
           plateLabel(violation).toLowerCase().includes(normalizedQuery) ||
-          (job?.filename ?? "").toLowerCase().includes(normalizedQuery) ||
-          (job?.message ?? "").toLowerCase().includes(normalizedQuery) ||
           violation.helmet_status.toLowerCase().includes(normalizedQuery) ||
-          violation.job_id.toLowerCase().includes(normalizedQuery) ||
           String(violation.track_id ?? "").includes(normalizedQuery) ||
           (violation.note ?? "").toLowerCase().includes(normalizedQuery) ||
           formatRecordTime(violation.detected_at).toLowerCase().includes(normalizedQuery);
         const matchesStatus =
-          statusFilter === "all" ||
-          (statusFilter === "manual" ? violation.source === "manual" : reviewState(violation) === statusFilter);
+          statusFilter !== "no_violations" &&
+          (statusFilter === "all" ||
+            (statusFilter === "manual" ? violation.source === "manual" : reviewState(violation) === statusFilter));
         return matchesQuery && matchesStatus;
       }),
     [jobsById, violations, query, statusFilter]
   );
 
-  const groupedRows = useMemo(
-    () =>
-      groupViolationsByJob(rows, jobsById).sort((a, b) => {
+  const groupedRows = useMemo(() => {
+      const groups = groupViolationsByJob(rows, jobsById);
+      if (statusFilter === "all" || statusFilter === "no_violations") {
+        const normalizedQuery = query.trim().toLowerCase();
+        for (const job of jobs) {
+          if (
+            job.status === "completed" &&
+            job.violation_count === 0 &&
+            jobMatchesQuery(job, normalizedQuery)
+          ) {
+            groups.push({
+              jobId: job.id,
+              job,
+              latestDetectedAt: job.updated_at,
+              violations: []
+            });
+          }
+        }
+      }
+      return groups.sort((a, b) => {
         const aTime = new Date(a.job?.created_at ?? a.latestDetectedAt).getTime();
         const bTime = new Date(b.job?.created_at ?? b.latestDetectedAt).getTime();
         return bTime - aTime;
-      }),
-    [jobsById, rows]
+      });
+    }, [jobs, jobsById, query, rows, statusFilter]);
+
+  const completedJobCount = useMemo(
+    () => jobs.filter((job) => job.status === "completed").length,
+    [jobs]
   );
 
   // Stable per-job numbering in frame order, computed over all records so it
@@ -101,7 +123,7 @@ export function ViolationsClient() {
         <div>
           <span className="eyebrow">Review Queue</span>
           <h1>Violations</h1>
-          <p>Confirm detections, mark false positives, and export reviewed evidence.</p>
+          <p>Confirm detections, inspect zero-result jobs, and export reviewed evidence.</p>
         </div>
         <div className="header-actions">
           <div className="console-clock">
@@ -118,7 +140,7 @@ export function ViolationsClient() {
             <Download size={16} />
             Export CSV
           </button>
-          <button className="button danger" type="button" onClick={clearAllRecords} disabled={clearing || !violations.length}>
+          <button className="button danger" type="button" onClick={clearAllRecords} disabled={clearing || !jobs.length}>
             <Trash2 size={16} />
             {clearing ? "Clearing" : "Clear Records"}
           </button>
@@ -128,9 +150,9 @@ export function ViolationsClient() {
       <section className="content-card violation-summary-card" aria-label="Violation summary">
         <div>
           <h2>Violation Records</h2>
-          <p>Recent helmet violations detected across completed analyses.</p>
+          <p>Completed analyses and their detected or zero-violation outcomes.</p>
         </div>
-        <span className="pill warning">{violations.length} total</span>
+        <span className="pill warning">{completedJobCount} jobs / {violations.length} violations</span>
       </section>
 
       {error ? <div className="notice danger" role="alert">{error}</div> : null}
@@ -150,7 +172,7 @@ export function ViolationsClient() {
                 <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search plate, filename, date, status, job" />
               </label>
               <div className="violation-filter-chips" role="group" aria-label="Violation status filter">
-                {(["all", "pending", "confirmed", "false_positive", "manual"] as const).map((filter) => (
+                {(["all", "pending", "confirmed", "false_positive", "manual", "no_violations"] as const).map((filter) => (
                   <button className={statusFilter === filter ? "active" : ""} key={filter} type="button" onClick={() => setStatusFilter(filter)}>
                     {statusFilterLabel(filter)}
                   </button>
@@ -160,6 +182,7 @@ export function ViolationsClient() {
             <div className="status-explainer">
               <span><i className="status-dot high" />Pending records still need a human decision.</span>
               <span><i className="status-dot review" />Use Confirm or False positive to finalize each detection.</span>
+              <span><i className="status-dot high" />Zero-violation jobs remain available for replay and missed-detection reporting.</span>
             </div>
 
             {groupedRows.length ? (
@@ -177,13 +200,15 @@ export function ViolationsClient() {
                           </span>
                         </button>
                         <div className="violation-job-actions">
-                          <span className="pill warning">{group.violations.length} violations</span>
+                          <span className={`pill ${group.violations.length ? "warning" : "completed"}`}>
+                            {group.violations.length} violations
+                          </span>
                           {group.job ? <span className={`pill ${group.job.status}`}>{group.job.status}</span> : null}
                           <Link className="button secondary" href={`/jobs/${group.jobId}`}>
                             <PlayCircle size={16} />
                             Replay Job
                           </Link>
-                          <button className="button secondary" type="button" onClick={() => exportJobCsv(group)}>
+                          <button className="button secondary" type="button" onClick={() => exportJobCsv(group)} disabled={!group.violations.length}>
                             <Download size={16} />
                             Export Job
                           </button>
@@ -198,7 +223,7 @@ export function ViolationsClient() {
                         </div>
                       </header>
 
-                      {!collapsed ? (
+                      {!collapsed && group.violations.length ? (
                         <div className="violation-table" role="table" aria-label={`${group.job?.filename ?? group.jobId} violations`}>
                           <div className="violation-table-head" role="row">
                             <span>Snapshot</span>
@@ -224,6 +249,14 @@ export function ViolationsClient() {
                             />
                           ))}
                         </div>
+                      ) : !collapsed ? (
+                        <div className="violation-job-empty">
+                          <ShieldCheck size={28} />
+                          <span>
+                            <strong>No model violations detected</strong>
+                            <small>Replay this job to inspect the footage and report a missed violation.</small>
+                          </span>
+                        </div>
                       ) : null}
                     </article>
                   );
@@ -232,8 +265,8 @@ export function ViolationsClient() {
             ) : (
               <div className="violation-empty">
                 <Clock3 size={34} />
-                <strong>No violation records</strong>
-                <span>Run an analysis to populate this table.</span>
+                <strong>No matching review jobs</strong>
+                <span>Completed analyses, including jobs with zero violations, appear here.</span>
               </div>
             )}
 
@@ -565,6 +598,17 @@ function jobSubtitle(group: ViolationJobGroup) {
   return `${shortJobId(group.jobId)} | ${formatted}`;
 }
 
+function jobMatchesQuery(job: Job | undefined, normalizedQuery: string) {
+  if (!normalizedQuery) {
+    return true;
+  }
+  if (!job) {
+    return false;
+  }
+  return [job.filename, job.message ?? "", job.id, job.status, job.result ?? "", formatRecordTime(job.created_at)]
+    .some((value) => value.toLowerCase().includes(normalizedQuery));
+}
+
 function shortJobId(jobId: string) {
   return jobId.slice(0, 8);
 }
@@ -630,13 +674,14 @@ function reviewState(violation: Violation) {
   return "pending";
 }
 
-function statusFilterLabel(value: "all" | "pending" | "confirmed" | "false_positive" | "manual") {
+function statusFilterLabel(value: ReviewFilter) {
   return {
     all: "All",
     pending: "Pending",
     confirmed: "Confirmed",
     false_positive: "False positive",
-    manual: "Reported miss"
+    manual: "Reported miss",
+    no_violations: "Zero violations"
   }[value];
 }
 

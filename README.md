@@ -87,6 +87,12 @@ Helmet detection runs on rider-focused crops around each motorcycle (batched int
 $env:HELMET_CROP_INFERENCE="false"
 ```
 
+Uploaded videos are auto-rotated from their orientation metadata by default. The upload Settings panel can disable this for videos whose encoded pixels are already in the intended orientation. The equivalent backend default is:
+
+```powershell
+$env:VIDEO_ORIENTATION_AUTO="true"
+```
+
 Object and plate detection still run full-frame at a pinned image size. Tune these if processing speed becomes more important than recall:
 
 ```powershell

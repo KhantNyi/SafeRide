@@ -70,6 +70,8 @@ export type DetectionSettings = {
   object_confidence: number;
   helmet_confidence: number;
   plate_confidence: number;
+  helmet_crop_inference: boolean;
+  video_orientation_auto: boolean;
   sample_every_seconds: number;
   max_violations_per_video: number;
   enable_ocr: boolean;

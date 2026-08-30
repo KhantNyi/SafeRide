@@ -58,6 +58,8 @@ class DetectionSettings(BaseModel):
     object_confidence: float
     helmet_confidence: float
     plate_confidence: float
+    helmet_crop_inference: bool
+    video_orientation_auto: bool
     sample_every_seconds: float
     max_violations_per_video: int
     enable_ocr: bool
@@ -67,6 +69,8 @@ class DetectionSettingsUpdate(BaseModel):
     object_confidence: float | None = Field(default=None, ge=0.05, le=0.95)
     helmet_confidence: float | None = Field(default=None, ge=0.05, le=0.95)
     plate_confidence: float | None = Field(default=None, ge=0.05, le=0.95)
+    helmet_crop_inference: bool | None = None
+    video_orientation_auto: bool | None = None
     sample_every_seconds: float | None = Field(default=None, ge=0.25, le=10)
     max_violations_per_video: int | None = Field(default=None, ge=1, le=200)
     enable_ocr: bool | None = None
