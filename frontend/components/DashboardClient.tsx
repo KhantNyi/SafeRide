@@ -174,6 +174,7 @@ export function DashboardClient() {
           <div className="job-table">
             {filteredJobs.map((job) => (
               <article className="job-table-row" key={job.id}>
+                <JobThumbnail job={job} />
                 <div className="job-main">
                   <strong>{job.filename}</strong>
                   <span>{job.message ?? "No status message."}</span>
@@ -248,6 +249,23 @@ function EmptyState({ text }: { text: string }) {
       <FileSearch size={34} />
       <span>{text}</span>
     </div>
+  );
+}
+
+function JobThumbnail({ job }: { job: Job }) {
+  const previewUrl = job.preview_image ? mediaUrl(job.preview_image) : null;
+  const videoUrl = job.source_video ? mediaUrl(job.source_video) : null;
+  return (
+    <Link className="job-thumbnail" href={videoUrl ? `/jobs/${job.id}` : "#"} aria-label={`Open ${job.filename}`}>
+      {previewUrl ? (
+        <img src={previewUrl} alt="" />
+      ) : videoUrl ? (
+        <video src={videoUrl} muted playsInline preload="metadata" aria-hidden="true" />
+      ) : (
+        <FileSearch size={20} aria-hidden="true" />
+      )}
+      {videoUrl ? <span><PlayCircle size={14} /></span> : null}
+    </Link>
   );
 }
 

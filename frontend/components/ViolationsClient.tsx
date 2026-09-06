@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Clock3, Download, PlayCircle, RefreshCcw, Search, ShieldCheck, Trash2, X } from "lucide-react";
+import { AlertTriangle, ChevronDown, Clock3, Download, PlayCircle, RefreshCcw, Search, ShieldCheck, Trash2, X } from "lucide-react";
 
 import { clearJobs, deleteViolation, fetchJobs, fetchViolations, Job, mediaUrl, reviewViolation, Violation } from "@/lib/api";
 
@@ -117,6 +117,87 @@ export function ViolationsClient() {
     return map;
   }, [violations]);
 
+  const violationGroups = groupedRows.filter((group) => group.violations.length > 0);
+  const clearGroups = groupedRows.filter((group) => group.violations.length === 0);
+
+  function renderJobGroup(group: ViolationJobGroup) {
+    const collapsed = collapsedJobIds.includes(group.jobId);
+    return (
+      <article className="violation-job-group" key={group.jobId}>
+        <header className="violation-job-header">
+          <button className="job-collapse-button" type="button" onClick={() => toggleJobGroup(group.jobId)} aria-expanded={!collapsed}>
+            <ChevronDown size={17} className={collapsed ? "collapsed" : ""} />
+            <span>
+              <strong>{group.job?.filename ?? `Job ${shortJobId(group.jobId)}`}</strong>
+              <small>{jobSubtitle(group)}</small>
+            </span>
+          </button>
+          <div className="violation-job-actions">
+            <span className={`pill ${group.violations.length ? "warning" : "completed"}`}>
+              {group.violations.length ? `${group.violations.length} violations` : "Clear result"}
+            </span>
+            {group.job ? <span className={`pill ${group.job.status}`}>{group.job.status}</span> : null}
+            <Link className="button secondary" href={`/jobs/${group.jobId}`}>
+              <PlayCircle size={16} />
+              Replay Job
+            </Link>
+            {group.violations.length ? (
+              <>
+                <button className="button secondary" type="button" onClick={() => exportJobCsv(group)}>
+                  <Download size={16} />
+                  Export Job
+                </button>
+                <button
+                  className="button secondary"
+                  type="button"
+                  onClick={() => confirmPendingForGroup(group.violations)}
+                  disabled={!group.violations.some((violation) => reviewState(violation) === "pending")}
+                >
+                  Confirm Pending
+                </button>
+              </>
+            ) : null}
+          </div>
+        </header>
+
+        {!collapsed && group.violations.length ? (
+          <div className="violation-table" role="table" aria-label={`${group.job?.filename ?? group.jobId} violations`}>
+            <div className="violation-table-head" role="row">
+              <span>Snapshot</span>
+              <span>Plate OCR</span>
+              <span>Plate Crop</span>
+              <span>Frame</span>
+              <span>Status</span>
+              <span>Decision</span>
+              <span>Replay</span>
+              <span>Delete</span>
+            </div>
+            {group.violations.map((violation) => (
+              <ViolationRow
+                deletingId={deletingId}
+                key={violation.id}
+                onApplyReview={applyReview}
+                onInspectEvidence={setSelectedViolation}
+                onInspectPlate={setSelectedPlate}
+                onRemove={removeRecord}
+                sequence={sequenceById.get(violation.id)}
+                violation={violation}
+              />
+            ))}
+          </div>
+        ) : !collapsed ? (
+          <div className="violation-job-empty">
+            <ShieldCheck size={28} />
+            <span>
+              <strong>No model violations detected</strong>
+              <small>Replay this job to inspect the footage and report a missed violation.</small>
+            </span>
+          </div>
+        ) : null}
+      </article>
+    );
+  }
+
   return (
     <div className="history-page violations-page">
       <header className="console-header">
@@ -186,81 +267,37 @@ export function ViolationsClient() {
             </div>
 
             {groupedRows.length ? (
-              <div className="violation-job-groups">
-                {groupedRows.map((group) => {
-                  const collapsed = collapsedJobIds.includes(group.jobId);
-                  return (
-                    <article className="violation-job-group" key={group.jobId}>
-                      <header className="violation-job-header">
-                        <button className="job-collapse-button" type="button" onClick={() => toggleJobGroup(group.jobId)} aria-expanded={!collapsed}>
-                          <ChevronDown size={17} className={collapsed ? "collapsed" : ""} />
-                          <span>
-                            <strong>{group.job?.filename ?? `Job ${shortJobId(group.jobId)}`}</strong>
-                            <small>{jobSubtitle(group)}</small>
-                          </span>
-                        </button>
-                        <div className="violation-job-actions">
-                          <span className={`pill ${group.violations.length ? "warning" : "completed"}`}>
-                            {group.violations.length} violations
-                          </span>
-                          {group.job ? <span className={`pill ${group.job.status}`}>{group.job.status}</span> : null}
-                          <Link className="button secondary" href={`/jobs/${group.jobId}`}>
-                            <PlayCircle size={16} />
-                            Replay Job
-                          </Link>
-                          <button className="button secondary" type="button" onClick={() => exportJobCsv(group)} disabled={!group.violations.length}>
-                            <Download size={16} />
-                            Export Job
-                          </button>
-                          <button
-                            className="button secondary"
-                            type="button"
-                            onClick={() => confirmPendingForGroup(group.violations)}
-                            disabled={!group.violations.some((violation) => reviewState(violation) === "pending")}
-                          >
-                            Confirm Pending
-                          </button>
+              <div className="review-result-sections">
+                {violationGroups.length ? (
+                  <section className="review-result-section violations" aria-labelledby="detected-results-heading">
+                    <header className="review-result-heading">
+                      <div>
+                        <span className="result-marker danger"><AlertTriangle size={16} /></span>
+                        <div>
+                          <h3 id="detected-results-heading">Violations detected</h3>
+                          <p>Jobs requiring evidence review and a decision.</p>
                         </div>
-                      </header>
-
-                      {!collapsed && group.violations.length ? (
-                        <div className="violation-table" role="table" aria-label={`${group.job?.filename ?? group.jobId} violations`}>
-                          <div className="violation-table-head" role="row">
-                            <span>Snapshot</span>
-                            <span>Plate OCR</span>
-                            <span>Plate Crop</span>
-                            <span>Frame</span>
-                            <span>Status</span>
-                            <span>Decision</span>
-                            <span>Replay</span>
-                            <span>Delete</span>
-                          </div>
-
-                          {group.violations.map((violation) => (
-                            <ViolationRow
-                              deletingId={deletingId}
-                              key={violation.id}
-                              onApplyReview={applyReview}
-                              onInspectEvidence={setSelectedViolation}
-                              onInspectPlate={setSelectedPlate}
-                              onRemove={removeRecord}
-                              sequence={sequenceById.get(violation.id)}
-                              violation={violation}
-                            />
-                          ))}
+                      </div>
+                      <span className="pill warning">{violationGroups.length} jobs / {rows.length} records</span>
+                    </header>
+                    <div className="violation-job-groups">{violationGroups.map(renderJobGroup)}</div>
+                  </section>
+                ) : null}
+                {clearGroups.length ? (
+                  <section className="review-result-section clear" aria-labelledby="clear-results-heading">
+                    <header className="review-result-heading">
+                      <div>
+                        <span className="result-marker clear"><ShieldCheck size={17} /></span>
+                        <div>
+                          <h3 id="clear-results-heading">No violations detected</h3>
+                          <p>Completed jobs with no saved violation records.</p>
                         </div>
-                      ) : !collapsed ? (
-                        <div className="violation-job-empty">
-                          <ShieldCheck size={28} />
-                          <span>
-                            <strong>No model violations detected</strong>
-                            <small>Replay this job to inspect the footage and report a missed violation.</small>
-                          </span>
-                        </div>
-                      ) : null}
-                    </article>
-                  );
-                })}
+                      </div>
+                      <span className="pill completed">{clearGroups.length} jobs</span>
+                    </header>
+                    <div className="violation-job-groups">{clearGroups.map(renderJobGroup)}</div>
+                  </section>
+                ) : null}
               </div>
             ) : (
               <div className="violation-empty">

@@ -61,6 +61,7 @@ export function UploadClient() {
   const [settingsDraft, setSettingsDraft] = useState<DetectionSettings>(DEFAULT_SETTINGS);
   const [settingsStatus, setSettingsStatus] = useState("");
   const [savingSettings, setSavingSettings] = useState(false);
+  const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
 
   async function refreshHealth() {
     setBackendOnline(await fetchHealth());
@@ -74,6 +75,16 @@ export function UploadClient() {
   useEffect(() => {
     refreshHealth();
   }, []);
+
+  useEffect(() => {
+    if (!file) {
+      setFilePreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setFilePreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
 
   useEffect(() => {
     let cancelled = false;
@@ -265,8 +276,23 @@ export function UploadClient() {
               onDragLeave={() => setIsDragging(false)}
               onDrop={handleDrop}
             >
-              <FileVideo size={26} />
-              <span>{file ? file.name : "Drop or select video file"}</span>
+              {filePreviewUrl ? (
+                <span className="upload-thumbnail" aria-hidden="true">
+                  <video
+                    key={filePreviewUrl}
+                    src={filePreviewUrl}
+                    muted
+                    playsInline
+                    preload="metadata"
+                    onLoadedMetadata={(event) => {
+                      const video = event.currentTarget;
+                      video.currentTime = Math.min(1, Math.max(video.duration * 0.05, 0.1));
+                    }}
+                  />
+                  <span className="upload-thumbnail-play"><PlayCircle size={22} /></span>
+                </span>
+              ) : <FileVideo size={26} />}
+              <span className="upload-file-name">{file ? file.name : "Drop or select video file"}</span>
               {file ? <small>{formatBytes(file.size)} | Ready to upload</small> : <small>MP4, MOV, or camera exports up to {MAX_UPLOAD_MB} MB</small>}
               <input
                 accept="video/*"

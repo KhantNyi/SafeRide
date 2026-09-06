@@ -95,6 +95,8 @@ class RiderTrackManager:
         self.recent_saves: list[dict] = []
         self.saved_track_ids: set[int] = set()
         self.saved_violation_signatures: list[dict] = []
+        self.track_aliases: dict[int, int] = {}
+        self.distinct_track_pairs: set[tuple[int, int]] = set()
 
     def update(self, analysis: dict, frame_number: int, frame=None) -> None:
         motorcycles = analysis["motorcycles"]
@@ -109,9 +111,27 @@ class RiderTrackManager:
         ]
 
         tracked_detections = self.tracker.update(detections, frame_number)
+        # A whole-bike detection and a nested rear-bike detection can coexist
+        # in one frame. Keep both boxes for rider/plate association, but do not
+        # let the newly born duplicate create a second violation identity.
+        # Established tracks are never joined just because they cross.
+        for detection in sorted(tracked_detections, key=lambda item: item.track_id):
+            self.track_aliases.setdefault(detection.track_id, detection.track_id)
+            if detection.hits != 1:
+                continue
+            people = analysis.get("people", [])
+            rider = self.nearest_rider_index(detection.xyxy, people)
+            candidates = [other for other in tracked_detections
+                          if other.track_id < detection.track_id
+                          and box_iou(other.xyxy, detection.xyxy) >= 0.5
+                          and rider is not None
+                          and self.nearest_rider_index(other.xyxy, people) == rider]
+            if candidates:
+                other = max(candidates, key=lambda item: box_iou(item.xyxy, detection.xyxy))
+                self.track_aliases[detection.track_id] = self.track_aliases[other.track_id]
         for tracked_detection in tracked_detections:
             motorcycle = motorcycles[tracked_detection.metadata["index"]]
-            motorcycle["track_id"] = tracked_detection.track_id
+            motorcycle["track_id"] = self.track_aliases[tracked_detection.track_id]
             motorcycle["track_hits"] = tracked_detection.hits
 
             # Buffer a few strong plate crops for every motorcycle track. If
@@ -119,7 +139,7 @@ class RiderTrackManager:
             # available; collection then continues even through helmet-model
             # flicker. Plate detection already ran, so this is cheap scoring.
             violation_track = self.violation_track(
-                tracked_detection.track_id, frame_number
+                motorcycle["track_id"], frame_number
             )
             violation_track["last_frame"] = frame_number
             self.collect_plate_candidate(
@@ -128,6 +148,16 @@ class RiderTrackManager:
                 frame_number,
                 frame,
             )
+
+        # Simultaneous, spatially separate motorcycles are positive evidence
+        # of different passages. A later save at the same road position must
+        # not be suppressed merely because the earlier bike passed there.
+        for i, first in enumerate(tracked_detections):
+            for second in tracked_detections[i + 1:]:
+                a = self.track_aliases[first.track_id]
+                b = self.track_aliases[second.track_id]
+                if a != b and box_iou(first.xyxy, second.xyxy) < 0.1:
+                    self.distinct_track_pairs.add(tuple(sorted((a, b))))
 
         for association in analysis["associations"]:
             motorcycle = association.get("motorcycle_box")
@@ -141,6 +171,13 @@ class RiderTrackManager:
             )
 
         self.prune(frame_number)
+
+    @staticmethod
+    def nearest_rider_index(box: list[int], people: list[dict]) -> int | None:
+        scores = [score_person_to_motorcycle(person, {"xyxy": box}) for person in people]
+        if not scores or max(scores) < 0.3:
+            return None
+        return max(range(len(scores)), key=scores.__getitem__)
 
     def record_helmet_vote(self, track_id: int, helmet_status: str | None, frame_number: int) -> None:
         if helmet_status not in ("no_helmet", "with_helmet"):
@@ -214,6 +251,8 @@ class RiderTrackManager:
         if not motorcycle:
             return False
         for save in self.recent_saves:
+            if self.known_distinct_tracks(association.get("track_id"), save.get("track_id")):
+                continue
             if frame_number - save["frame"] > self.cooldown_frames:
                 continue
             if box_iou(motorcycle["xyxy"], save["xyxy"]) >= 0.35:
@@ -234,7 +273,8 @@ class RiderTrackManager:
         motorcycle = association.get("motorcycle_box")
         if not motorcycle:
             return
-        self.recent_saves.append({"frame": frame_number, "xyxy": motorcycle["xyxy"]})
+        self.recent_saves.append({"frame": frame_number, "xyxy": motorcycle["xyxy"],
+                                  "track_id": association.get("track_id")})
         self.recent_saves = [
             save for save in self.recent_saves
             if frame_number - save["frame"] <= self.cooldown_frames
@@ -307,7 +347,7 @@ class RiderTrackManager:
         collection_expired = (
             frame_number - track["pending_started_frame"] >= self.collection_frames
         )
-        track_ended = track["id"] not in self.tracker.active_track_ids()
+        track_ended = track["id"] not in self.active_violation_track_ids()
         return collection_expired or track_ended
 
     def violation_payload(self, track: dict) -> dict:
@@ -376,6 +416,8 @@ class RiderTrackManager:
         for signature in self.saved_violation_signatures:
             if frame_number - signature["frame_number"] > self.dedupe_frames:
                 continue
+            if any(self.known_distinct_tracks(track_id, saved_id) for saved_id in signature["track_ids"]):
+                continue
             if association_signature_score(signature, association) >= settings.rider_dedupe_match_threshold:
                 return signature
         return None
@@ -441,7 +483,7 @@ class RiderTrackManager:
 
     def prune(self, frame_number: int) -> None:
         max_age = max(self.cooldown_frames * 2, 1)
-        active_track_ids = self.tracker.active_track_ids()
+        active_track_ids = self.active_violation_track_ids()
         self.violation_tracks = {
             track_id: track
             for track_id, track in self.violation_tracks.items()
@@ -456,6 +498,14 @@ class RiderTrackManager:
             or track_id in self.violation_tracks
             or frame_number - votes["last_frame"] <= max_age
         }
+
+    def active_violation_track_ids(self) -> set[int]:
+        return {self.track_aliases.get(track_id, track_id)
+                for track_id in self.tracker.active_track_ids()}
+
+    def known_distinct_tracks(self, first: int | None, second: int | None) -> bool:
+        return (first is not None and second is not None
+                and tuple(sorted((first, second))) in self.distinct_track_pairs)
 
 
 def media_url(path: Path) -> str:
