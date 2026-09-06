@@ -1,5 +1,6 @@
 import os
 import json
+from copy import deepcopy
 from pathlib import Path
 from time import monotonic, sleep
 from uuid import uuid4
@@ -291,6 +292,8 @@ class RiderTrackManager:
             "pending_started_frame": None,
             "pending_samples": 0,
             "pending_association": None,
+            "evidence_association": None,
+            "evidence_score": -1.0,
             "pending_frame_number": None,
             "pending_frame": None,
             "pending_annotated": None,
@@ -309,10 +312,17 @@ class RiderTrackManager:
             track["pending_samples"] = 0
 
         track["pending_samples"] += 1
-        track["pending_association"] = association.copy()
-        track["pending_frame_number"] = frame_number
-        track["pending_frame"] = frame.copy()
-        track["pending_annotated"] = annotated.copy()
+        # Keep the latest position for duplicate suppression, independently of
+        # the best evidence view (which may be much earlier in the passage).
+        track["pending_association"] = deepcopy(association)
+        track["last_frame"] = frame_number
+        score = rider_evidence_score(frame, association)
+        if score > track["evidence_score"]:
+            track["evidence_score"] = score
+            track["evidence_association"] = deepcopy(association)
+            track["pending_frame_number"] = frame_number
+            track["pending_frame"] = frame.copy()
+            track["pending_annotated"] = annotated.copy()
 
         self.collect_plate_candidate(
             track, association.get("plate_box"), frame_number, frame
@@ -351,7 +361,7 @@ class RiderTrackManager:
         return collection_expired or track_ended
 
     def violation_payload(self, track: dict) -> dict:
-        association = track["pending_association"].copy()
+        association = (track["evidence_association"] or track["pending_association"]).copy()
         candidate, ocr_reads = finalize_plate_candidates(track["plate_candidates"])
 
         # Co-travel gate: the plate must have been seen with this track in enough
@@ -388,19 +398,18 @@ class RiderTrackManager:
 
     def finalize_pending_track(self, track: dict) -> dict | None:
         association = track["pending_association"]
-        frame_number = track["pending_frame_number"]
+        frame_number = track["last_frame"]
         duplicate_signature = self.saved_duplicate_signature(association, frame_number)
         if duplicate_signature:
             self.mark_duplicate_track(track, duplicate_signature, association, frame_number)
             return None
 
         payload = self.violation_payload(track)
-        frame_number = payload["frame_number"]
-        duplicate = self.is_duplicate_save(payload["association"], frame_number)
+        duplicate = self.is_duplicate_save(association, frame_number)
         # Record the location either way so a moving rider keeps extending the
         # dedup chain even while its saves are being suppressed.
-        self.record_save(payload["association"], frame_number)
-        self.mark_track_saved(track, payload["association"], frame_number)
+        self.record_save(association, frame_number)
+        self.mark_track_saved(track, association, frame_number)
         self.clear_pending(track)
         return None if duplicate else payload
 
@@ -474,6 +483,8 @@ class RiderTrackManager:
         track["pending_started_frame"] = None
         track["pending_samples"] = 0
         track["pending_association"] = None
+        track["evidence_association"] = None
+        track["evidence_score"] = -1.0
         track["pending_frame_number"] = None
         track["pending_frame"] = None
         track["pending_annotated"] = None
@@ -1127,6 +1138,35 @@ def highlight_violation_rider(annotated, association: dict):
         cv2.LINE_AA,
     )
     return highlighted
+
+
+def rider_evidence_score(frame, association: dict) -> float:
+    """Rank qualifying views, penalizing clipped riders and favoring clear heads.
+
+    All terms are bounded. Only a small head crop is filtered; no extra model
+    inference or full-frame image processing is required.
+    """
+    head = association.get("helmet_box")
+    if not head:
+        return 0.0
+    height, width = frame.shape[:2]
+    boxes = [association[key]["xyxy"] for key in
+             ("helmet_box", "person_box", "motorcycle_box") if association.get(key)]
+    margin = min(min(b[0], b[1], width - b[2], height - b[3]) for b in boxes)
+    clearance = max(0.0, min(margin / max(min(width, height) * 0.05, 1), 1.0))
+    crop = crop_box(frame, head["xyxy"])
+    if crop is None or not crop.size:
+        return 0.0
+    h, w = crop.shape[:2]
+    size = min((h * w) ** 0.5 / 64.0, 1.0)
+    if max(h, w) > 96:
+        crop = cv2.resize(crop, (max(1, round(w * 96 / max(h, w))),
+                                 max(1, round(h * 96 / max(h, w)))))
+    gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+    variance = float(cv2.Laplacian(gray, cv2.CV_64F).var())
+    sharpness = variance / (variance + 100.0)
+    confidence = max(0.0, min(float(head.get("confidence", 0)), 1.0))
+    return (0.2 + 0.8 * clearance) * (0.45 * size + 0.35 * sharpness + 0.2 * confidence)
 
 
 def build_plate_candidate(frame, plate_box: dict, *, run_ocr: bool = True) -> dict | None:
