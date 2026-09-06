@@ -1122,8 +1122,7 @@ def highlight_violation_rider(annotated, association: dict):
     y2 = min(int(max(box[3] for box in xyxys)) + pad, height - 1)
     cv2.rectangle(highlighted, (x1, y1), (x2, y2), VIOLATION_HIGHLIGHT_COLOR, 4)
 
-    track_id = association.get("track_id")
-    label = f"VIOLATION track {track_id}" if track_id is not None else "VIOLATION"
+    label = "Helmet violation"
     (text_width, text_height), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.65, 2)
     tag_top = max(y1 - text_height - baseline - 10, 0)
     cv2.rectangle(highlighted, (x1, tag_top), (x1 + text_width + 14, tag_top + text_height + baseline + 10), VIOLATION_HIGHLIGHT_COLOR, -1)
@@ -1679,17 +1678,6 @@ def draw_association(image, association: dict) -> None:
 
     helmet_center = tuple(int(value) for value in box_center(helmet_box["xyxy"]))
     cv2.circle(image, helmet_center, 4, (255, 255, 255), -1)
-    if association.get("track_id") is not None:
-        cv2.putText(
-            image,
-            f"track {association['track_id']}",
-            (helmet_center[0] + 8, max(helmet_center[1] - 8, 18)),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.55,
-            (255, 255, 255),
-            2,
-            cv2.LINE_AA,
-        )
 
     if motorcycle_box:
         motorcycle_center = tuple(int(value) for value in box_center(motorcycle_box["xyxy"]))

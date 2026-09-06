@@ -596,7 +596,6 @@ function LiveTab({ job }: { job: Job | null }) {
     frame.associations.forEach((association) => {
       drawAssociationLine(context, association.helmet_box, association.motorcycle_box, frame, videoRect, "#ffffff");
       drawAssociationLine(context, association.motorcycle_box ?? association.helmet_box, association.plate_box, frame, videoRect, "#1fd1d1");
-      drawTrackLabel(context, association.track_id, association.helmet_box, frame, videoRect);
     });
   }, [detections]);
 
@@ -757,23 +756,6 @@ function drawAssociationLine(
   context.beginPath();
   context.arc(toX, toY, 4, 0, Math.PI * 2);
   context.fill();
-}
-
-function drawTrackLabel(
-  context: CanvasRenderingContext2D,
-  trackId: number | null,
-  box: DetectionBox | null,
-  frame: DetectionFrame,
-  videoRect: { x: number; y: number; width: number; height: number }
-) {
-  if (trackId === null || !box) {
-    return;
-  }
-
-  const [centerX, centerY] = scaledBoxCenter(box, frame, videoRect);
-  context.font = "12px Aptos, Segoe UI, sans-serif";
-  context.fillStyle = "#ffffff";
-  context.fillText(`track ${trackId}`, centerX + 8, Math.max(14, centerY - 8));
 }
 
 function scaledBoxCenter(

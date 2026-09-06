@@ -58,7 +58,6 @@ export function ViolationsClient() {
           jobMatchesQuery(job, normalizedQuery) ||
           plateLabel(violation).toLowerCase().includes(normalizedQuery) ||
           violation.helmet_status.toLowerCase().includes(normalizedQuery) ||
-          String(violation.track_id ?? "").includes(normalizedQuery) ||
           (violation.note ?? "").toLowerCase().includes(normalizedQuery) ||
           formatRecordTime(violation.detected_at).toLowerCase().includes(normalizedQuery);
         const matchesStatus =
@@ -341,8 +340,8 @@ export function ViolationsClient() {
                 <dd>{selectedViolation.frame_number ?? "-"}</dd>
               </div>
               <div>
-                <dt>Track</dt>
-                <dd>{selectedViolation.track_id ?? "-"}</dd>
+                <dt>Violation</dt>
+                <dd>{sequenceById.get(selectedViolation.id) ?? "-"}</dd>
               </div>
               {selectedViolation.source === "manual" ? (
                 <div>
@@ -599,7 +598,7 @@ function groupViolationsByJob(rows: Violation[], jobsById: Map<string, Job>): Vi
 }
 
 function downloadViolationCsv(filename: string, records: Violation[], jobsById: Map<string, Job>, sequenceById: Map<string, number>) {
-  const header = ["No.", "Job", "Job ID", "Source", "Plate OCR", "Detected At", "Status", "Confidence", "Frame", "Track", "Miss Diagnosis", "Note", "Evidence Image"];
+  const header = ["No.", "Job", "Job ID", "Source", "Plate OCR", "Detected At", "Status", "Confidence", "Frame", "Miss Diagnosis", "Note", "Evidence Image"];
   const lines = records.map((violation) => {
     const job = jobsById.get(violation.job_id);
     return [
@@ -612,7 +611,6 @@ function downloadViolationCsv(filename: string, records: Violation[], jobsById: 
       statusLabel(violation),
       violation.source === "manual" ? "" : Math.round(violation.helmet_confidence * 100),
       violation.frame_number ?? "",
-      violation.track_id ?? "",
       violation.source === "manual" ? missReasonLabel(violation.miss_reason) : "",
       violation.note ?? "",
       mediaUrl(violation.evidence_image)
