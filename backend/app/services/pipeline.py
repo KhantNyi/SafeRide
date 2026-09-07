@@ -10,7 +10,8 @@ import cv2
 from app.core.config import settings
 from app.core.database import utc_now
 from app.services.byte_tracker import ByteTrackDetection, ByteTracker
-from app.services.plate_ocr import read_plate_text, vote_plate_texts
+from app.services.plate_ocr import read_plate_text, vote_plate_texts, plate_reading_status
+from app.services.plate_candidates import crop_descriptor, select_plate_candidates
 from app.services.repository import create_violation, update_job
 from app.services.streaming import frame_hub
 
@@ -79,8 +80,10 @@ class RiderTrackManager:
         collection_frames: int,
         max_lost_frames: int,
         dedupe_frames: int,
+        source_fps: float = 30.0,
     ):
         self.cooldown_frames = cooldown_frames
+        self.source_fps = max(source_fps, 1.0)
         self.collection_frames = max(collection_frames, 1)
         self.dedupe_frames = max(dedupe_frames, max_lost_frames, cooldown_frames)
         self.tracker = ByteTracker(
@@ -346,10 +349,10 @@ class RiderTrackManager:
         if not candidate:
             return
 
+        candidate["timestamp"] = frame_number / self.source_fps
         candidates = track["plate_candidates"]
         candidates.append(candidate)
-        candidates.sort(key=lambda item: item["score"], reverse=True)
-        del candidates[max(settings.plate_candidate_limit, 1):]
+        track["plate_candidates"] = select_plate_candidates(candidates, settings.plate_candidate_limit)
 
     def pending_ready(self, track: dict, frame_number: int) -> bool:
         if track["pending_started_frame"] is None:
@@ -374,6 +377,7 @@ class RiderTrackManager:
             if voted:
                 candidate = dict(candidate)
                 candidate["plate_text"], candidate["plate_confidence"] = voted
+            candidate["plate_ocr_status"] = plate_reading_status(voted, ocr_reads)
         else:
             candidate = None
             association["plate_box"] = None
@@ -571,6 +575,7 @@ def process_uploaded_video(job_id: str, source_path: str) -> None:
         collection_frames,
         max_lost_frames,
         dedupe_frames,
+        source_fps=fps,
     )
     latest_analysis = empty_analysis()
     latest_preview_url = None
@@ -1087,6 +1092,10 @@ def save_violation(job_id: str, payload: dict) -> None:
             "helmet_confidence": helmet_box["confidence"],
             "plate_text": plate_text,
             "plate_confidence": plate_confidence,
+            "plate_ocr_status": plate_candidate.get("plate_ocr_status") if plate_candidate else plate_reading_status(
+                (plate_text, plate_confidence or 0.0) if plate_text else None,
+                [(plate_text, plate_confidence or 0.0)] if plate_text else [],
+            ),
             "evidence_image": media_url(evidence_path),
             "plate_image": media_url(plate_path) if plate_path else None,
             "frame_number": frame_number,
@@ -1176,6 +1185,7 @@ def build_plate_candidate(frame, plate_box: dict, *, run_ocr: bool = True) -> di
     plate_text, plate_confidence = read_plate_text(crop) if run_ocr else (None, None)
     return {
         "crop": crop.copy(),
+        "descriptor": crop_descriptor(crop),
         "plate_box": plate_box,
         "plate_text": plate_text,
         "plate_confidence": plate_confidence,
@@ -1190,7 +1200,7 @@ def finalize_plate_candidates(candidates: list[dict]) -> tuple[dict | None, list
     finalized = []
     ocr_reads = []
     ocr_limit = max(settings.plate_ocr_candidate_limit, 1)
-    for candidate in candidates[:ocr_limit]:
+    for candidate in select_plate_candidates(candidates, ocr_limit):
         item = dict(candidate)
         plate_text, plate_confidence = read_plate_text(item["crop"])
         item["plate_text"] = plate_text

@@ -1,7 +1,10 @@
 "use client";
+import { plateLabel } from "@/lib/plate-label";
 
 import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { nearestDetection, smoothDetection } from "@/lib/overlay";
+import { useVideoOverlay } from "@/lib/use-video-overlay";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Clock3, Eye, EyeOff, FileVideo, Flag, Pause, Play, RefreshCcw, SkipBack, SkipForward } from "lucide-react";
 
@@ -85,8 +88,9 @@ export function ReplayClient({ jobId }: { jobId: string }) {
       return;
     }
 
-    const frame = closestDetectionFrame(detections, video.currentTime);
-    setOverlayFrame(frame);
+    const observed = nearestDetection(detections, video.currentTime);
+    setOverlayFrame(observed);
+    const frame = smoothDetection(detections, video.currentTime, observed);
     if (!frame || video.videoWidth <= 0 || video.videoHeight <= 0) {
       return;
     }
@@ -146,6 +150,8 @@ export function ReplayClient({ jobId }: { jobId: string }) {
       }
     }
   }, [detections, overlayEnabled, highlightTrackId]);
+
+  useVideoOverlay(videoRef, drawOverlay, job?.source_video);
 
   useEffect(() => {
     loadReplay();
@@ -476,24 +482,6 @@ export function ReplayClient({ jobId }: { jobId: string }) {
   );
 }
 
-function closestDetectionFrame(frames: DetectionFrame[], currentTime: number) {
-  if (!frames.length) {
-    return null;
-  }
-
-  let closest = frames[0];
-  let smallestGap = Math.abs(currentTime - closest.timestamp);
-  for (const frame of frames) {
-    const gap = Math.abs(currentTime - frame.timestamp);
-    if (gap < smallestGap) {
-      closest = frame;
-      smallestGap = gap;
-    }
-  }
-
-  return smallestGap <= 1.25 ? closest : null;
-}
-
 function timestampForFrame(frameNumber: number, frames: DetectionFrame[]) {
   if (!Number.isFinite(frameNumber) || !frames.length) {
     return null;
@@ -599,14 +587,6 @@ function resultLabel(job: Job) {
     return "Failed";
   }
   return job.violation_count > 0 ? "Violation" : "Clear";
-}
-
-function plateLabel(violation: Violation) {
-  const text = violation.plate_text?.trim();
-  if (text) {
-    return text;
-  }
-  return violation.plate_image ? "Unreadable plate" : "Plate not captured";
 }
 
 function formatVideoTime(seconds: number) {

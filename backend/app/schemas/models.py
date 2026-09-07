@@ -29,6 +29,7 @@ class Violation(BaseModel):
     helmet_confidence: float
     plate_text: str | None = None
     plate_confidence: float | None = None
+    plate_ocr_status: str | None = None
     evidence_image: str
     plate_image: str | None = None
     frame_number: int | None = None

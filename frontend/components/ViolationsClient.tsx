@@ -1,4 +1,5 @@
 "use client";
+import { plateLabel } from "@/lib/plate-label";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -650,14 +651,6 @@ function shortJobId(jobId: string) {
 
 function sanitizeFilename(filename: string) {
   return filename.replace(/[^a-z0-9._-]+/gi, "-").replace(/^-+|-+$/g, "") || "saferide-violations.csv";
-}
-
-function plateLabel(violation: Violation) {
-  const text = violation.plate_text?.trim();
-  if (text) {
-    return text;
-  }
-  return violation.plate_image ? "Unreadable plate" : "Plate not captured";
 }
 
 function plateConfidenceLabel(violation: Violation) {

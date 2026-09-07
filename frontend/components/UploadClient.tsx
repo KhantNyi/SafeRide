@@ -1,7 +1,10 @@
 "use client";
+import { plateLabel } from "@/lib/plate-label";
 
 import { DragEvent, FormEvent, type CSSProperties, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { nearestDetection, smoothDetection } from "@/lib/overlay";
+import { useVideoOverlay } from "@/lib/use-video-overlay";
 import {
   Clock3,
   FileVideo,
@@ -560,8 +563,9 @@ function LiveTab({ job }: { job: Job | null }) {
     context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     context.clearRect(0, 0, bounds.width, bounds.height);
 
-    const frame = closestDetectionFrame(detections, video.currentTime);
-    setOverlayFrame(frame);
+    const observed = nearestDetection(detections, video.currentTime);
+    setOverlayFrame(observed);
+    const frame = smoothDetection(detections, video.currentTime, observed);
     if (!frame || video.videoWidth <= 0 || video.videoHeight <= 0) {
       return;
     }
@@ -598,6 +602,8 @@ function LiveTab({ job }: { job: Job | null }) {
       drawAssociationLine(context, association.motorcycle_box ?? association.helmet_box, association.plate_box, frame, videoRect, "#1fd1d1");
     });
   }, [detections]);
+
+  useVideoOverlay(videoRef, drawOverlay, videoUrl);
 
   useEffect(() => {
     setDetections([]);
@@ -698,24 +704,6 @@ function LiveTab({ job }: { job: Job | null }) {
       ) : null}
     </div>
   );
-}
-
-function closestDetectionFrame(frames: DetectionFrame[], currentTime: number) {
-  if (!frames.length) {
-    return null;
-  }
-
-  let closest = frames[0];
-  let smallestGap = Math.abs(currentTime - closest.timestamp);
-  for (const frame of frames) {
-    const gap = Math.abs(currentTime - frame.timestamp);
-    if (gap < smallestGap) {
-      closest = frame;
-      smallestGap = gap;
-    }
-  }
-
-  return smallestGap <= 1.25 ? closest : null;
 }
 
 function containedRect(containerWidth: number, containerHeight: number, mediaWidth: number, mediaHeight: number) {
@@ -969,14 +957,6 @@ function resultToneForJob(job: Job | null) {
 
 function clampProgress(progress: number) {
   return Math.max(0, Math.min(100, progress));
-}
-
-function plateLabel(violation: Violation) {
-  const text = violation.plate_text?.trim();
-  if (text) {
-    return text;
-  }
-  return violation.plate_image ? "Unreadable plate" : "Plate not captured";
 }
 
 function formatBytes(bytes: number) {

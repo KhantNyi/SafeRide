@@ -56,6 +56,7 @@ export type Violation = {
   helmet_confidence: number;
   plate_text: string | null;
   plate_confidence: number | null;
+  plate_ocr_status?: "read" | "uncertain" | "unreadable" | null;
   evidence_image: string;
   plate_image: string | null;
   frame_number: number | null;

@@ -149,7 +149,7 @@ def delete_all_jobs() -> int:
 
 VIOLATION_COLUMNS = (
     "id, job_id, detected_at, helmet_status, helmet_confidence, plate_text, plate_confidence, "
-    "evidence_image, plate_image, frame_number, track_id, review_status, source, note, miss_reason"
+    "evidence_image, plate_image, frame_number, track_id, review_status, source, note, miss_reason, plate_ocr_status"
 )
 
 
@@ -158,7 +158,7 @@ def create_violation(record: dict) -> None:
         conn.execute(
             f"""
             INSERT INTO violations ({VIOLATION_COLUMNS})
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 record["id"],
@@ -176,6 +176,7 @@ def create_violation(record: dict) -> None:
                 record.get("source", "detected"),
                 record.get("note"),
                 record.get("miss_reason"),
+                record.get("plate_ocr_status"),
             ),
         )
 

@@ -25,6 +25,44 @@ from app.core.config import settings
 PLATE_PREFIX_PATTERN = re.compile(r"^\d{0,2}[ก-ฮ]{1,3}\d{0,4}$")
 PLATE_DIGITS_PATTERN = re.compile(r"^\d{1,4}$")
 PLATE_PROVINCE_PATTERN = re.compile(r"^[ก-๙]{3,}$")
+REGISTRATION_PATTERN = re.compile(r"^(\d{0,2}[ก-ฮ]{1,3})(\d{1,4})?$")
+
+
+def plate_components(text: str) -> dict[str, str]:
+    """Normalize joined and separated registration numbers before voting."""
+    parts: dict[str, str] = {}
+    for token in normalize_plate_text(text).split():
+        match = REGISTRATION_PATTERN.fullmatch(token)
+        if match and "prefix" not in parts:
+            parts["prefix"] = match[1]
+            if match[2]:
+                parts["digits"] = match[2]
+        elif PLATE_DIGITS_PATTERN.fullmatch(token):
+            parts.setdefault("digits", token)
+        elif PLATE_PROVINCE_PATTERN.fullmatch(token):
+            parts.setdefault("province", token)
+    return parts
+
+
+def plate_reading_status(voted: tuple[str, float] | None, reads: list[tuple[str, float]]) -> str:
+    """Conservative agreement gate, not a calibrated probability of correctness.
+
+    Preserve uncertain text for review. Two independently selected crops must
+    support the complete registration; synthesized or partial strings are not
+    silently presented as a supported read.
+    """
+    if not voted or not voted[0]:
+        return "unreadable"
+    parts = plate_components(voted[0])
+    if voted[1] < 0.5 or not {"prefix", "digits"} <= parts.keys():
+        return "uncertain"
+    parsed = [(plate_components(text), max(confidence, 0.05)) for text, confidence in reads]
+    supporting = [(p, weight) for p, weight in parsed
+                  if weight >= 0.5 and all(p.get(key) == value for key, value in parts.items())]
+    total = sum(weight for _, weight in parsed)
+    if len(supporting) < 2 or sum(weight for _, weight in supporting) < total * (2 / 3) - 1e-9:
+        return "uncertain"
+    return "read"
 
 # Thai consonants, vowels, and tone marks (no Thai digits — plates use Arabic
 # digits, and allowing both invites 4/๔-style confusions), plus Arabic digits.
@@ -141,19 +179,25 @@ def combine_plate_lines(lines) -> tuple[str, float, float] | None:
     digits = best_matching_entry(entries, PLATE_DIGITS_PATTERN, exclude=[prefix])
     province = best_matching_entry(entries, PLATE_PROVINCE_PATTERN, exclude=[prefix, digits])
 
-    registration_parts = sorted(
-        [entry for entry in (prefix, digits) if entry], key=lambda entry: entry["top"]
-    )
+    prefix_parts = plate_components(prefix["compact"]) if prefix else {}
+    # A single OCR line may already contain both prefix and number. Do not
+    # append a second detection of that number (or unrelated numeric text).
+    if "digits" in prefix_parts:
+        digits = None
+    registration_parts = [entry for entry in (prefix, digits) if entry]
     if registration_parts:
         used = registration_parts + ([province] if province else [])
-        text = " ".join(entry["compact"] for entry in registration_parts)
+        text_parts = [prefix_parts[key] for key in ("prefix", "digits") if key in prefix_parts]
+        if digits:
+            text_parts.append(digits["compact"])
+        text = " ".join(text_parts)
         if province:
             text = f"{text} {province['compact']}"
         confidence = sum(entry["confidence"] for entry in used) / len(used)
         quality = (
             confidence
             + (0.45 if prefix else 0.0)
-            + (0.25 if digits else 0.0)
+            + (0.25 if digits or "digits" in prefix_parts else 0.0)
             + (0.15 if province else 0.0)
         )
         if len(re.sub(r"\s+", "", text)) < 2:
@@ -194,14 +238,8 @@ def vote_plate_texts(reads: list[tuple[str, float]]) -> tuple[str, float] | None
     components: dict[str, list[tuple[str, float]]] = defaultdict(list)
     for text, confidence in reads:
         weight = max(confidence, 0.05)
-        for token in text.split():
-            compact = re.sub(r"\s+", "", token)
-            if PLATE_PREFIX_PATTERN.fullmatch(compact):
-                components["prefix"].append((compact, weight))
-            elif PLATE_DIGITS_PATTERN.fullmatch(compact):
-                components["digits"].append((compact, weight))
-            elif PLATE_PROVINCE_PATTERN.fullmatch(compact):
-                components["province"].append((compact, weight))
+        for name, token in plate_components(text).items():
+            components[name].append((token, weight))
 
     voted_parts = []
     confidences = []

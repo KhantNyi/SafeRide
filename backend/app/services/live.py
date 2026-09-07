@@ -132,6 +132,7 @@ def process_live_stream(job_id: str, source: str) -> None:
         collection_frames,
         max_lost_frames,
         dedupe_frames,
+        source_fps=fps,
     )
 
     dense_interval_seconds = settings.sample_every_seconds / max(settings.adaptive_sample_divisor, 1)

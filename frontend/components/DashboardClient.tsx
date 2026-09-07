@@ -1,4 +1,5 @@
 "use client";
+import { plateLabel } from "@/lib/plate-label";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -287,14 +288,6 @@ function toneForJob(job: Job) {
     return "danger";
   }
   return "clear";
-}
-
-function plateLabel(violation: Violation) {
-  const text = violation.plate_text?.trim();
-  if (text) {
-    return text;
-  }
-  return violation.plate_image ? "Unreadable plate" : "Plate not captured";
 }
 
 function filterLabel(filter: "all" | "active" | "violations" | "clear" | "failed") {
