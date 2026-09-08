@@ -5,6 +5,7 @@ import { type CSSProperties, useCallback, useEffect, useMemo, useRef, useState }
 import Link from "next/link";
 import { nearestDetection, smoothDetection } from "@/lib/overlay";
 import { useVideoOverlay } from "@/lib/use-video-overlay";
+import { VideoFullscreenButton } from "@/components/VideoFullscreenButton";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Clock3, Eye, EyeOff, FileVideo, Flag, Pause, Play, RefreshCcw, SkipBack, SkipForward } from "lucide-react";
 
@@ -319,6 +320,7 @@ export function ReplayClient({ jobId }: { jobId: string }) {
                   ref={videoRef}
                   src={videoUrl}
                   controls
+                  controlsList="nofullscreen"
                   playsInline
                   preload="metadata"
                   onLoadedMetadata={handleLoadedMetadata}
@@ -334,6 +336,7 @@ export function ReplayClient({ jobId }: { jobId: string }) {
                   onTimeUpdate={drawOverlay}
                 />
                 <canvas ref={canvasRef} className="detection-overlay" aria-hidden="true" />
+                <VideoFullscreenButton />
               </div>
             ) : (
               <div className="empty-preview">

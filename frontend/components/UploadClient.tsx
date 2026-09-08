@@ -5,6 +5,7 @@ import { DragEvent, FormEvent, type CSSProperties, useCallback, useEffect, useMe
 import Link from "next/link";
 import { nearestDetection, smoothDetection } from "@/lib/overlay";
 import { useVideoOverlay } from "@/lib/use-video-overlay";
+import { VideoFullscreenButton } from "@/components/VideoFullscreenButton";
 import {
   Clock3,
   FileVideo,
@@ -673,6 +674,7 @@ function LiveTab({ job }: { job: Job | null }) {
               ref={videoRef}
               src={videoUrl}
               controls
+              controlsList="nofullscreen"
               muted
               playsInline
               preload="metadata"
@@ -683,6 +685,7 @@ function LiveTab({ job }: { job: Job | null }) {
               onTimeUpdate={drawOverlay}
             />
             <canvas ref={canvasRef} className="detection-overlay" aria-hidden="true" />
+            <VideoFullscreenButton />
           </div>
         ) : (
           <div className="empty-preview">

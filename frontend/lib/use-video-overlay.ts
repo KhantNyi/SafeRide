@@ -26,6 +26,9 @@ export function useVideoOverlay(ref: RefObject<HTMLVideoElement | null>, draw: (
     video.addEventListener("play", start);
     video.addEventListener("pause", stop);
     video.addEventListener("ended", stop);
+    const resize = new ResizeObserver(() => draw());
+    if (video.parentElement) resize.observe(video.parentElement);
+    document.addEventListener("fullscreenchange", start);
     start();
     return () => {
       stopped = true;
@@ -33,6 +36,8 @@ export function useVideoOverlay(ref: RefObject<HTMLVideoElement | null>, draw: (
       video.removeEventListener("play", start);
       video.removeEventListener("pause", stop);
       video.removeEventListener("ended", stop);
+      resize.disconnect();
+      document.removeEventListener("fullscreenchange", start);
     };
   }, [ref, draw, source]);
 }
