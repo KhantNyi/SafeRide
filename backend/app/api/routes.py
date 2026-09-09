@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone, timedelta
 from uuid import uuid4
 
 from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile
@@ -33,6 +34,7 @@ from app.services.repository import (
 )
 from app.services.storage import delete_job_media, delete_violation_media, save_upload
 from app.services.streaming import frame_hub
+from app.services.playback import playback_status, reserve_playback, enhance_playback
 
 router = APIRouter()
 
@@ -164,6 +166,33 @@ def job_detections(job_id: str) -> dict:
     if not path.exists():
         return {"frames": []}
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+@router.get("/jobs/{job_id}/playback")
+def get_playback(job_id: str) -> dict:
+    if not get_job(job_id):
+        raise HTTPException(status_code=404, detail="Job not found")
+    return playback_status(job_id)
+
+
+@router.post("/jobs/{job_id}/playback", status_code=202)
+def start_playback(job_id: str, background_tasks: BackgroundTasks) -> dict:
+    record = get_job_storage(job_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="Job not found")
+    if get_job(job_id)["status"] != "completed" or not record.get("source_path"):
+        raise HTTPException(status_code=409, detail="Wait for video processing to finish")
+    # Historical interrupted jobs can remain marked processing indefinitely.
+    recent = datetime.now(timezone.utc) - timedelta(minutes=5)
+    if any(job["status"] in ("queued", "processing")
+           and datetime.fromisoformat(job["updated_at"]) > recent for job in list_jobs()):
+        raise HTTPException(status_code=409, detail="Wait for active video processing to finish")
+    try:
+        reserve_playback(job_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    background_tasks.add_task(enhance_playback, job_id, record["source_path"])
+    return {"status": "processing", "progress": 0}
 
 
 @router.post("/jobs/{job_id}/violations/manual", response_model=Violation, status_code=201)

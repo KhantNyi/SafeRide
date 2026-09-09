@@ -9,7 +9,7 @@ import { VideoFullscreenButton } from "@/components/VideoFullscreenButton";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Clock3, Eye, EyeOff, FileVideo, Flag, Pause, Play, RefreshCcw, SkipBack, SkipForward } from "lucide-react";
 
-import { DetectionBox, DetectionFrame, fetchDetections, fetchJob, fetchViolations, Job, mediaUrl, reportMissedViolation, Violation } from "@/lib/api";
+import { DetectionBox, DetectionFrame, fetchDetections, fetchJob, fetchViolations, fetchPlayback, PlaybackEnhancement, Job, mediaUrl, reportMissedViolation, Violation } from "@/lib/api";
 
 export function ReplayClient({ jobId }: { jobId: string }) {
   const searchParams = useSearchParams();
@@ -18,6 +18,10 @@ export function ReplayClient({ jobId }: { jobId: string }) {
   const appliedTargetRef = useRef<string | null>(null);
   const [job, setJob] = useState<Job | null>(null);
   const [detections, setDetections] = useState<DetectionFrame[]>([]);
+  const [enhancement, setEnhancement] = useState<PlaybackEnhancement>({ status: "idle" });
+  const [enhancedEnabled, setEnhancedEnabled] = useState(false);
+  const [enhanceError, setEnhanceError] = useState<string | null>(null);
+  const [enhanceStarting, setEnhanceStarting] = useState(false);
   const [violations, setViolations] = useState<Violation[]>([]);
   const [overlayFrame, setOverlayFrame] = useState<DetectionFrame | null>(null);
   const [videoSize, setVideoSize] = useState<{ width: number; height: number } | null>(null);
@@ -65,6 +69,34 @@ export function ReplayClient({ jobId }: { jobId: string }) {
     }
   }, [jobId]);
 
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout>;
+    setEnhancement({ status: "idle" });
+    setEnhancedEnabled(false);
+    const poll = async () => {
+      try {
+        const result = await fetchPlayback(jobId);
+        if (cancelled) return;
+        setEnhancement(result);
+        if (result.status === "completed") setEnhancedEnabled(true);
+        if (result.status === "processing") timer = setTimeout(poll, 1500);
+      } catch (err) {
+        if (!cancelled) setEnhanceError(err instanceof Error ? err.message : "Playback enhancement unavailable");
+      }
+    };
+    void poll();
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [jobId, enhanceStarting]);
+
+  const startEnhancement = async () => {
+    setEnhanceError(null);
+    setEnhanceStarting(true);
+    try { setEnhancement(await fetchPlayback(jobId, true)); }
+    catch (err) { setEnhanceError(err instanceof Error ? err.message : "Could not enhance playback"); }
+    finally { setEnhanceStarting(false); }
+  };
+
   const drawOverlay = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -91,7 +123,9 @@ export function ReplayClient({ jobId }: { jobId: string }) {
 
     const observed = nearestDetection(detections, video.currentTime);
     setOverlayFrame(observed);
-    const frame = smoothDetection(detections, video.currentTime, observed);
+    const frame = enhancedEnabled && enhancement.frames
+      ? smoothDetection(enhancement.frames, video.currentTime)
+      : smoothDetection(detections, video.currentTime, observed);
     if (!frame || video.videoWidth <= 0 || video.videoHeight <= 0) {
       return;
     }
@@ -150,7 +184,7 @@ export function ReplayClient({ jobId }: { jobId: string }) {
         context.fillText("VIOLATION", left + 2, Math.max(16, top - 8));
       }
     }
-  }, [detections, overlayEnabled, highlightTrackId]);
+  }, [detections, overlayEnabled, highlightTrackId, enhancedEnabled, enhancement.frames]);
 
   useVideoOverlay(videoRef, drawOverlay, job?.source_video);
 
@@ -387,6 +421,21 @@ export function ReplayClient({ jobId }: { jobId: string }) {
             </button>
             <span className="replay-readout">
               {overlayFrame ? `Overlay frame ${overlayFrame.frame_number}` : "No frame overlay"} | {detections.length} analyzed frames
+            </span>
+            {enhancement.status === "completed" ? (
+              <button className="button secondary" type="button" aria-pressed={enhancedEnabled} onClick={() => setEnhancedEnabled((value) => !value)}>
+                Smooth playback: {enhancedEnabled ? "On" : "Off"}
+              </button>
+            ) : (
+              <button className="button secondary" type="button" onClick={startEnhancement}
+                disabled={job?.status !== "completed" || enhancement.status === "processing" || enhanceStarting}>
+                {enhancement.status === "processing" ? `Enhancing ${enhancement.progress ?? 0}%` : "Enhance playback"}
+              </button>
+            )}
+            <span className="replay-readout" role="status">
+              {enhanceError ?? (enhancement.status === "failed" ? enhancement.message :
+                enhancement.status === "completed" ? "Estimated motion between detections" :
+                enhancement.status === "processing" ? "Preparing smoother boxes. Replay is available." : "Optional smoother boxes")}
             </span>
           </div>
         </main>

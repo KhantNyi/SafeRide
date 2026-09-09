@@ -19,6 +19,8 @@ export type Job = {
 };
 
 export type DetectionBox = {
+  playback_id?: string;
+  track_id?: number | null;
   label: string;
   confidence: number;
   xyxy: [number, number, number, number];
@@ -36,6 +38,7 @@ export type DetectionAssociation = {
 };
 
 export type DetectionFrame = {
+  playback_generated?: boolean;
   frame_number: number;
   timestamp: number;
   width: number;
@@ -46,6 +49,7 @@ export type DetectionFrame = {
   no_helmets: DetectionBox[];
   plates: DetectionBox[];
   associations: DetectionAssociation[];
+  tracking_associations?: DetectionAssociation[];
 };
 
 export type Violation = {
@@ -139,6 +143,25 @@ export async function fetchDetections(jobId: string): Promise<DetectionFrame[]> 
   }
   const payload = (await response.json()) as { frames?: DetectionFrame[] };
   return payload.frames ?? [];
+}
+
+export type PlaybackEnhancement = {
+  status: "idle" | "processing" | "completed" | "failed";
+  progress?: number;
+  elapsed_seconds?: number;
+  message?: string;
+  frames?: DetectionFrame[];
+};
+
+export async function fetchPlayback(jobId: string, start = false): Promise<PlaybackEnhancement> {
+  const response = await fetch(`${API_BASE}/api/jobs/${jobId}/playback`, {
+    method: start ? "POST" : "GET", cache: "no-store"
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({}));
+    throw new Error(error.detail ?? "Could not load enhanced playback");
+  }
+  return response.json();
 }
 
 export async function fetchViolations(): Promise<Violation[]> {

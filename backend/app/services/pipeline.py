@@ -978,6 +978,8 @@ def serialize_detection_frame(frame_number: int, fps: float, frame, analysis: di
         "helmets": serialize_boxes(analysis.get("helmets", [])),
         "no_helmets": serialize_boxes(analysis.get("no_helmets", [])),
         "plates": serialize_boxes(analysis.get("plates", [])),
+        # Playback identities are independent of violation eligibility.
+        "tracking_associations": playback_associations(analysis),
         "associations": [
             serialize_association(association)
             for association in analysis.get("associations", [])
@@ -992,9 +994,29 @@ def serialize_boxes(boxes: list[dict]) -> list[dict]:
             "label": box["label"],
             "confidence": box["confidence"],
             "xyxy": box["xyxy"],
+            **({"track_id": box["track_id"]} if box.get("track_id") is not None else {}),
         }
         for box in boxes
     ]
+
+
+def playback_associations(analysis: dict) -> list[dict]:
+    associations = list(analysis.get("associations", []))
+    assigned = {id(a.get("person_box")) for a in associations}
+    for person in analysis.get("people", []):
+        if id(person) in assigned:
+            continue
+        motorcycle, score = best_motorcycle_for_person(person, analysis.get("motorcycles", []))
+        if not motorcycle or score < settings.min_person_motorcycle_score:
+            continue
+        associations.append({
+            "person_box": person, "motorcycle_box": motorcycle,
+            "track_id": motorcycle.get("track_id"),
+            "track_hits": motorcycle.get("track_hits", 0),
+            "helmet_status": "unknown", "association_score": score,
+            "plate_box": motorcycle.get("plate_box"),
+        })
+    return [serialize_association(a) for a in associations]
 
 
 def serialize_association(association: dict) -> dict:
