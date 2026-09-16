@@ -46,6 +46,7 @@ def health() -> dict[str, str]:
 
 def current_detection_settings() -> DetectionSettings:
     return DetectionSettings(
+        ocr_engine=settings.ocr_engine,
         object_confidence=settings.object_confidence,
         helmet_confidence=settings.helmet_confidence,
         plate_confidence=settings.plate_confidence,
@@ -64,7 +65,7 @@ def get_detection_settings() -> DetectionSettings:
 
 @router.patch("/settings", response_model=DetectionSettings)
 def update_detection_settings(update: DetectionSettingsUpdate) -> DetectionSettings:
-    updates = update.model_dump(exclude_unset=True)
+    updates = update.model_dump(exclude_unset=True, exclude_none=True)
     for key, value in updates.items():
         setattr(settings, key, value)
     return current_detection_settings()

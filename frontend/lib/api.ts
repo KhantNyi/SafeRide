@@ -72,6 +72,7 @@ export type Violation = {
 };
 
 export type DetectionSettings = {
+  ocr_engine: "easyocr" | "paddleocr";
   object_confidence: number;
   helmet_confidence: number;
   plate_confidence: number;

@@ -1,0 +1,539 @@
+{
+  "method": "AI visual reference annotations from source-only 0.5-second contact sheets plus targeted full-resolution source frames. Not independently human-validated.",
+  "unit": "one motorcycle passage with at least one visibly unhelmeted rider/passenger",
+  "clips": [
+    {
+      "clip": "IMG_6665.MOV",
+      "events": [
+        {
+          "id": "6665-E1",
+          "start_seconds": 8.0,
+          "end_seconds": 12.76,
+          "description": "Tan-shirt backpack passenger, helmeted dark-clothed driver, yellow plate 3399",
+          "reference_frame": 510,
+          "status": "confirmed"
+        },
+        {
+          "id": "6665-E2",
+          "start_seconds": 11,
+          "end_seconds": 12.76,
+          "description": "Gray-shirt solo rider with backpack on white scooter; visible bare hair",
+          "reference_frame": 690,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": []
+    },
+    {
+      "clip": "IMG_6698.MOV",
+      "events": [],
+      "uncertain": []
+    },
+    {
+      "clip": "IMG_6699.MOV",
+      "events": [],
+      "uncertain": []
+    },
+    {
+      "clip": "IMG_6701.MOV",
+      "events": [],
+      "uncertain": []
+    },
+    {
+      "clip": "IMG_6705.MOV",
+      "events": [
+        {
+          "id": "6705-E1",
+          "start_seconds": 4,
+          "end_seconds": 6.5,
+          "description": "White-shirt bareheaded passenger behind dark-clothed helmeted driver",
+          "reference_frame": 270,
+          "status": "confirmed"
+        },
+        {
+          "id": "6705-E2",
+          "start_seconds": 5.5,
+          "end_seconds": 7.67,
+          "description": "White-shirt driver and green-hoodie passenger on second scooter; bare heads",
+          "reference_frame": 360,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": []
+    },
+    {
+      "clip": "IMG_6712.MOV",
+      "events": [
+        {
+          "id": "6712-E1",
+          "start_seconds": 2.5,
+          "end_seconds": 7.32,
+          "description": "Blue-shirt backpack rider, green sports motorcycle, visible bare hair",
+          "reference_frame": 165,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": []
+    },
+    {
+      "clip": "IMG_6714.MOV",
+      "events": [
+        {
+          "id": "6714-E1",
+          "start_seconds": 18.5,
+          "end_seconds": 19.89,
+          "description": "Brown/olive top backpack rider on red scooter, visible bare hair",
+          "reference_frame": 1140,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": [
+        {
+          "start_seconds": 0,
+          "end_seconds": 4,
+          "description": "Distant motorcycles already at vanishing point; heads not resolvable",
+          "status": "unscorable"
+        }
+      ]
+    },
+    {
+      "clip": "IMG_6760.MOV",
+      "events": [
+        {
+          "id": "6760-E1",
+          "start_seconds": 6.5,
+          "end_seconds": 11,
+          "description": "Two bareheaded long-haired riders on burgundy scooter",
+          "reference_frame": 420,
+          "status": "confirmed"
+        },
+        {
+          "id": "6760-E2",
+          "start_seconds": 17.5,
+          "end_seconds": 20.14,
+          "description": "Solo bareheaded rider wearing white/yellow shirt",
+          "reference_frame": 1080,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": [
+        {
+          "start_seconds": 0,
+          "end_seconds": 0.5,
+          "description": "White-shirt rider partially outside left image boundary; head outside view",
+          "status": "unscorable"
+        }
+      ]
+    },
+    {
+      "clip": "IMG_6761.MOV",
+      "events": [
+        {
+          "id": "6761-E1",
+          "start_seconds": 5,
+          "end_seconds": 7.2,
+          "description": "Light-gray shirt solo rider on black scooter, bare hair",
+          "reference_frame": 330,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": []
+    },
+    {
+      "clip": "IMG_6766.MOV",
+      "events": [
+        {
+          "id": "6766-E1",
+          "start_seconds": 4,
+          "end_seconds": 5.6,
+          "description": "Navy shirt solo bareheaded rider on dark scooter",
+          "reference_frame": 270,
+          "status": "confirmed"
+        },
+        {
+          "id": "6766-E2",
+          "start_seconds": 22,
+          "end_seconds": 23.7,
+          "description": "Dark green shirt solo rider with loose black hair on dark scooter",
+          "reference_frame": 1350,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": []
+    },
+    {
+      "clip": "IMG_6767.MOV",
+      "events": [
+        {
+          "id": "6767-E1",
+          "start_seconds": 12,
+          "end_seconds": 15.5,
+          "description": "Long blond-haired bareheaded passenger behind white-helmet driver",
+          "reference_frame": 750,
+          "status": "confirmed"
+        },
+        {
+          "id": "6767-E2",
+          "start_seconds": 17,
+          "end_seconds": 18.8,
+          "description": "Bareheaded dark-shirt passenger with gray backpack behind helmeted driver",
+          "reference_frame": 1050,
+          "status": "confirmed"
+        },
+        {
+          "id": "6767-E3",
+          "start_seconds": 18.5,
+          "end_seconds": 20.66,
+          "description": "Bareheaded white-shirt passenger with light backpack behind green-shirt helmeted driver",
+          "reference_frame": 1140,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": []
+    },
+    {
+      "clip": "IMG_6768.MOV",
+      "events": [
+        {
+          "id": "6768-E1",
+          "start_seconds": 11,
+          "end_seconds": 14.5,
+          "description": "Two long-haired bareheaded riders on teal/dark scooter",
+          "reference_frame": 690,
+          "status": "confirmed"
+        },
+        {
+          "id": "6768-E2",
+          "start_seconds": 13.5,
+          "end_seconds": 15.6,
+          "description": "Solo bareheaded ponytail rider in number 12 sports jersey",
+          "reference_frame": 840,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": []
+    },
+    {
+      "clip": "IMG_6773.MOV",
+      "events": [
+        {
+          "id": "6773-E1",
+          "start_seconds": 4,
+          "end_seconds": 6.7,
+          "description": "White-shirt solo rider with rectangular backpack, bare hair",
+          "reference_frame": 270,
+          "status": "confirmed"
+        },
+        {
+          "id": "6773-E2",
+          "start_seconds": 10,
+          "end_seconds": 11.6,
+          "description": "Purple-shirt bareheaded passenger behind black-shirt helmeted driver",
+          "reference_frame": 630,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": [
+        {
+          "start_seconds": 13.3,
+          "end_seconds": 15.1,
+          "description": "Black hood covers passenger head behind yellow-shirt driver; helmet under hood cannot be resolved",
+          "status": "uncertain",
+          "reference_frame": 825
+        }
+      ]
+    },
+    {
+      "clip": "IMG_6774.MOV",
+      "events": [
+        {
+          "id": "6774-E1",
+          "start_seconds": 9.5,
+          "end_seconds": 11.1,
+          "description": "Bareheaded black-clothed long-haired passenger with pale pink backpack behind white-helmet driver",
+          "reference_frame": 600,
+          "status": "confirmed"
+        },
+        {
+          "id": "6774-E2",
+          "start_seconds": 13,
+          "end_seconds": 15,
+          "description": "Beige-shirt bareheaded passenger behind helmeted driver",
+          "reference_frame": 810,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": []
+    },
+    {
+      "clip": "IMG_6776.MOV",
+      "events": [
+        {
+          "id": "6776-E1",
+          "start_seconds": 7.5,
+          "end_seconds": 9.4,
+          "description": "Bareheaded solo rider in white graphic T-shirt and black shorts",
+          "reference_frame": 480,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": [
+        {
+          "start_seconds": 2,
+          "end_seconds": 4.5,
+          "description": "White-top passenger with dark hood and backpack; helmet beneath hood unresolved",
+          "status": "uncertain",
+          "reference_frame": 135
+        }
+      ]
+    },
+    {
+      "clip": "IMG_6779.MOV",
+      "events": [
+        {
+          "id": "6779-E1",
+          "start_seconds": 2,
+          "end_seconds": 5,
+          "description": "Bareheaded tan-top backpack passenger behind black-helmet driver",
+          "reference_frame": 150,
+          "status": "confirmed"
+        },
+        {
+          "id": "6779-E2",
+          "start_seconds": 29,
+          "end_seconds": 33.08,
+          "description": "Bareheaded white-shirt passenger with blue backpack behind silver-helmet driver",
+          "reference_frame": 1770,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": []
+    },
+    {
+      "clip": "IMG_6786.MOV",
+      "events": [
+        {
+          "id": "6786-E1",
+          "start_seconds": 2.5,
+          "end_seconds": 6,
+          "description": "Long-haired bareheaded passenger in dark vest behind white-shirt rider on sports motorcycle",
+          "reference_frame": 180,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": []
+    },
+    {
+      "clip": "IMG_6787.MOV",
+      "events": [
+        {
+          "id": "6787-E1",
+          "start_seconds": 0,
+          "end_seconds": 5,
+          "description": "Bareheaded white-shirt passenger with black backpack on yellow-plate motorcycle already present at clip start",
+          "reference_frame": 0,
+          "status": "confirmed"
+        },
+        {
+          "id": "6787-E2",
+          "start_seconds": 8.5,
+          "end_seconds": 11.5,
+          "description": "Bareheaded beige-top passenger on mint scooter, white-top driver",
+          "reference_frame": 540,
+          "status": "confirmed"
+        },
+        {
+          "id": "6787-E3",
+          "start_seconds": 20.5,
+          "end_seconds": 24,
+          "description": "Bareheaded green-patterned-shirt passenger behind white-helmet driver",
+          "reference_frame": 1260,
+          "status": "confirmed"
+        },
+        {
+          "id": "6787-E4",
+          "start_seconds": 35,
+          "end_seconds": 38.87,
+          "description": "Bareheaded light-gray/white-top passenger behind white-helmet driver",
+          "reference_frame": 2130,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": []
+    },
+    {
+      "clip": "IMG_6788.MOV",
+      "events": [
+        {
+          "id": "6788-E1",
+          "start_seconds": 9,
+          "end_seconds": 16.5,
+          "description": "Bareheaded solo rider in black clothing on dark scooter",
+          "reference_frame": 570,
+          "status": "confirmed"
+        },
+        {
+          "id": "6788-E2",
+          "start_seconds": 11.5,
+          "end_seconds": 18.5,
+          "description": "Bareheaded white-top driver and blue/white-top passenger on second motorcycle",
+          "reference_frame": 720,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": []
+    },
+    {
+      "clip": "IMG_6791.MOV",
+      "events": [
+        {
+          "id": "6791-E1",
+          "start_seconds": 17,
+          "end_seconds": 21,
+          "description": "Bareheaded dark-top passenger with black backpack on white scooter",
+          "reference_frame": 1050,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": [
+        {
+          "id": "6791-U1",
+          "start_seconds": 2,
+          "end_seconds": 7,
+          "description": "Beige hood covers passenger head; helmet underneath cannot be resolved",
+          "reference_frame": 150,
+          "status": "uncertain"
+        }
+      ]
+    },
+    {
+      "clip": "IMG_6792.MOV",
+      "events": [],
+      "uncertain": [
+        {
+          "id": "6792-U1",
+          "start_seconds": 5.5,
+          "end_seconds": 8,
+          "description": "Blue raincoat rider: dark head covering cannot be reliably distinguished from hair/helmet",
+          "reference_frame": 345,
+          "status": "uncertain"
+        },
+        {
+          "id": "6792-U2",
+          "start_seconds": 9,
+          "end_seconds": 12,
+          "description": "Purple hood covers passenger head behind helmeted driver",
+          "reference_frame": 570,
+          "status": "uncertain"
+        }
+      ]
+    },
+    {
+      "clip": "IMG_6793.MOV",
+      "events": [],
+      "uncertain": []
+    },
+    {
+      "clip": "IMG_6798.MOV",
+      "events": [
+        {
+          "id": "6798-E1",
+          "start_seconds": 10,
+          "end_seconds": 14,
+          "description": "Bareheaded white-shirt passenger behind white-helmet driver, first scooter",
+          "reference_frame": 630,
+          "status": "confirmed"
+        },
+        {
+          "id": "6798-E2",
+          "start_seconds": 11.5,
+          "end_seconds": 19,
+          "description": "Bareheaded long-ponytail white-shirt passenger on second motorcycle",
+          "reference_frame": 720,
+          "status": "confirmed"
+        },
+        {
+          "id": "6798-E3",
+          "start_seconds": 13,
+          "end_seconds": 19,
+          "description": "Bareheaded navy-shirt black-backpack passenger on burgundy scooter",
+          "reference_frame": 810,
+          "status": "confirmed"
+        },
+        {
+          "id": "6798-E4",
+          "start_seconds": 20.5,
+          "end_seconds": 25,
+          "description": "Bareheaded ponytail passenger in black graphic top behind helmeted driver",
+          "reference_frame": 1260,
+          "status": "confirmed"
+        },
+        {
+          "id": "6798-E5",
+          "start_seconds": 21,
+          "end_seconds": 27,
+          "description": "Bareheaded white-shirt solo rider with MOOD shoulder bag",
+          "reference_frame": 1260,
+          "status": "confirmed"
+        },
+        {
+          "id": "6798-E6",
+          "start_seconds": 23,
+          "end_seconds": 27,
+          "description": "Bareheaded white-shirt solo rider with beige backpack on sports bike",
+          "reference_frame": 1440,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": [
+        {
+          "id": "6798-U1",
+          "start_seconds": 27,
+          "end_seconds": 29.36,
+          "description": "Blue raincoat hood fully covers rear rider head",
+          "reference_frame": 1620,
+          "status": "uncertain"
+        }
+      ]
+    },
+    {
+      "clip": "IMG_6805.MOV",
+      "events": [
+        {
+          "id": "6805-E1",
+          "start_seconds": 3.5,
+          "end_seconds": 6,
+          "description": "Bareheaded long-haired white-top rider on cream scooter",
+          "reference_frame": 210,
+          "status": "confirmed"
+        },
+        {
+          "id": "6805-E2",
+          "start_seconds": 5,
+          "end_seconds": 8,
+          "description": "Bareheaded white-shirt rider on motorcycle with rear cargo box",
+          "reference_frame": 300,
+          "status": "confirmed"
+        },
+        {
+          "id": "6805-E3",
+          "start_seconds": 7.5,
+          "end_seconds": 10.29,
+          "description": "Bareheaded white-shirt black-backpack passenger behind white-helmet driver",
+          "reference_frame": 480,
+          "status": "confirmed"
+        }
+      ],
+      "uncertain": [
+        {
+          "id": "6805-U1",
+          "start_seconds": 0,
+          "end_seconds": 0.5,
+          "description": "Distant motorcycle already exiting at start; head not scorable",
+          "reference_frame": 0,
+          "status": "uncertain"
+        }
+      ]
+    }
+  ]
+}

@@ -39,10 +39,11 @@ import {
 type ConsoleTab = "live" | "results" | "evidence";
 type NumericSettingKey = Exclude<
   keyof DetectionSettings,
-  "enable_ocr" | "helmet_crop_inference" | "video_orientation_auto"
+  "enable_ocr" | "helmet_crop_inference" | "video_orientation_auto" | "ocr_engine"
 >;
 const MAX_UPLOAD_MB = 500;
 const DEFAULT_SETTINGS: DetectionSettings = {
+  ocr_engine: "easyocr",
   object_confidence: 0.35,
   helmet_confidence: 0.35,
   plate_confidence: 0.3,
@@ -481,6 +482,20 @@ function SettingsPanel({
         <small className="source-hint">
           Auto keeps phone videos upright when their rotation is stored as metadata.
         </small>
+      </div>
+
+      <div className="setting-control">
+        <label htmlFor="ocr-engine">Plate OCR engine</label>
+        <select
+          id="ocr-engine"
+          value={draft.ocr_engine}
+          onChange={(event) => onChange({ ...draft, ocr_engine: event.target.value as DetectionSettings["ocr_engine"] })}
+          disabled={disabled || !draft.enable_ocr}
+        >
+          <option value="easyocr">EasyOCR (Thai)</option>
+          <option value="paddleocr">PaddleOCR (Thai PP-OCRv5)</option>
+        </select>
+        <small className="source-hint">Save before uploading a new video. Existing results stay unchanged.</small>
       </div>
 
       <div className="setting-grid">

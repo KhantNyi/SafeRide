@@ -1,0 +1,3 @@
+# Standalone OCR evaluation environment; see docs/paddleocr-setup.md.
+paddlepaddle==3.3.0
+paddleocr==3.7.0

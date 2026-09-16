@@ -115,6 +115,13 @@ class RiderTrackManager:
         ]
 
         tracked_detections = self.tracker.update(detections, frame_number)
+        # An unmatched duplicate must not sit at its old location and later
+        # adopt a new arrival while retaining the original motorcycle identity.
+        for track in self.tracker.tracks:
+            if (track["state"] == "lost"
+                    and self.track_aliases.get(track["id"], track["id"]) != track["id"]):
+                track["state"] = "removed"
+        self.tracker.prune()
         # A whole-bike detection and a nested rear-bike detection can coexist
         # in one frame. Keep both boxes for rider/plate association, but do not
         # let the newly born duplicate create a second violation identity.
@@ -133,6 +140,17 @@ class RiderTrackManager:
             if candidates:
                 other = max(candidates, key=lambda item: box_iou(item.xyxy, detection.xyxy))
                 self.track_aliases[detection.track_id] = self.track_aliases[other.track_id]
+        # A still-visible duplicate can drift onto a different motorcycle.
+        # Separate it before votes, plate crops, or pending evidence are shared.
+        for detection in sorted(tracked_detections, key=lambda item: item.track_id):
+            identity = self.track_aliases[detection.track_id]
+            if identity == detection.track_id:
+                continue
+            if any(other.track_id != detection.track_id
+                   and self.track_aliases[other.track_id] == identity
+                   and box_iou(other.xyxy, detection.xyxy) < 0.1
+                   for other in tracked_detections):
+                self.track_aliases[detection.track_id] = detection.track_id
         for tracked_detection in tracked_detections:
             motorcycle = motorcycles[tracked_detection.metadata["index"]]
             motorcycle["track_id"] = self.track_aliases[tracked_detection.track_id]

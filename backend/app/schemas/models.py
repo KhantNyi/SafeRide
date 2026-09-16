@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import Literal
 
 
 class Job(BaseModel):
@@ -56,6 +57,7 @@ class LiveStartRequest(BaseModel):
 
 
 class DetectionSettings(BaseModel):
+    ocr_engine: Literal["easyocr", "paddleocr"]
     object_confidence: float
     helmet_confidence: float
     plate_confidence: float
@@ -67,6 +69,7 @@ class DetectionSettings(BaseModel):
 
 
 class DetectionSettingsUpdate(BaseModel):
+    ocr_engine: Literal["easyocr", "paddleocr"] | None = None
     object_confidence: float | None = Field(default=None, ge=0.05, le=0.95)
     helmet_confidence: float | None = Field(default=None, ge=0.05, le=0.95)
     plate_confidence: float | None = Field(default=None, ge=0.05, le=0.95)

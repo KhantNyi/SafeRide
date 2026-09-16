@@ -60,6 +60,7 @@ class MotorcycleDeduplicationTests(unittest.TestCase):
         bikes = [{'xyxy': [100, 200, 200, 400], 'confidence': .8},
                  {'xyxy': [110, 200, 210, 400], 'confidence': .7}]
         manager.tracker = Mock()
+        manager.tracker.tracks = []
         manager.tracker.update.return_value = [
             TrackedDetection(i+1, b['xyxy'], b['confidence'], {'index': i}, 'tracked', 5)
             for i, b in enumerate(bikes)]
@@ -90,6 +91,40 @@ class MotorcycleDeduplicationTests(unittest.TestCase):
         following = {'track_id': 2, 'motorcycle_box': {'xyxy': bikes[0]['xyxy']}}
         self.assertIsNone(manager.saved_duplicate_signature(following, 60))
         self.assertFalse(manager.is_duplicate_save(following, 60))
+
+    def test_lost_duplicate_cannot_adopt_a_later_arrival(self):
+        manager = RiderTrackManager(240, 360, 180, 720, 60)
+        def update(frame, boxes):
+            analysis = {'motorcycles': [dict(xyxy=b, confidence=.8) for b in boxes],
+                        'people': [], 'associations': []}
+            with patch.object(manager, 'nearest_rider_index', return_value=0):
+                manager.update(analysis, frame)
+            return [b['track_id'] for b in analysis['motorcycles']]
+        self.assertEqual(update(300, [[876,722,1079,991], [918,750,1077,991]]), [1,1])
+        update(306, [[794,707,997,970]])
+        # Follow the original while its unused duplicate would remain at entry.
+        for frame in range(312, 444, 6):
+            x = 794 - (frame-306)*4
+            update(frame, [[x,707,x+203,970]])
+        ids = update(444, [[242,707,445,970], [957,816,1079,1260]])
+        self.assertNotEqual(ids[0], ids[1])
+        self.assertTrue(manager.known_distinct_tracks(*ids))
+
+    def test_visible_aliases_separate_before_sharing_helmet_votes(self):
+        manager = RiderTrackManager(120, 180, 90, 360)
+        manager.track_aliases = {1: 1, 2: 1}
+        bikes = [dict(xyxy=[100,200,200,400], confidence=.8),
+                 dict(xyxy=[700,200,800,400], confidence=.8)]
+        detections = [TrackedDetection(i+1, b['xyxy'], .8, {'index': i}, 'tracked', 5)
+                      for i,b in enumerate(bikes)]
+        associations = [dict(motorcycle_box=b, helmet_status=s)
+                        for b,s in zip(bikes, ['with_helmet', 'no_helmet'])]
+        with patch.object(manager.tracker, 'update', return_value=detections):
+            manager.update(dict(motorcycles=bikes, people=[], associations=associations), 30)
+        self.assertEqual([b['track_id'] for b in bikes], [1,2])
+        self.assertEqual(manager.helmet_votes[1]['no_helmet'], 0)
+        self.assertEqual(manager.helmet_votes[2]['no_helmet'], 1)
+        self.assertTrue(manager.known_distinct_tracks(1,2))
 
 
 if __name__ == '__main__':

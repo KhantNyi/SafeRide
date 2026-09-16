@@ -1,9 +1,9 @@
 """Dedicated Thai license-plate OCR.
 
-Specializes EasyOCR for Thai plates instead of treating them as generic text:
+Combines EasyOCR or PaddleOCR readings for Thai plates:
 
-- The recognizer is restricted to an allowlist of Thai characters and Arabic
-  digits, so Latin junk reads ("allo", "1o") are impossible by construction.
+- EasyOCR uses a Thai/Arabic-digit allowlist. PaddleOCR uses its Thai model's
+  vocabulary, which also includes English; uncertain outputs still need review.
 - Thai plates are multi-line (registration prefix / province / digit group);
   OCR lines are classified by shape and recombined top-to-bottom.
 - A plate-format quality score ranks readings across preprocess variants so a
@@ -14,6 +14,7 @@ Specializes EasyOCR for Thai plates instead of treating them as generic text:
 """
 
 import re
+import logging
 from collections import Counter, defaultdict
 
 import cv2
@@ -89,6 +90,10 @@ def ocr_uses_gpu() -> bool:
 
 
 def get_reader():
+    if settings.ocr_engine == "paddleocr":
+        from app.services.paddle_ocr import paddle_reader
+
+        return paddle_reader
     global _ocr_reader
     if _ocr_reader is None:
         import easyocr
@@ -123,6 +128,9 @@ def read_plate_text(crop) -> tuple[str | None, float | None]:
             if combined and combined[2] > best_quality:
                 best_text, best_confidence, best_quality = combined
     except Exception:
+        logging.getLogger(__name__).exception("%s plate OCR failed", settings.ocr_engine)
+        if settings.ocr_engine == "paddleocr":
+            raise  # Report integration failures on the job instead of empty OCR results.
         return None, None
 
     return best_text, best_confidence

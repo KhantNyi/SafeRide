@@ -1,0 +1,14 @@
+{
+  "confirmed_passages": 40,
+  "correctly_recorded_passages": 23,
+  "missed_passages": 17,
+  "record_statuses": {
+    "false_positive": 1,
+    "true_positive": 23,
+    "duplicate": 4,
+    "uncertain": 1
+  },
+  "precision": 0.8214285714285714,
+  "recall": 0.575,
+  "f1": 0.676470588235294
+}

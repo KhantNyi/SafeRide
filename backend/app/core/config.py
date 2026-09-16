@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -62,6 +63,7 @@ class Settings(BaseSettings):
     plate_confidence: float = 0.30
     model_device: str = "auto"
     enable_ocr: bool = True
+    ocr_engine: Literal["easyocr", "paddleocr"] = "easyocr"
     ocr_languages: list[str] = ["th", "en"]
     ocr_gpu: bool | None = None
 
