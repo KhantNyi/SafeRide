@@ -1,0 +1,289 @@
+{
+  "annotation_method": "Single AI assistant visual review of source road-region contact sheets every 15 frames (~0.5 seconds), including final frames, plus targeted full-resolution inspection. Saved detection evidence then matched by motorcycle identity. Not independently human-validated; not exhaustive frame-by-frame review.",
+  "unit": "One motorcycle passage with at least one visibly unhelmeted occupant; multiple unhelmeted occupants count once.",
+  "revision": "During v3 review, full-resolution IMG_7094 frame 270 showed gray hair on the delivery rider previously mistaken for a helmet. Added 7094-E2, raising confirmed events from 24 to 25. V2 prediction matches are unchanged; recall corrected to 32%, 52%, 68%.",
+  "source": "C:/Users/ADMIN/Downloads/Sp data 2 september",
+  "uncertain": [
+    {
+      "clip": "IMG_7078.MOV",
+      "start_seconds": 15,
+      "end_seconds": 18.03,
+      "description": "Checkered-shirt rider with white cloth covering head; concealed helmet cannot be ruled out.",
+      "treatment": "Excluded from primary denominator; missed in all runs if counted positive."
+    }
+  ],
+  "limitations": [
+    "IMG_7082 source temporarily obscured/out of focus around 6.5–7.5 seconds.",
+    "Visibility windows are approximate; no bounding-box annotations or OCR ground truth.",
+    "Reviewer had previously seen predictions; this is not a blinded evaluation."
+  ],
+  "clips": [
+    {
+      "clip": "IMG_7075.MOV",
+      "events": [
+        {
+          "id": "7075-E1",
+          "start_seconds": 0.5,
+          "end_seconds": 10.5,
+          "description": "Two bareheaded occupants in white tops on red scooter"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7075-0.jpg"
+    },
+    {
+      "clip": "IMG_7076.MOV",
+      "events": [
+        {
+          "id": "7076-E1",
+          "start_seconds": 4,
+          "end_seconds": 6,
+          "description": "Two occupants wearing brimmed hats, not helmets"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7076-0.jpg"
+    },
+    {
+      "clip": "IMG_7077.MOV",
+      "events": [],
+      "source_review": "review/labeling/IMG_7077-0.jpg"
+    },
+    {
+      "clip": "IMG_7078.MOV",
+      "events": [
+        {
+          "id": "7078-E1",
+          "start_seconds": 7,
+          "end_seconds": 14.5,
+          "description": "Bareheaded solo rider in blue/purple shirt"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7078-0.jpg"
+    },
+    {
+      "clip": "IMG_7079.MOV",
+      "events": [
+        {
+          "id": "7079-E1",
+          "start_seconds": 2.5,
+          "end_seconds": 3.67,
+          "description": "Two bareheaded occupants in white tops with black backpacks"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7079-0.jpg"
+    },
+    {
+      "clip": "IMG_7080.MOV",
+      "events": [
+        {
+          "id": "7080-E1",
+          "start_seconds": 6,
+          "end_seconds": 11.5,
+          "description": "Bareheaded black-shirt rider with graphic backpack on yellow/orange motorcycle"
+        },
+        {
+          "id": "7080-E2",
+          "start_seconds": 17,
+          "end_seconds": 21,
+          "description": "Bareheaded black long-sleeve rider on black/green scooter, plate digits 5528"
+        },
+        {
+          "id": "7080-E3",
+          "start_seconds": 18,
+          "end_seconds": 22,
+          "description": "Bareheaded J&T courier in gray/white/red jacket with loaded side bags"
+        },
+        {
+          "id": "7080-E4",
+          "start_seconds": 33,
+          "end_seconds": 40.5,
+          "description": "Bareheaded white-shirt passenger behind dark-clothed driver"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7080-0.jpg"
+    },
+    {
+      "clip": "IMG_7081.MOV",
+      "events": [
+        {
+          "id": "7081-E1",
+          "start_seconds": 6,
+          "end_seconds": 9.5,
+          "description": "Bareheaded solo white-shirt rider on black motorcycle"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7081-0.jpg"
+    },
+    {
+      "clip": "IMG_7082.MOV",
+      "events": [
+        {
+          "id": "7082-E1",
+          "start_seconds": 8,
+          "end_seconds": 14.5,
+          "description": "Bareheaded dark-blue-shirt solo rider"
+        },
+        {
+          "id": "7082-E2",
+          "start_seconds": 13,
+          "end_seconds": 17.03,
+          "description": "Bareheaded white-shirt driver and black-jacket ponytail passenger on lime scooter"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7082-0.jpg"
+    },
+    {
+      "clip": "IMG_7083.MOV",
+      "events": [
+        {
+          "id": "7083-E1",
+          "start_seconds": 4,
+          "end_seconds": 5.83,
+          "description": "Bareheaded white-shirt passenger behind helmeted green-shirt driver"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7083-0.jpg"
+    },
+    {
+      "clip": "IMG_7084.MOV",
+      "events": [
+        {
+          "id": "7084-E1",
+          "start_seconds": 5,
+          "end_seconds": 8.5,
+          "description": "Bareheaded white-shirt passenger behind helmeted patterned/vest driver"
+        },
+        {
+          "id": "7084-E2",
+          "start_seconds": 24,
+          "end_seconds": 25.63,
+          "description": "Bareheaded buzzcut Grab delivery rider, plate digits 7390"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7084-0.jpg"
+    },
+    {
+      "clip": "IMG_7085.MOV",
+      "events": [
+        {
+          "id": "7085-E1",
+          "start_seconds": 1.5,
+          "end_seconds": 3.5,
+          "description": "Bareheaded long-haired white-top passenger behind helmeted red-shirt driver"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7085-0.jpg"
+    },
+    {
+      "clip": "IMG_7086.MOV",
+      "events": [
+        {
+          "id": "7086-E1",
+          "start_seconds": 10,
+          "end_seconds": 19.5,
+          "description": "Bareheaded blue-shirt rider in beige trousers on red/white motorcycle"
+        },
+        {
+          "id": "7086-E2",
+          "start_seconds": 20.5,
+          "end_seconds": 23.5,
+          "description": "Bareheaded white-shirt rider with black sling bag on teal scooter"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7086-0.jpg"
+    },
+    {
+      "clip": "IMG_7087.MOV",
+      "events": [
+        {
+          "id": "7087-E1",
+          "start_seconds": 6,
+          "end_seconds": 8.5,
+          "description": "Bareheaded blonde passenger in white T-shirt and black skirt holding drink"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7087-0.jpg"
+    },
+    {
+      "clip": "IMG_7088.MOV",
+      "events": [
+        {
+          "id": "7088-E1",
+          "start_seconds": 8.5,
+          "end_seconds": 11.73,
+          "description": "LINE MAN rider wearing black cap, with delivery box"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7088-0.jpg"
+    },
+    {
+      "clip": "IMG_7089.MOV",
+      "events": [
+        {
+          "id": "7089-E1",
+          "start_seconds": 15.5,
+          "end_seconds": 19.5,
+          "description": "Bareheaded black-shirt rider with gray backpack on black sporty motorcycle"
+        },
+        {
+          "id": "7089-E2",
+          "start_seconds": 23,
+          "end_seconds": 28,
+          "description": "Bareheaded brown-haired passenger in black hoodie with hood down"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7089-0.jpg"
+    },
+    {
+      "clip": "IMG_7090.MOV",
+      "events": [
+        {
+          "id": "7090-E1",
+          "start_seconds": 8.5,
+          "end_seconds": 14.5,
+          "description": "Bareheaded dark-navy-shirt solo rider on red/black scooter"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7090-0.jpg"
+    },
+    {
+      "clip": "IMG_7091.MOV",
+      "events": [
+        {
+          "id": "7091-E1",
+          "start_seconds": 11,
+          "end_seconds": 14.33,
+          "description": "Bareheaded long-haired white-shirt passenger behind helmeted delivery driver"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7091-0.jpg"
+    },
+    {
+      "clip": "IMG_7092.MOV",
+      "events": [],
+      "source_review": "review/labeling/IMG_7092-0.jpg"
+    },
+    {
+      "clip": "IMG_7093.MOV",
+      "events": [],
+      "source_review": "review/labeling/IMG_7093-0.jpg"
+    },
+    {
+      "clip": "IMG_7094.MOV",
+      "events": [
+        {
+          "id": "7094-E1",
+          "start_seconds": 11,
+          "end_seconds": 14,
+          "description": "Bareheaded female passenger in black top and white trousers, motorcycle plate digits 1380"
+        },
+        {
+          "id": "7094-E2",
+          "start_seconds": 8.5,
+          "end_seconds": 13,
+          "description": "Bareheaded gray-haired green delivery rider, plate digits 1742; corrected after full-resolution source review during v3 evaluation"
+        }
+      ],
+      "source_review": "review/labeling/IMG_7094-0.jpg"
+    }
+  ]
+}

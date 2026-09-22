@@ -37,7 +37,7 @@ class WholeTrackPlateCollectionTests(unittest.TestCase):
             self.manager.collect_plate_candidate(
                 track,
                 plate_box(0.40 + frame_number / 100),
-                frame_number,
+                frame_number * 6,  # Independent observations at 0.2 seconds.
                 self.frame,
             )
 

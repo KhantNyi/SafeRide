@@ -1,0 +1,24 @@
+{
+  "source_clips": 24,
+  "candidate_frames": 64,
+  "training_images": 53,
+  "excluded_frames": 11,
+  "boxes": 287,
+  "class_counts": {
+    "Helmet": 36,
+    "License Plate": 58,
+    "Motorcycle": 59,
+    "No Helmet": 48,
+    "No License Plate": 0,
+    "Person": 86
+  },
+  "annotation_method": "V4/YOLO11s proposals followed by AI visual review, corrections and additions; not independently human-validated",
+  "image_scope": "Contextual motorcycle crops; full source frames preserved separately and not labeled for training",
+  "evaluation_overlap": "All source clips were previously used in the Sp vd benchmark. Do not use that benchmark as an independent test after training on this set.",
+  "validation": {
+    "paired_images_and_labels": true,
+    "normalized_boxes_in_bounds": true,
+    "duplicate_training_pixels": 0,
+    "all_24_source_clips_represented": true
+  }
+}

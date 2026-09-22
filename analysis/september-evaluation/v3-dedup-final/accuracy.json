@@ -1,0 +1,1025 @@
+[
+  {
+    "interval": 0.5,
+    "runtime_seconds": 182.64858030000323,
+    "records": 22,
+    "found": 21,
+    "recall": 0.84,
+    "duplicates": 1,
+    "false_positives": 0,
+    "clips": [
+      {
+        "clip": "IMG_7075.MOV",
+        "found": [
+          "7075-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 60,
+            "track_id": 1,
+            "event": "7075-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7076.MOV",
+        "found": [
+          "7076-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 180,
+            "track_id": 1,
+            "event": "7076-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7077.MOV",
+        "found": [],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7078.MOV",
+        "found": [
+          "7078-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 291,
+            "track_id": 1,
+            "event": "7078-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7079.MOV",
+        "found": [
+          "7079-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 108,
+            "track_id": 1,
+            "event": "7079-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7080.MOV",
+        "found": [
+          "7080-E1",
+          "7080-E3",
+          "7080-E4"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 267,
+            "track_id": 2,
+            "event": "7080-E1",
+            "duplicate": false
+          },
+          {
+            "frame": 627,
+            "track_id": 5,
+            "event": "7080-E3",
+            "duplicate": false
+          },
+          {
+            "frame": 1068,
+            "track_id": 10,
+            "event": "7080-E4",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7081.MOV",
+        "found": [
+          "7081-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 252,
+            "track_id": 1,
+            "event": "7081-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7082.MOV",
+        "found": [
+          "7082-E1",
+          "7082-E2"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 354,
+            "track_id": 1,
+            "event": "7082-E1",
+            "duplicate": false
+          },
+          {
+            "frame": 486,
+            "track_id": 2,
+            "event": "7082-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7083.MOV",
+        "found": [
+          "7083-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 174,
+            "track_id": 1,
+            "event": "7083-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7084.MOV",
+        "found": [
+          "7084-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 237,
+            "track_id": 2,
+            "event": "7084-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7085.MOV",
+        "found": [
+          "7085-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 78,
+            "track_id": 2,
+            "event": "7085-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7086.MOV",
+        "found": [
+          "7086-E1",
+          "7086-E2"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 435,
+            "track_id": 1,
+            "event": "7086-E1",
+            "duplicate": false
+          },
+          {
+            "frame": 687,
+            "track_id": 3,
+            "event": "7086-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7087.MOV",
+        "found": [],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7088.MOV",
+        "found": [
+          "7088-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 321,
+            "track_id": 1,
+            "event": "7088-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7089.MOV",
+        "found": [
+          "7089-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 552,
+            "track_id": 8,
+            "event": "7089-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7090.MOV",
+        "found": [
+          "7090-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 345,
+            "track_id": 1,
+            "event": "7090-E1",
+            "duplicate": false
+          },
+          {
+            "frame": 417,
+            "track_id": 5,
+            "event": "7090-E1",
+            "duplicate": true
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7091.MOV",
+        "found": [
+          "7091-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 429,
+            "track_id": 1,
+            "event": "7091-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7092.MOV",
+        "found": [],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7093.MOV",
+        "found": [],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7094.MOV",
+        "found": [
+          "7094-E1",
+          "7094-E2"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [
+          "7094-E1"
+        ],
+        "assignments": [
+          {
+            "frame": 321,
+            "track_id": 2,
+            "event": "7094-E2",
+            "duplicate": false
+          },
+          {
+            "frame": 420,
+            "track_id": 5,
+            "event": "7094-E1",
+            "duplicate": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "interval": 0.25,
+    "runtime_seconds": 470.3745717000056,
+    "records": 23,
+    "found": 22,
+    "recall": 0.88,
+    "duplicates": 1,
+    "false_positives": 0,
+    "clips": [
+      {
+        "clip": "IMG_7075.MOV",
+        "found": [
+          "7075-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 64,
+            "track_id": 1,
+            "event": "7075-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7076.MOV",
+        "found": [
+          "7076-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 180,
+            "track_id": 1,
+            "event": "7076-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7077.MOV",
+        "found": [],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7078.MOV",
+        "found": [
+          "7078-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 334,
+            "track_id": 1,
+            "event": "7078-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7079.MOV",
+        "found": [
+          "7079-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 110,
+            "track_id": 1,
+            "event": "7079-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7080.MOV",
+        "found": [
+          "7080-E1",
+          "7080-E3",
+          "7080-E4"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 267,
+            "track_id": 1,
+            "event": "7080-E1",
+            "duplicate": false
+          },
+          {
+            "frame": 590,
+            "track_id": 5,
+            "event": "7080-E3",
+            "duplicate": false
+          },
+          {
+            "frame": 627,
+            "track_id": 7,
+            "event": "7080-E3",
+            "duplicate": true
+          },
+          {
+            "frame": 1069,
+            "track_id": 10,
+            "event": "7080-E4",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7081.MOV",
+        "found": [
+          "7081-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 254,
+            "track_id": 1,
+            "event": "7081-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7082.MOV",
+        "found": [
+          "7082-E1",
+          "7082-E2"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 362,
+            "track_id": 1,
+            "event": "7082-E1",
+            "duplicate": false
+          },
+          {
+            "frame": 486,
+            "track_id": 2,
+            "event": "7082-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7083.MOV",
+        "found": [
+          "7083-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 175,
+            "track_id": 1,
+            "event": "7083-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7084.MOV",
+        "found": [
+          "7084-E1",
+          "7084-E2"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 241,
+            "track_id": 1,
+            "event": "7084-E1",
+            "duplicate": false
+          },
+          {
+            "frame": 758,
+            "track_id": 4,
+            "event": "7084-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7085.MOV",
+        "found": [
+          "7085-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 101,
+            "track_id": 1,
+            "event": "7085-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7086.MOV",
+        "found": [
+          "7086-E1",
+          "7086-E2"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 472,
+            "track_id": 1,
+            "event": "7086-E1",
+            "duplicate": false
+          },
+          {
+            "frame": 687,
+            "track_id": 3,
+            "event": "7086-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7087.MOV",
+        "found": [],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7088.MOV",
+        "found": [
+          "7088-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 326,
+            "track_id": 1,
+            "event": "7088-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7089.MOV",
+        "found": [
+          "7089-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 556,
+            "track_id": 3,
+            "event": "7089-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7090.MOV",
+        "found": [
+          "7090-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 417,
+            "track_id": 1,
+            "event": "7090-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7091.MOV",
+        "found": [
+          "7091-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 429,
+            "track_id": 1,
+            "event": "7091-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7092.MOV",
+        "found": [],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7093.MOV",
+        "found": [],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7094.MOV",
+        "found": [
+          "7094-E1",
+          "7094-E2"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [
+          "7094-E1"
+        ],
+        "assignments": [
+          {
+            "frame": 323,
+            "track_id": 1,
+            "event": "7094-E2",
+            "duplicate": false
+          },
+          {
+            "frame": 420,
+            "track_id": 4,
+            "event": "7094-E1",
+            "duplicate": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "interval": 1.0,
+    "runtime_seconds": 113.86028749999969,
+    "records": 22,
+    "found": 21,
+    "recall": 0.84,
+    "duplicates": 1,
+    "false_positives": 0,
+    "clips": [
+      {
+        "clip": "IMG_7075.MOV",
+        "found": [
+          "7075-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 60,
+            "track_id": 1,
+            "event": "7075-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7076.MOV",
+        "found": [
+          "7076-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 180,
+            "track_id": 1,
+            "event": "7076-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7077.MOV",
+        "found": [],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7078.MOV",
+        "found": [
+          "7078-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 288,
+            "track_id": 2,
+            "event": "7078-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7079.MOV",
+        "found": [
+          "7079-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 108,
+            "track_id": 1,
+            "event": "7079-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7080.MOV",
+        "found": [
+          "7080-E1",
+          "7080-E3",
+          "7080-E4"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 264,
+            "track_id": 2,
+            "event": "7080-E1",
+            "duplicate": false
+          },
+          {
+            "frame": 624,
+            "track_id": 5,
+            "event": "7080-E3",
+            "duplicate": false
+          },
+          {
+            "frame": 1068,
+            "track_id": 11,
+            "event": "7080-E4",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7081.MOV",
+        "found": [
+          "7081-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 252,
+            "track_id": 1,
+            "event": "7081-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7082.MOV",
+        "found": [
+          "7082-E1",
+          "7082-E2"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 354,
+            "track_id": 1,
+            "event": "7082-E1",
+            "duplicate": false
+          },
+          {
+            "frame": 438,
+            "track_id": 2,
+            "event": "7082-E2",
+            "duplicate": false
+          },
+          {
+            "frame": 486,
+            "track_id": 7,
+            "event": "7082-E2",
+            "duplicate": true
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7083.MOV",
+        "found": [
+          "7083-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 174,
+            "track_id": 1,
+            "event": "7083-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7084.MOV",
+        "found": [
+          "7084-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 234,
+            "track_id": 3,
+            "event": "7084-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7085.MOV",
+        "found": [
+          "7085-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 78,
+            "track_id": 1,
+            "event": "7085-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7086.MOV",
+        "found": [
+          "7086-E1",
+          "7086-E2"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [
+          "7086-E2"
+        ],
+        "assignments": [
+          {
+            "frame": 432,
+            "track_id": 2,
+            "event": "7086-E1",
+            "duplicate": false
+          },
+          {
+            "frame": 684,
+            "track_id": 4,
+            "event": "7086-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7087.MOV",
+        "found": [],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7088.MOV",
+        "found": [
+          "7088-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 276,
+            "track_id": 1,
+            "event": "7088-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7089.MOV",
+        "found": [
+          "7089-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 552,
+            "track_id": 3,
+            "event": "7089-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7090.MOV",
+        "found": [
+          "7090-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 336,
+            "track_id": 1,
+            "event": "7090-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7091.MOV",
+        "found": [
+          "7091-E1"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": [
+          {
+            "frame": 426,
+            "track_id": 1,
+            "event": "7091-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7092.MOV",
+        "found": [],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7093.MOV",
+        "found": [],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7094.MOV",
+        "found": [
+          "7094-E1",
+          "7094-E2"
+        ],
+        "lost_vs_baseline": [],
+        "gained_vs_baseline": [
+          "7094-E1"
+        ],
+        "assignments": [
+          {
+            "frame": 318,
+            "track_id": 1,
+            "event": "7094-E2",
+            "duplicate": false
+          },
+          {
+            "frame": 420,
+            "track_id": 2,
+            "event": "7094-E1",
+            "duplicate": false
+          }
+        ]
+      }
+    ]
+  }
+]

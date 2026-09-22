@@ -1,0 +1,28 @@
+{
+  "categories": [
+    {
+      "id": 0,
+      "name": "Helmet"
+    },
+    {
+      "id": 1,
+      "name": "License Plate"
+    },
+    {
+      "id": 2,
+      "name": "Motorcycle"
+    },
+    {
+      "id": 3,
+      "name": "No Helmet"
+    },
+    {
+      "id": 4,
+      "name": "No License Plate"
+    },
+    {
+      "id": 5,
+      "name": "Person"
+    }
+  ]
+}

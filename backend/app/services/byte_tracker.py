@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
+from app.services.assignment import match_scores
+
 
 @dataclass
 class ByteTrackDetection:
@@ -115,6 +117,7 @@ class ByteTracker:
         match_threshold: float,
         max_time_lost: int,
         appearance_weight: float = 0.30,
+        source_fps: float = 30.0,
     ):
         self.high_threshold = high_threshold
         self.low_threshold = low_threshold
@@ -122,10 +125,18 @@ class ByteTracker:
         self.match_threshold = match_threshold
         self.max_time_lost = max(max_time_lost, 1)
         self.appearance_weight = min(max(appearance_weight, 0.0), 0.9)
+        self.source_fps = max(source_fps, 1.0)
         self.next_track_id = 1
         self.tracks: list[dict] = []
+        self.uncertain_detection_indexes: set[int] = set()
 
     def update(self, detections: list[ByteTrackDetection], frame_number: int) -> list[TrackedDetection]:
+        self.uncertain_detection_indexes = set()
+        # Expired tracks must not adopt a new arrival before the age check.
+        for track in self.tracks:
+            lifetime = min(self.max_time_lost, self.source_fps * .75) if track["hits"] == 1 else self.max_time_lost
+            if frame_number - track["last_frame"] > lifetime:
+                track["state"] = "removed"
         candidates = [
             detection
             for detection in detections
@@ -169,6 +180,8 @@ class ByteTracker:
                 track["state"] = "lost"
 
         for detection in unmatched_high:
+            if detection.metadata.get("index") in self.uncertain_detection_indexes:
+                continue  # Coast through ambiguous overlap, do not create a duplicate.
             if detection.score < self.new_track_threshold:
                 continue
             track = self.create_track(detection, frame_number)
@@ -185,24 +198,58 @@ class ByteTracker:
         frame_number: int,
         threshold: float,
     ) -> tuple[list[tuple[dict, ByteTrackDetection]], list[dict], list[ByteTrackDetection]]:
-        pairs = []
+        scores = np.zeros((len(tracks), len(detections)))
         for track_index, track in enumerate(tracks):
             dt = max(frame_number - track["last_frame"], 0)
-            predicted_box = track["kalman"].predict_box(dt)
+            # Linear extrapolation can shrink a receding, occluded motorcycle
+            # to zero size and overshoot its position. Dampen only lost-track
+            # extrapolation; retain uncertainty rather than inventing a new ID.
+            horizon = max(self.max_time_lost / 2, 1)
+            prediction_dt = horizon * (1 - np.exp(-dt / horizon)) if track["state"] == "lost" else dt
+            predicted_box = track["kalman"].predict_box(prediction_dt)
+            center = np.array(xyxy_to_cxcywh(predicted_box), dtype=float)
+            previous_size = np.maximum(xyxy_to_cxcywh(track["xyxy"])[2:],1)
+            center[2:] = np.clip(center[2:], previous_size*.35, previous_size*2.8)
+            predicted_box = cxcywh_to_xyxy(center)
             for detection_index, detection in enumerate(detections):
                 motion = motion_match_score(predicted_box, detection.xyxy)
+                # Before a second observation there is no learned velocity.
+                # Fast bikes can travel beyond one box-height between samples.
+                # Permit a wider first-step gate ONLY with strong appearance
+                # evidence and a short gap, not for an old stationary ghost.
+                if (track["hits"] == 1 and dt <= self.source_fps * .6
+                        and track.get("feature") is not None and detection.feature is not None
+                        and feature_similarity(track["feature"], detection.feature) >= .65):
+                    previous = track["xyxy"]
+                    distance = point_distance(box_center(previous),box_center(detection.xyxy))
+                    extent = max(previous[2]-previous[0],previous[3]-previous[1],1)
+                    motion = max(motion, max(0,1-distance/(2.5*extent))*.65)
+                predicted_size = np.maximum(xyxy_to_cxcywh(predicted_box)[2:], 1)
+                detected_size = np.maximum(xyxy_to_cxcywh(detection.xyxy)[2:], 1)
+                ratios = detected_size / predicted_size
+                if np.any(ratios < .35) or np.any(ratios > 2.8):
+                    continue
+                # A plausible position alone cannot justify a sudden scale jump.
+                motion *= float(np.exp(-.5 * np.abs(np.log(ratios)).mean()))
                 score = self.blend_appearance(motion, track, detection)
                 if score >= threshold:
-                    pairs.append((score, track_index, detection_index))
-
-        pairs.sort(reverse=True, key=lambda item: item[0])
+                    scores[track_index, detection_index] = score
+        for index, detection in enumerate(detections):
+            contenders = sorted([(scores[i, index], tracks[i]) for i in range(len(tracks))
+                                 if scores[i, index] >= threshold], key=lambda x: x[0], reverse=True)
+            if len(contenders) < 2:
+                continue
+            best_score, best = contenders[0]
+            rival = next(((score, track) for score, track in contenders[1:]
+                          if track.get("identity", track["id"]) != best.get("identity", best["id"])), None)
+            if rival and best_score - rival[0] < .08 and detection.metadata.get("occluded"):
+                scores[:, index] = 0
+                self.uncertain_detection_indexes.add(detection.metadata.get("index", index))
         matched_track_indexes: set[int] = set()
         matched_detection_indexes: set[int] = set()
         matches = []
 
-        for _score, track_index, detection_index in pairs:
-            if track_index in matched_track_indexes or detection_index in matched_detection_indexes:
-                continue
+        for track_index, detection_index in match_scores(scores, threshold):
             matched_track_indexes.add(track_index)
             matched_detection_indexes.add(detection_index)
             matches.append((tracks[track_index], detections[detection_index]))
@@ -238,7 +285,7 @@ class ByteTracker:
             "id": self.next_track_id,
             "xyxy": [float(value) for value in detection.xyxy],
             "kalman": KalmanBoxFilter(detection.xyxy),
-            "feature": None if detection.feature is None else detection.feature.copy(),
+            "feature": None if detection.feature is None or detection.metadata.get("occluded") else detection.feature.copy(),
             "score": detection.score,
             "first_frame": frame_number,
             "last_frame": frame_number,
@@ -257,7 +304,7 @@ class ByteTracker:
         track["last_frame"] = frame_number
         track["hits"] += 1
         track["state"] = "tracked"
-        if detection.feature is not None:
+        if detection.feature is not None and not detection.metadata.get("occluded"):
             if track["feature"] is None:
                 track["feature"] = detection.feature.copy()
             else:

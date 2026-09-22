@@ -1,0 +1,1210 @@
+[
+  {
+    "interval_seconds": 1.0,
+    "ocr": false,
+    "runtime_seconds": 157.32345539999733,
+    "records": 20,
+    "true_positive_events": 19,
+    "false_negative_events": 6,
+    "false_positive_unmatched_records": 0,
+    "duplicate_records": 1,
+    "uncertain_records_excluded": 0,
+    "event_precision_duplicates_penalized": 0.95,
+    "event_recall": 0.76,
+    "event_f1_duplicates_penalized": 0.8444444444444444,
+    "clips": [
+      {
+        "clip": "IMG_7075.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "1.0:False:IMG_7075.MOV:60:1",
+            "event": "7075-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7076.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "1.0:False:IMG_7076.MOV:180:1",
+            "event": "7076-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7077.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7078.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "1.0:False:IMG_7078.MOV:288:2",
+            "event": "7078-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7079.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "1.0:False:IMG_7079.MOV:108:1",
+            "event": "7079-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7080.MOV",
+        "ground_truth": 4,
+        "detected_events": 3,
+        "missed_events": [
+          "7080-E2"
+        ],
+        "assignments": [
+          {
+            "key": "1.0:False:IMG_7080.MOV:234:2",
+            "event": "7080-E1",
+            "duplicate": false
+          },
+          {
+            "key": "1.0:False:IMG_7080.MOV:624:5",
+            "event": "7080-E3",
+            "duplicate": false
+          },
+          {
+            "key": "1.0:False:IMG_7080.MOV:1068:11",
+            "event": "7080-E4",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7081.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "1.0:False:IMG_7081.MOV:252:1",
+            "event": "7081-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7082.MOV",
+        "ground_truth": 2,
+        "detected_events": 2,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "1.0:False:IMG_7082.MOV:354:1",
+            "event": "7082-E1",
+            "duplicate": false
+          },
+          {
+            "key": "1.0:False:IMG_7082.MOV:438:2",
+            "event": "7082-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7083.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "1.0:False:IMG_7083.MOV:174:1",
+            "event": "7083-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7084.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "missed_events": [
+          "7084-E2"
+        ],
+        "assignments": [
+          {
+            "key": "1.0:False:IMG_7084.MOV:234:3",
+            "event": "7084-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7085.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "1.0:False:IMG_7085.MOV:78:1",
+            "event": "7085-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7086.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "missed_events": [
+          "7086-E2"
+        ],
+        "assignments": [
+          {
+            "key": "1.0:False:IMG_7086.MOV:390:3",
+            "event": "7086-E1",
+            "duplicate": false
+          },
+          {
+            "key": "1.0:False:IMG_7086.MOV:432:2",
+            "event": "7086-E1",
+            "duplicate": true
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7087.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "missed_events": [
+          "7087-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7088.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "1.0:False:IMG_7088.MOV:276:1",
+            "event": "7088-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7089.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "missed_events": [
+          "7089-E2"
+        ],
+        "assignments": [
+          {
+            "key": "1.0:False:IMG_7089.MOV:552:3",
+            "event": "7089-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7090.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "1.0:False:IMG_7090.MOV:336:1",
+            "event": "7090-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7091.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "1.0:False:IMG_7091.MOV:426:1",
+            "event": "7091-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7092.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7093.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7094.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "missed_events": [
+          "7094-E1"
+        ],
+        "assignments": [
+          {
+            "key": "1.0:False:IMG_7094.MOV:318:1",
+            "event": "7094-E2",
+            "duplicate": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "interval_seconds": 0.5,
+    "ocr": false,
+    "runtime_seconds": 209.303611299998,
+    "records": 24,
+    "true_positive_events": 20,
+    "false_negative_events": 5,
+    "false_positive_unmatched_records": 0,
+    "duplicate_records": 4,
+    "uncertain_records_excluded": 0,
+    "event_precision_duplicates_penalized": 0.8333333333333334,
+    "event_recall": 0.8,
+    "event_f1_duplicates_penalized": 0.816326530612245,
+    "clips": [
+      {
+        "clip": "IMG_7075.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:False:IMG_7075.MOV:60:1",
+            "event": "7075-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7076.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:False:IMG_7076.MOV:180:1",
+            "event": "7076-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7077.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7078.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:False:IMG_7078.MOV:291:1",
+            "event": "7078-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7079.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:False:IMG_7079.MOV:108:1",
+            "event": "7079-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7080.MOV",
+        "ground_truth": 4,
+        "detected_events": 3,
+        "missed_events": [
+          "7080-E2"
+        ],
+        "assignments": [
+          {
+            "key": "0.5:False:IMG_7080.MOV:234:2",
+            "event": "7080-E1",
+            "duplicate": false
+          },
+          {
+            "key": "0.5:False:IMG_7080.MOV:627:5",
+            "event": "7080-E3",
+            "duplicate": false
+          },
+          {
+            "key": "0.5:False:IMG_7080.MOV:1068:10",
+            "event": "7080-E4",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7081.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:False:IMG_7081.MOV:252:1",
+            "event": "7081-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7082.MOV",
+        "ground_truth": 2,
+        "detected_events": 2,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:False:IMG_7082.MOV:354:1",
+            "event": "7082-E1",
+            "duplicate": false
+          },
+          {
+            "key": "0.5:False:IMG_7082.MOV:447:2",
+            "event": "7082-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7083.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:False:IMG_7083.MOV:174:1",
+            "event": "7083-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7084.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "missed_events": [
+          "7084-E2"
+        ],
+        "assignments": [
+          {
+            "key": "0.5:False:IMG_7084.MOV:177:3",
+            "event": "7084-E1",
+            "duplicate": false
+          },
+          {
+            "key": "0.5:False:IMG_7084.MOV:219:2",
+            "event": "7084-E1",
+            "duplicate": true
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7085.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:False:IMG_7085.MOV:78:2",
+            "event": "7085-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7086.MOV",
+        "ground_truth": 2,
+        "detected_events": 2,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:False:IMG_7086.MOV:393:2",
+            "event": "7086-E1",
+            "duplicate": false
+          },
+          {
+            "key": "0.5:False:IMG_7086.MOV:435:1",
+            "event": "7086-E1",
+            "duplicate": true
+          },
+          {
+            "key": "0.5:False:IMG_7086.MOV:624:3",
+            "event": "7086-E2",
+            "duplicate": false
+          },
+          {
+            "key": "0.5:False:IMG_7086.MOV:687:4",
+            "event": "7086-E2",
+            "duplicate": true
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7087.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "missed_events": [
+          "7087-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7088.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:False:IMG_7088.MOV:285:1",
+            "event": "7088-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7089.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "missed_events": [
+          "7089-E2"
+        ],
+        "assignments": [
+          {
+            "key": "0.5:False:IMG_7089.MOV:552:8",
+            "event": "7089-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7090.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:False:IMG_7090.MOV:345:1",
+            "event": "7090-E1",
+            "duplicate": false
+          },
+          {
+            "key": "0.5:False:IMG_7090.MOV:417:5",
+            "event": "7090-E1",
+            "duplicate": true
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7091.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:False:IMG_7091.MOV:420:1",
+            "event": "7091-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7092.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7093.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7094.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "missed_events": [
+          "7094-E1"
+        ],
+        "assignments": [
+          {
+            "key": "0.5:False:IMG_7094.MOV:321:4",
+            "event": "7094-E2",
+            "duplicate": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "interval_seconds": 0.25,
+    "ocr": false,
+    "runtime_seconds": 578.0234678999986,
+    "records": 28,
+    "true_positive_events": 21,
+    "false_negative_events": 4,
+    "false_positive_unmatched_records": 0,
+    "duplicate_records": 7,
+    "uncertain_records_excluded": 0,
+    "event_precision_duplicates_penalized": 0.75,
+    "event_recall": 0.84,
+    "event_f1_duplicates_penalized": 0.7924528301886793,
+    "clips": [
+      {
+        "clip": "IMG_7075.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.25:False:IMG_7075.MOV:64:1",
+            "event": "7075-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7076.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.25:False:IMG_7076.MOV:131:1",
+            "event": "7076-E1",
+            "duplicate": false
+          },
+          {
+            "key": "0.25:False:IMG_7076.MOV:179:2",
+            "event": "7076-E1",
+            "duplicate": true
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7077.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7078.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.25:False:IMG_7078.MOV:334:1",
+            "event": "7078-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7079.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.25:False:IMG_7079.MOV:110:1",
+            "event": "7079-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7080.MOV",
+        "ground_truth": 4,
+        "detected_events": 3,
+        "missed_events": [
+          "7080-E2"
+        ],
+        "assignments": [
+          {
+            "key": "0.25:False:IMG_7080.MOV:188:2",
+            "event": "7080-E1",
+            "duplicate": false
+          },
+          {
+            "key": "0.25:False:IMG_7080.MOV:235:1",
+            "event": "7080-E1",
+            "duplicate": true
+          },
+          {
+            "key": "0.25:False:IMG_7080.MOV:267:3",
+            "event": "7080-E1",
+            "duplicate": true
+          },
+          {
+            "key": "0.25:False:IMG_7080.MOV:627:7",
+            "event": "7080-E3",
+            "duplicate": false
+          },
+          {
+            "key": "0.25:False:IMG_7080.MOV:1047:10",
+            "event": "7080-E4",
+            "duplicate": false
+          },
+          {
+            "key": "0.25:False:IMG_7080.MOV:1069:11",
+            "event": "7080-E4",
+            "duplicate": true
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7081.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.25:False:IMG_7081.MOV:254:1",
+            "event": "7081-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7082.MOV",
+        "ground_truth": 2,
+        "detected_events": 2,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.25:False:IMG_7082.MOV:362:1",
+            "event": "7082-E1",
+            "duplicate": false
+          },
+          {
+            "key": "0.25:False:IMG_7082.MOV:439:2",
+            "event": "7082-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7083.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.25:False:IMG_7083.MOV:138:1",
+            "event": "7083-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7084.MOV",
+        "ground_truth": 2,
+        "detected_events": 2,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.25:False:IMG_7084.MOV:222:2",
+            "event": "7084-E1",
+            "duplicate": false
+          },
+          {
+            "key": "0.25:False:IMG_7084.MOV:758:4",
+            "event": "7084-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7085.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.25:False:IMG_7085.MOV:101:1",
+            "event": "7085-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7086.MOV",
+        "ground_truth": 2,
+        "detected_events": 2,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.25:False:IMG_7086.MOV:397:1",
+            "event": "7086-E1",
+            "duplicate": false
+          },
+          {
+            "key": "0.25:False:IMG_7086.MOV:508:2",
+            "event": "7086-E1",
+            "duplicate": true
+          },
+          {
+            "key": "0.25:False:IMG_7086.MOV:687:4",
+            "event": "7086-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7087.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "missed_events": [
+          "7087-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7088.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.25:False:IMG_7088.MOV:326:1",
+            "event": "7088-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7089.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "missed_events": [
+          "7089-E2"
+        ],
+        "assignments": [
+          {
+            "key": "0.25:False:IMG_7089.MOV:556:3",
+            "event": "7089-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7090.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.25:False:IMG_7090.MOV:295:1",
+            "event": "7090-E1",
+            "duplicate": false
+          },
+          {
+            "key": "0.25:False:IMG_7090.MOV:408:2",
+            "event": "7090-E1",
+            "duplicate": true
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7091.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.25:False:IMG_7091.MOV:429:1",
+            "event": "7091-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7092.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7093.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7094.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "missed_events": [
+          "7094-E1"
+        ],
+        "assignments": [
+          {
+            "key": "0.25:False:IMG_7094.MOV:280:2",
+            "event": "7094-E2",
+            "duplicate": false
+          },
+          {
+            "key": "0.25:False:IMG_7094.MOV:323:1",
+            "event": "7094-E2",
+            "duplicate": true
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "interval_seconds": 0.5,
+    "ocr": true,
+    "runtime_seconds": 216.40747109999938,
+    "records": 24,
+    "true_positive_events": 20,
+    "false_negative_events": 5,
+    "false_positive_unmatched_records": 0,
+    "duplicate_records": 4,
+    "uncertain_records_excluded": 0,
+    "event_precision_duplicates_penalized": 0.8333333333333334,
+    "event_recall": 0.8,
+    "event_f1_duplicates_penalized": 0.816326530612245,
+    "clips": [
+      {
+        "clip": "IMG_7075.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:True:IMG_7075.MOV:60:1",
+            "event": "7075-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7076.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:True:IMG_7076.MOV:180:1",
+            "event": "7076-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7077.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7078.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:True:IMG_7078.MOV:291:1",
+            "event": "7078-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7079.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:True:IMG_7079.MOV:108:1",
+            "event": "7079-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7080.MOV",
+        "ground_truth": 4,
+        "detected_events": 3,
+        "missed_events": [
+          "7080-E2"
+        ],
+        "assignments": [
+          {
+            "key": "0.5:True:IMG_7080.MOV:234:2",
+            "event": "7080-E1",
+            "duplicate": false
+          },
+          {
+            "key": "0.5:True:IMG_7080.MOV:627:5",
+            "event": "7080-E3",
+            "duplicate": false
+          },
+          {
+            "key": "0.5:True:IMG_7080.MOV:1068:10",
+            "event": "7080-E4",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7081.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:True:IMG_7081.MOV:252:1",
+            "event": "7081-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7082.MOV",
+        "ground_truth": 2,
+        "detected_events": 2,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:True:IMG_7082.MOV:354:1",
+            "event": "7082-E1",
+            "duplicate": false
+          },
+          {
+            "key": "0.5:True:IMG_7082.MOV:447:2",
+            "event": "7082-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7083.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:True:IMG_7083.MOV:174:1",
+            "event": "7083-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7084.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "missed_events": [
+          "7084-E2"
+        ],
+        "assignments": [
+          {
+            "key": "0.5:True:IMG_7084.MOV:177:3",
+            "event": "7084-E1",
+            "duplicate": false
+          },
+          {
+            "key": "0.5:True:IMG_7084.MOV:219:2",
+            "event": "7084-E1",
+            "duplicate": true
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7085.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:True:IMG_7085.MOV:78:2",
+            "event": "7085-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7086.MOV",
+        "ground_truth": 2,
+        "detected_events": 2,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:True:IMG_7086.MOV:393:2",
+            "event": "7086-E1",
+            "duplicate": false
+          },
+          {
+            "key": "0.5:True:IMG_7086.MOV:435:1",
+            "event": "7086-E1",
+            "duplicate": true
+          },
+          {
+            "key": "0.5:True:IMG_7086.MOV:624:3",
+            "event": "7086-E2",
+            "duplicate": false
+          },
+          {
+            "key": "0.5:True:IMG_7086.MOV:687:4",
+            "event": "7086-E2",
+            "duplicate": true
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7087.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "missed_events": [
+          "7087-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7088.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:True:IMG_7088.MOV:285:1",
+            "event": "7088-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7089.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "missed_events": [
+          "7089-E2"
+        ],
+        "assignments": [
+          {
+            "key": "0.5:True:IMG_7089.MOV:552:8",
+            "event": "7089-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7090.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:True:IMG_7090.MOV:345:1",
+            "event": "7090-E1",
+            "duplicate": false
+          },
+          {
+            "key": "0.5:True:IMG_7090.MOV:417:5",
+            "event": "7090-E1",
+            "duplicate": true
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7091.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "key": "0.5:True:IMG_7091.MOV:420:1",
+            "event": "7091-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7092.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7093.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7094.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "missed_events": [
+          "7094-E1"
+        ],
+        "assignments": [
+          {
+            "key": "0.5:True:IMG_7094.MOV:321:4",
+            "event": "7094-E2",
+            "duplicate": false
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "id": "469013c45c0f4b0783e800cc7ff3f7d4",
+  "filename": "IMG_6805.MOV",
+  "status": "completed",
+  "message": "Detected 3 helmet violation(s)",
+  "progress": 100.0,
+  "current_frame": 618,
+  "total_frames": 618,
+  "sampled_frames": 75,
+  "violation_count": 3,
+  "elapsed_seconds": 24.3,
+  "processing_fps": 25.5,
+  "eta_seconds": 0.0,
+  "preview_image": "/media/previews/469013c45c0f4b0783e800cc7ff3f7d4_latest.jpg",
+  "source_video": "/media/uploads/469013c45c0f4b0783e800cc7ff3f7d4.mov",
+  "result": "violations_detected",
+  "created_at": "2026-09-16T12:06:48.016221+00:00",
+  "updated_at": "2026-09-16T12:07:12.335781+00:00"
+}

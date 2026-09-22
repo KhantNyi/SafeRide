@@ -1,0 +1,4787 @@
+[
+  {
+    "image": "IMG_6665_f000120.jpg",
+    "source_clip": "IMG_6665.MOV",
+    "frame_number": 120,
+    "timestamp": 2.0010443864229766,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "helmeted rider comparison",
+    "candidate_index": 0,
+    "crop_xyxy": [
+      516,
+      865,
+      940,
+      1536
+    ],
+    "image_size": [
+      424,
+      671
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          113,
+          40,
+          238,
+          168
+        ],
+        "confidence": 0.2031,
+        "origin": "visually_corrected",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          247,
+          579,
+          361,
+          659
+        ],
+        "confidence": 0.4736,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          168,
+          384,
+          671
+        ],
+        "confidence": 0.8337,
+        "origin": "visually_corrected",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          49,
+          40,
+          349,
+          565
+        ],
+        "confidence": 0.6206,
+        "origin": "visually_corrected",
+        "proposal_index": 5
+      }
+    ],
+    "image_sha256": "22a0ec38d2a90f145858caee16fb0fa0b2d82e4ccffe4f13e9b8d2092463621e",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6665.MOV"
+  },
+  {
+    "image": "IMG_6665_f000510.jpg",
+    "source_clip": "IMG_6665.MOV",
+    "frame_number": 510,
+    "timestamp": 8.50443864229765,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6665-E1",
+    "candidate_index": 1,
+    "crop_xyxy": [
+      672,
+      773,
+      955,
+      1222
+    ],
+    "image_size": [
+      283,
+      449
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          154,
+          40,
+          204,
+          101
+        ],
+        "confidence": 0.6488,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          116,
+          68,
+          168,
+          126
+        ],
+        "confidence": 0.607,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          167,
+          281,
+          225,
+          332
+        ],
+        "confidence": 0.7671,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 6
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          78,
+          47,
+          243,
+          332
+        ],
+        "confidence": 0.8701,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 7
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          137,
+          233,
+          409
+        ],
+        "confidence": 0.804,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 9
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          53,
+          75,
+          161,
+          329
+        ],
+        "confidence": 0.4713,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 13
+      }
+    ],
+    "image_sha256": "e2f531b6c065f1ad3e227f773accf972498656d268ec96bc96d291017676b650",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6665.MOV"
+  },
+  {
+    "image": "IMG_6665_f000690.jpg",
+    "source_clip": "IMG_6665.MOV",
+    "frame_number": 690,
+    "timestamp": 11.506005221932115,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6665-E2",
+    "candidate_index": 2,
+    "crop_xyxy": [
+      688,
+      799,
+      1012,
+      1322
+    ],
+    "image_size": [
+      324,
+      523
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          121,
+          40,
+          186,
+          123
+        ],
+        "confidence": 0.7423,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          202,
+          326,
+          273,
+          383
+        ],
+        "confidence": 0.7969,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 5
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          147,
+          284,
+          483
+        ],
+        "confidence": 0.8734,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 7
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          40,
+          51,
+          220,
+          378
+        ],
+        "confidence": 0.8455,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 9
+      }
+    ],
+    "image_sha256": "2da692ef45b97f5c42ea3179cb4dd65d3ec3b343fed89200d461ca8be18d8696",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6665.MOV"
+  },
+  {
+    "image": "IMG_6698_f000090.jpg",
+    "source_clip": "IMG_6698.MOV",
+    "frame_number": 90,
+    "timestamp": 1.5008426966292134,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "helmeted rider comparison",
+    "candidate_index": 3,
+    "crop_xyxy": [
+      684,
+      758,
+      970,
+      1202
+    ],
+    "image_size": [
+      286,
+      444
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          88,
+          40,
+          160,
+          112
+        ],
+        "confidence": 0.8589,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          170,
+          261,
+          232,
+          303
+        ],
+        "confidence": 0.7704,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          40,
+          51,
+          182,
+          325
+        ],
+        "confidence": 0.8539,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          48,
+          192,
+          246,
+          404
+        ],
+        "confidence": 0.6768,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      }
+    ],
+    "image_sha256": "82ff5e3587c09612573b14934d89cb9d183e9c95127436f9a5e0b8e73b81e2c0",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6698.MOV"
+  },
+  {
+    "image": "IMG_6699_f000210.jpg",
+    "source_clip": "IMG_6699.MOV",
+    "frame_number": 210,
+    "timestamp": 3.5019718309859154,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "helmeted rider comparison",
+    "candidate_index": 4,
+    "crop_xyxy": [
+      400,
+      745,
+      813,
+      1321
+    ],
+    "image_size": [
+      413,
+      576
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          182,
+          40,
+          261,
+          136
+        ],
+        "confidence": 0.6334,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          279,
+          365,
+          351,
+          420
+        ],
+        "confidence": 0.8086,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          101,
+          49,
+          308,
+          433
+        ],
+        "confidence": 0.889,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          159,
+          373,
+          536
+        ],
+        "confidence": 0.8481,
+        "origin": "visually_corrected",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          283,
+          151,
+          315,
+          188
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "c190fd89a07e2877b66ac8aa325db728d211540ef49ba51d6d8f9e57fed259b3",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6699.MOV"
+  },
+  {
+    "image": "IMG_6701_f000630.jpg",
+    "source_clip": "IMG_6701.MOV",
+    "frame_number": 630,
+    "timestamp": 10.504393305439331,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "helmeted rider comparison",
+    "candidate_index": 7,
+    "crop_xyxy": [
+      80,
+      727,
+      405,
+      1172
+    ],
+    "image_size": [
+      325,
+      445
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          79,
+          64,
+          124,
+          107
+        ],
+        "confidence": 0.6947,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          223,
+          40,
+          254,
+          73
+        ],
+        "confidence": 0.6521,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          105,
+          84,
+          164,
+          134
+        ],
+        "confidence": 0.6397,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          137,
+          275,
+          198,
+          315
+        ],
+        "confidence": 0.7824,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          239,
+          153,
+          280,
+          184
+        ],
+        "confidence": 0.7119,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          76,
+          91,
+          207,
+          346
+        ],
+        "confidence": 0.9112,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 5
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          192,
+          43,
+          284,
+          198
+        ],
+        "confidence": 0.8468,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 6
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          194,
+          122,
+          285,
+          232
+        ],
+        "confidence": 0.7596,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 7
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          69,
+          227,
+          210,
+          405
+        ],
+        "confidence": 0.6371,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 8
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          42,
+          147,
+          121,
+          302
+        ],
+        "confidence": 0.4978,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 9
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          40,
+          69,
+          124,
+          295
+        ],
+        "confidence": 0.4933,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 10
+      }
+    ],
+    "image_sha256": "7bc93c63743f5cc3c659394f59a39c615f22eeb77b7625b83fdb80bbd7d59278",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6701.MOV"
+  },
+  {
+    "image": "IMG_6705_f000270.jpg",
+    "source_clip": "IMG_6705.MOV",
+    "frame_number": 270,
+    "timestamp": 4.501952277657266,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6705-E1",
+    "candidate_index": 8,
+    "crop_xyxy": [
+      434,
+      764,
+      924,
+      1510
+    ],
+    "image_size": [
+      490,
+      746
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          248,
+          40,
+          342,
+          136
+        ],
+        "confidence": 0.2716,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          242,
+          527,
+          341,
+          608
+        ],
+        "confidence": 0.8159,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          40,
+          47,
+          450,
+          551
+        ],
+        "confidence": 0.6015,
+        "origin": "visually_corrected",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          51,
+          191,
+          370,
+          706
+        ],
+        "confidence": 0.5985,
+        "origin": "visually_corrected",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          60,
+          91,
+          264,
+          587
+        ],
+        "confidence": 0.2798,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 5
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          190,
+          89,
+          274,
+          167
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "c3ee2f585c358254e46f8c4fad20814874b6bb0121f5466a88a56de5f4040f6f",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6705.MOV"
+  },
+  {
+    "image": "IMG_6705_f000360.jpg",
+    "source_clip": "IMG_6705.MOV",
+    "frame_number": 360,
+    "timestamp": 6.002603036876355,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6705-E2",
+    "candidate_index": 9,
+    "crop_xyxy": [
+      612,
+      720,
+      923,
+      1221
+    ],
+    "image_size": [
+      311,
+      501
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          152,
+          40,
+          218,
+          117
+        ],
+        "confidence": 0.6797,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          104,
+          62,
+          160,
+          126
+        ],
+        "confidence": 0.6214,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          201,
+          314,
+          262,
+          364
+        ],
+        "confidence": 0.7823,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          63,
+          51,
+          244,
+          373
+        ],
+        "confidence": 0.8783,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 6
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          186,
+          271,
+          461
+        ],
+        "confidence": 0.8728,
+        "origin": "visually_corrected",
+        "proposal_index": 7
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          47,
+          73,
+          158,
+          371
+        ],
+        "confidence": 0.766,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 9
+      }
+    ],
+    "image_sha256": "f358e577bcd9b427be4d801755df998ce5bc7e9c7445eeca3013c239a9b7e51d",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6705.MOV"
+  },
+  {
+    "image": "IMG_6712_f000165.jpg",
+    "source_clip": "IMG_6712.MOV",
+    "frame_number": 165,
+    "timestamp": 2.75125,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6712-E1",
+    "candidate_index": 11,
+    "crop_xyxy": [
+      671,
+      757,
+      939,
+      1172
+    ],
+    "image_size": [
+      268,
+      415
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          109,
+          40,
+          161,
+          91
+        ],
+        "confidence": 0.676,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          108,
+          228,
+          375
+        ],
+        "confidence": 0.7902,
+        "origin": "visually_corrected",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          46,
+          45,
+          203,
+          317
+        ],
+        "confidence": 0.7818,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      }
+    ],
+    "image_sha256": "6cf24363cf0f62b191c14a0ef60b7d706a731180417927326e07502497097015",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6712.MOV"
+  },
+  {
+    "image": "IMG_6712_f000300.jpg",
+    "source_clip": "IMG_6712.MOV",
+    "frame_number": 300,
+    "timestamp": 5.002272727272728,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "helmeted rider comparison",
+    "candidate_index": 12,
+    "crop_xyxy": [
+      474,
+      739,
+      818,
+      1327
+    ],
+    "image_size": [
+      344,
+      588
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          103,
+          40,
+          185,
+          136
+        ],
+        "confidence": 0.5893,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          210,
+          367,
+          288,
+          427
+        ],
+        "confidence": 0.8258,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          175,
+          304,
+          548
+        ],
+        "confidence": 0.8251,
+        "origin": "visually_corrected",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          53,
+          48,
+          296,
+          438
+        ],
+        "confidence": 0.816,
+        "origin": "visually_corrected",
+        "proposal_index": 5
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          160,
+          48,
+          211,
+          125
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          148,
+          48,
+          276,
+          370
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "f7b2481128d57219ec6fd7025cab59c6c8940e8312e45dcf383a1bbf89259512",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6712.MOV"
+  },
+  {
+    "image": "IMG_6714_f000690.jpg",
+    "source_clip": "IMG_6714.MOV",
+    "frame_number": 690,
+    "timestamp": 11.505778894472362,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "helmeted rider comparison",
+    "candidate_index": 13,
+    "crop_xyxy": [
+      782,
+      853,
+      1080,
+      1337
+    ],
+    "image_size": [
+      298,
+      484
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          136,
+          40,
+          220,
+          118
+        ],
+        "confidence": 0.8713,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          249,
+          284,
+          298,
+          336
+        ],
+        "confidence": 0.7731,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          123,
+          298,
+          444
+        ],
+        "confidence": 0.8879,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          73,
+          54,
+          240,
+          358
+        ],
+        "confidence": 0.8874,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 5
+      }
+    ],
+    "image_sha256": "376ff3c2755588a78f4fcb7320337e1e5e2864d0261317928a5ac03eb0410933",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6714.MOV"
+  },
+  {
+    "image": "IMG_6714_f001140.jpg",
+    "source_clip": "IMG_6714.MOV",
+    "frame_number": 1140,
+    "timestamp": 19.009547738693467,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6714-E1",
+    "candidate_index": 14,
+    "crop_xyxy": [
+      780,
+      846,
+      1000,
+      1173
+    ],
+    "image_size": [
+      220,
+      327
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          78,
+          40,
+          116,
+          84
+        ],
+        "confidence": 0.4863,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          132,
+          181,
+          178,
+          215
+        ],
+        "confidence": 0.7379,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          46,
+          47,
+          156,
+          230
+        ],
+        "confidence": 0.857,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          114,
+          180,
+          287
+        ],
+        "confidence": 0.8111,
+        "origin": "visually_corrected",
+        "proposal_index": 3
+      }
+    ],
+    "image_sha256": "18e00d604c39e67bcce0efa11c650ae367e21d4f36d28c78059c7180769e8fa1",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6714.MOV"
+  },
+  {
+    "image": "IMG_6760_f000060.jpg",
+    "source_clip": "IMG_6760.MOV",
+    "frame_number": 60,
+    "timestamp": 1.0004962779156328,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "helmeted rider comparison",
+    "candidate_index": 15,
+    "crop_xyxy": [
+      238,
+      616,
+      614,
+      1236
+    ],
+    "image_size": [
+      376,
+      620
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          161,
+          40,
+          239,
+          135
+        ],
+        "confidence": 0.7991,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          234,
+          382,
+          322,
+          446
+        ],
+        "confidence": 0.7751,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          72,
+          54,
+          305,
+          478
+        ],
+        "confidence": 0.8492,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          81,
+          250,
+          336,
+          580
+        ],
+        "confidence": 0.742,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          40,
+          141,
+          95,
+          168
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "b15713ab1dd96c8b79b6cb82fd581272d93e88524aeeca2996997aa0e85e631d",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6760.MOV"
+  },
+  {
+    "image": "IMG_6760_f000420.jpg",
+    "source_clip": "IMG_6760.MOV",
+    "frame_number": 420,
+    "timestamp": 7.0034739454094295,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6760-E1",
+    "candidate_index": 16,
+    "crop_xyxy": [
+      775,
+      617,
+      1080,
+      1079
+    ],
+    "image_size": [
+      305,
+      462
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          150,
+          52,
+          237,
+          128
+        ],
+        "confidence": 0.2214,
+        "origin": "visually_corrected",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          198,
+          300,
+          262,
+          351
+        ],
+        "confidence": 0.7719,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          88,
+          56,
+          259,
+          350
+        ],
+        "confidence": 0.8107,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          133,
+          269,
+          422
+        ],
+        "confidence": 0.6609,
+        "origin": "visually_corrected",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          46,
+          50,
+          163,
+          347
+        ],
+        "confidence": 0.4387,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          107,
+          40,
+          162,
+          124
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "5eb45d81107bdbc0f8267226eb45fdb999837d5cc02cc94a790de678a595bea1",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6760.MOV"
+  },
+  {
+    "image": "IMG_6760_f001080.jpg",
+    "source_clip": "IMG_6760.MOV",
+    "frame_number": 1080,
+    "timestamp": 18.00893300248139,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6760-E2",
+    "candidate_index": 17,
+    "crop_xyxy": [
+      643,
+      604,
+      957,
+      1069
+    ],
+    "image_size": [
+      314,
+      465
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          131,
+          40,
+          187,
+          102
+        ],
+        "confidence": 0.7256,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          180,
+          252,
+          245,
+          301
+        ],
+        "confidence": 0.7601,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          130,
+          274,
+          425
+        ],
+        "confidence": 0.8249,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          43,
+          44,
+          222,
+          354
+        ],
+        "confidence": 0.7758,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      }
+    ],
+    "image_sha256": "e38e04ba633ad90229891a04fd6fded8d2d53dfb61903de8b9bebbb33f3cdec6",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6760.MOV"
+  },
+  {
+    "image": "IMG_6761_f000330.jpg",
+    "source_clip": "IMG_6761.MOV",
+    "frame_number": 330,
+    "timestamp": 5.502562111801242,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6761-E1",
+    "candidate_index": 18,
+    "crop_xyxy": [
+      466,
+      620,
+      814,
+      1219
+    ],
+    "image_size": [
+      348,
+      599
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          159,
+          40,
+          247,
+          131
+        ],
+        "confidence": 0.8742,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          220,
+          390,
+          308,
+          452
+        ],
+        "confidence": 0.7496,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          43,
+          56,
+          270,
+          452
+        ],
+        "confidence": 0.8785,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          154,
+          308,
+          559
+        ],
+        "confidence": 0.7716,
+        "origin": "visually_corrected",
+        "proposal_index": 4
+      }
+    ],
+    "image_sha256": "55491ae9bb1c39e569a5fad0ae8bbc239baefa135e98e6cae261c5a298ec3e6e",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6761.MOV"
+  },
+  {
+    "image": "IMG_6766_f000270.jpg",
+    "source_clip": "IMG_6766.MOV",
+    "frame_number": 270,
+    "timestamp": 4.502192066805846,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6766-E1",
+    "candidate_index": 20,
+    "crop_xyxy": [
+      172,
+      620,
+      546,
+      1319
+    ],
+    "image_size": [
+      374,
+      699
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          145,
+          40,
+          241,
+          144
+        ],
+        "confidence": 0.6058,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          224,
+          435,
+          313,
+          507
+        ],
+        "confidence": 0.7547,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          51,
+          179,
+          334,
+          659
+        ],
+        "confidence": 0.8583,
+        "origin": "visually_corrected",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          40,
+          61,
+          290,
+          514
+        ],
+        "confidence": 0.8193,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      }
+    ],
+    "image_sha256": "1428ef5078649c18fc8224fada6b6119fcdbf39d8eaa8d30577646813c48a13f",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6766.MOV"
+  },
+  {
+    "image": "IMG_6766_f001350.jpg",
+    "source_clip": "IMG_6766.MOV",
+    "frame_number": 1350,
+    "timestamp": 22.510960334029228,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6766-E2",
+    "candidate_index": 22,
+    "crop_xyxy": [
+      286,
+      604,
+      633,
+      1215
+    ],
+    "image_size": [
+      347,
+      611
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          149,
+          40,
+          231,
+          144
+        ],
+        "confidence": 0.6105,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          209,
+          366,
+          294,
+          427
+        ],
+        "confidence": 0.7717,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          40,
+          51,
+          263,
+          465
+        ],
+        "confidence": 0.8766,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          204,
+          307,
+          571
+        ],
+        "confidence": 0.8071,
+        "origin": "visually_corrected",
+        "proposal_index": 3
+      }
+    ],
+    "image_sha256": "a6dda92732f46ce1fcbf45ee7d996800c21757e510728782c67591da963d5576",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6766.MOV"
+  },
+  {
+    "image": "IMG_6767_f000750.jpg",
+    "source_clip": "IMG_6767.MOV",
+    "frame_number": 750,
+    "timestamp": 12.50607779578606,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6767-E1",
+    "candidate_index": 24,
+    "crop_xyxy": [
+      613,
+      599,
+      909,
+      1057
+    ],
+    "image_size": [
+      296,
+      458
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          103,
+          40,
+          161,
+          111
+        ],
+        "confidence": 0.7472,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          149,
+          49,
+          209,
+          118
+        ],
+        "confidence": 0.5684,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          181,
+          333,
+          244,
+          383
+        ],
+        "confidence": 0.7896,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          47,
+          50,
+          163,
+          337
+        ],
+        "confidence": 0.8286,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          138,
+          256,
+          418
+        ],
+        "confidence": 0.8245,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          70,
+          61,
+          235,
+          337
+        ],
+        "confidence": 0.3342,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 5
+      }
+    ],
+    "image_sha256": "b92651290e2ccc27ce9f659d4b5bc1f3368b0edc65624e03e21938844065e831",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6767.MOV"
+  },
+  {
+    "image": "IMG_6767_f001050.jpg",
+    "source_clip": "IMG_6767.MOV",
+    "frame_number": 1050,
+    "timestamp": 17.508508914100485,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6767-E2",
+    "candidate_index": 25,
+    "crop_xyxy": [
+      220,
+      614,
+      612,
+      1307
+    ],
+    "image_size": [
+      392,
+      693
+    ],
+    "boxes": [
+      {
+        "class_id": 1,
+        "xyxy": [
+          223,
+          428,
+          313,
+          500
+        ],
+        "confidence": 0.7698,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          179,
+          330,
+          653
+        ],
+        "confidence": 0.7324,
+        "origin": "visually_corrected",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          47,
+          82,
+          241,
+          532
+        ],
+        "confidence": 0.7304,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          95,
+          40,
+          352,
+          504
+        ],
+        "confidence": 0.3546,
+        "origin": "visually_corrected",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          170,
+          75,
+          241,
+          154
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          235,
+          40,
+          310,
+          119
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "546042d84ba165eebee9ee5dc1d0ee306a8cec3ff89e380cfe6245d1663e36ce",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6767.MOV"
+  },
+  {
+    "image": "IMG_6767_f001140.jpg",
+    "source_clip": "IMG_6767.MOV",
+    "frame_number": 1140,
+    "timestamp": 19.009238249594812,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6767-E3",
+    "candidate_index": 26,
+    "crop_xyxy": [
+      464,
+      618,
+      940,
+      1357
+    ],
+    "image_size": [
+      476,
+      739
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          210,
+          40,
+          317,
+          145
+        ],
+        "confidence": 0.5022,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          293,
+          55,
+          383,
+          150
+        ],
+        "confidence": 0.2103,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          86,
+          64,
+          436,
+          563
+        ],
+        "confidence": 0.7678,
+        "origin": "visually_corrected",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          177,
+          381,
+          699
+        ],
+        "confidence": 0.7624,
+        "origin": "visually_corrected",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          45,
+          54,
+          313,
+          549
+        ],
+        "confidence": 0.5442,
+        "origin": "visually_corrected",
+        "proposal_index": 5
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          265,
+          560,
+          351,
+          642
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "11678431bf0ae653ad43c64c740f6062f314704861cb2eddc73b20de396f29ef",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6767.MOV"
+  },
+  {
+    "image": "IMG_6768_f000690.jpg",
+    "source_clip": "IMG_6768.MOV",
+    "frame_number": 690,
+    "timestamp": 11.504776739356178,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6768-E1",
+    "candidate_index": 27,
+    "crop_xyxy": [
+      580,
+      597,
+      897,
+      1056
+    ],
+    "image_size": [
+      317,
+      459
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          146,
+          40,
+          195,
+          102
+        ],
+        "confidence": 0.5738,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          126,
+          41,
+          167,
+          101
+        ],
+        "confidence": 0.3987,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          185,
+          254,
+          241,
+          297
+        ],
+        "confidence": 0.7941,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          64,
+          48,
+          240,
+          353
+        ],
+        "confidence": 0.8191,
+        "origin": "visually_corrected",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          141,
+          277,
+          419
+        ],
+        "confidence": 0.8139,
+        "origin": "visually_corrected",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          49,
+          56,
+          154,
+          306
+        ],
+        "confidence": 0.3507,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 5
+      }
+    ],
+    "image_sha256": "eeea9aab964c86517dd1c3eede1c70326dcd65b6ae9ac34b1c90d7fd3c36f5c2",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6768.MOV"
+  },
+  {
+    "image": "IMG_6768_f000840.jpg",
+    "source_clip": "IMG_6768.MOV",
+    "frame_number": 840,
+    "timestamp": 14.005815160955347,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6768-E2",
+    "candidate_index": 28,
+    "crop_xyxy": [
+      538,
+      620,
+      921,
+      1191
+    ],
+    "image_size": [
+      383,
+      571
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          168,
+          40,
+          236,
+          104
+        ],
+        "confidence": 0.6309,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          140,
+          343,
+          531
+        ],
+        "confidence": 0.8664,
+        "origin": "visually_corrected",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          50,
+          52,
+          278,
+          429
+        ],
+        "confidence": 0.8429,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          276,
+          382,
+          339,
+          431
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "85e1faae91b7fc2906714e90c3f121c684e9dce911f7a841e8ca73fedb087dc5",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6768.MOV"
+  },
+  {
+    "image": "IMG_6773_f000270.jpg",
+    "source_clip": "IMG_6773.MOV",
+    "frame_number": 270,
+    "timestamp": 4.5019459459459465,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6773-E1",
+    "candidate_index": 29,
+    "crop_xyxy": [
+      585,
+      620,
+      885,
+      1115
+    ],
+    "image_size": [
+      300,
+      495
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          107,
+          40,
+          171,
+          107
+        ],
+        "confidence": 0.6498,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          177,
+          290,
+          244,
+          345
+        ],
+        "confidence": 0.7411,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          41,
+          49,
+          220,
+          378
+        ],
+        "confidence": 0.8822,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          150,
+          260,
+          455
+        ],
+        "confidence": 0.6773,
+        "origin": "visually_corrected",
+        "proposal_index": 4
+      }
+    ],
+    "image_sha256": "830414a1dec547ec921245f3b543390054d2fa34f51ea9c78e9bcc6d0421deeb",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6773.MOV"
+  },
+  {
+    "image": "IMG_6773_f000630.jpg",
+    "source_clip": "IMG_6773.MOV",
+    "frame_number": 630,
+    "timestamp": 10.50454054054054,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6773-E2",
+    "candidate_index": 30,
+    "crop_xyxy": [
+      324,
+      665,
+      788,
+      1337
+    ],
+    "image_size": [
+      464,
+      672
+    ],
+    "boxes": [
+      {
+        "class_id": 2,
+        "xyxy": [
+          43,
+          138,
+          405,
+          632
+        ],
+        "confidence": 0.7824,
+        "origin": "visually_corrected",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          40,
+          40,
+          316,
+          475
+        ],
+        "confidence": 0.6392,
+        "origin": "visually_corrected",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          90,
+          45,
+          418,
+          548
+        ],
+        "confidence": 0.2635,
+        "origin": "visually_corrected",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          194,
+          40,
+          290,
+          139
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          299,
+          45,
+          376,
+          149
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          281,
+          434,
+          373,
+          507
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          373,
+          134,
+          424,
+          162
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "f6c1b871d13b3b617d23c1bec58644278ca813f8bc4f5586a142c96384a93ab9",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6773.MOV"
+  },
+  {
+    "image": "IMG_6774_f000600.jpg",
+    "source_clip": "IMG_6774.MOV",
+    "frame_number": 600,
+    "timestamp": 10.004866180048662,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6774-E1",
+    "candidate_index": 31,
+    "crop_xyxy": [
+      166,
+      687,
+      699,
+      1536
+    ],
+    "image_size": [
+      533,
+      849
+    ],
+    "boxes": [
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          216,
+          493,
+          833
+        ],
+        "confidence": 0.7256,
+        "origin": "visually_corrected",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          90,
+          40,
+          485,
+          699
+        ],
+        "confidence": 0.5725,
+        "origin": "visually_corrected",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          186,
+          86,
+          239,
+          184
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          225,
+          40,
+          349,
+          178
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          301,
+          583,
+          430,
+          673
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          128,
+          88,
+          240,
+          341
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "f8b1e79def4380611569d15a18549c701a37fc6c1d88aceda762a3495c3a5887",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6774.MOV"
+  },
+  {
+    "image": "IMG_6774_f000810.jpg",
+    "source_clip": "IMG_6774.MOV",
+    "frame_number": 810,
+    "timestamp": 13.506569343065692,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6774-E2",
+    "candidate_index": 32,
+    "crop_xyxy": [
+      472,
+      610,
+      798,
+      1099
+    ],
+    "image_size": [
+      326,
+      489
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          139,
+          40,
+          199,
+          115
+        ],
+        "confidence": 0.7248,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          207,
+          359,
+          275,
+          417
+        ],
+        "confidence": 0.7789,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          57,
+          46,
+          262,
+          358
+        ],
+        "confidence": 0.8819,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          186,
+          286,
+          449
+        ],
+        "confidence": 0.8541,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          122,
+          68,
+          151,
+          121
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          52,
+          68,
+          152,
+          343
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "ee26eccd95cb310ca39d5d52262adf7cb93a98624128a9c81cac7c851c04355a",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6774.MOV"
+  },
+  {
+    "image": "IMG_6774_f001470.jpg",
+    "source_clip": "IMG_6774.MOV",
+    "frame_number": 1470,
+    "timestamp": 24.51192214111922,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "helmeted rider comparison",
+    "candidate_index": 33,
+    "crop_xyxy": [
+      533,
+      633,
+      927,
+      1291
+    ],
+    "image_size": [
+      394,
+      658
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          135,
+          40,
+          237,
+          146
+        ],
+        "confidence": 0.3011,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          255,
+          411,
+          346,
+          479
+        ],
+        "confidence": 0.7381,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          168,
+          354,
+          618
+        ],
+        "confidence": 0.797,
+        "origin": "visually_corrected",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          65,
+          62,
+          308,
+          510
+        ],
+        "confidence": 0.7738,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      }
+    ],
+    "image_sha256": "5387bf71c04b0e94ec2a8693261c7a602adbdd7299802c5a6eb2f5621aef28f1",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6774.MOV"
+  },
+  {
+    "image": "IMG_6776_f000480.jpg",
+    "source_clip": "IMG_6776.MOV",
+    "frame_number": 480,
+    "timestamp": 8.003842459173871,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6776-E1",
+    "candidate_index": 34,
+    "crop_xyxy": [
+      398,
+      648,
+      743,
+      1182
+    ],
+    "image_size": [
+      345,
+      534
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          127,
+          40,
+          197,
+          124
+        ],
+        "confidence": 0.7012,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          204,
+          322,
+          280,
+          371
+        ],
+        "confidence": 0.3533,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          40,
+          54,
+          254,
+          421
+        ],
+        "confidence": 0.8421,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          52,
+          202,
+          305,
+          494
+        ],
+        "confidence": 0.8216,
+        "origin": "visually_corrected",
+        "proposal_index": 3
+      }
+    ],
+    "image_sha256": "d4535c3daf57150eb9ad5ba3d1574f464e063aa2821c064755f4d4585cab1b19",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6776.MOV"
+  },
+  {
+    "image": "IMG_6779_f000000.jpg",
+    "source_clip": "IMG_6779.MOV",
+    "frame_number": 0,
+    "timestamp": 0.0,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "helmeted rider comparison",
+    "candidate_index": 35,
+    "crop_xyxy": [
+      681,
+      621,
+      1048,
+      1161
+    ],
+    "image_size": [
+      367,
+      540
+    ],
+    "boxes": [
+      {
+        "class_id": 1,
+        "xyxy": [
+          211,
+          324,
+          284,
+          375
+        ],
+        "confidence": 0.6836,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          42,
+          46,
+          230,
+          404
+        ],
+        "confidence": 0.8672,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          169,
+          327,
+          500
+        ],
+        "confidence": 0.7717,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          118,
+          40,
+          188,
+          113
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "a0c1fc8a0e44323a389f250cc578b9376e5380965d78996af826294b7567d111",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6779.MOV"
+  },
+  {
+    "image": "IMG_6779_f000150.jpg",
+    "source_clip": "IMG_6779.MOV",
+    "frame_number": 150,
+    "timestamp": 2.501133501259446,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6779-E1",
+    "candidate_index": 36,
+    "crop_xyxy": [
+      698,
+      594,
+      994,
+      1017
+    ],
+    "image_size": [
+      296,
+      423
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          104,
+          40,
+          165,
+          106
+        ],
+        "confidence": 0.675,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          155,
+          44,
+          203,
+          94
+        ],
+        "confidence": 0.2051,
+        "origin": "visually_corrected",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          176,
+          263,
+          230,
+          308
+        ],
+        "confidence": 0.7657,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          65,
+          51,
+          169,
+          305
+        ],
+        "confidence": 0.7708,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          124,
+          256,
+          383
+        ],
+        "confidence": 0.7004,
+        "origin": "visually_corrected",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          80,
+          49,
+          236,
+          304
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "4a0f2ed2709800b8b19a5288b519bbe47d42656173d6839607ff9a470cd509be",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6779.MOV"
+  },
+  {
+    "image": "IMG_6779_f001770.jpg",
+    "source_clip": "IMG_6779.MOV",
+    "frame_number": 1770,
+    "timestamp": 29.513375314861463,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6779-E2",
+    "candidate_index": 37,
+    "crop_xyxy": [
+      518,
+      606,
+      825,
+      1142
+    ],
+    "image_size": [
+      307,
+      536
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          161,
+          40,
+          239,
+          122
+        ],
+        "confidence": 0.6364,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          126,
+          65,
+          176,
+          133
+        ],
+        "confidence": 0.5757,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          168,
+          347,
+          243,
+          403
+        ],
+        "confidence": 0.7672,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          80,
+          41,
+          267,
+          409
+        ],
+        "confidence": 0.7811,
+        "origin": "visually_corrected",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          161,
+          253,
+          496
+        ],
+        "confidence": 0.734,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          55,
+          67,
+          177,
+          403
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "1a505c1f572685e7613de97c03fbe23706eb167f9674f2a217c1ce07eb039a0a",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6779.MOV"
+  },
+  {
+    "image": "IMG_6786_f000180.jpg",
+    "source_clip": "IMG_6786.MOV",
+    "frame_number": 180,
+    "timestamp": 3.001300578034682,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6786-E1",
+    "candidate_index": 39,
+    "crop_xyxy": [
+      508,
+      629,
+      886,
+      1187
+    ],
+    "image_size": [
+      378,
+      558
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          144,
+          40,
+          201,
+          100
+        ],
+        "confidence": 0.1808,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          214,
+          298,
+          296,
+          354
+        ],
+        "confidence": 0.5941,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          106,
+          49,
+          338,
+          386
+        ],
+        "confidence": 0.7631,
+        "origin": "visually_corrected",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          195,
+          303,
+          518
+        ],
+        "confidence": 0.7382,
+        "origin": "visually_corrected",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          46,
+          126,
+          158,
+          377
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "33189ad57a804c3c8a29e643a521d924765ad5a809da2d869d5373512d3307fb",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6786.MOV"
+  },
+  {
+    "image": "IMG_6787_f000000.jpg",
+    "source_clip": "IMG_6787.MOV",
+    "frame_number": 0,
+    "timestamp": 0.0,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6787-E1",
+    "candidate_index": 40,
+    "crop_xyxy": [
+      222,
+      601,
+      432,
+      973
+    ],
+    "image_size": [
+      210,
+      372
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          74,
+          40,
+          122,
+          90
+        ],
+        "confidence": 0.5793,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          94,
+          224,
+          145,
+          265
+        ],
+        "confidence": 0.786,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          40,
+          43,
+          170,
+          279
+        ],
+        "confidence": 0.8694,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          45,
+          133,
+          167,
+          332
+        ],
+        "confidence": 0.7351,
+        "origin": "visually_corrected",
+        "proposal_index": 3
+      }
+    ],
+    "image_sha256": "b51ddfe42c26a7f7cf512d1e50ab10b15f0c5d71a007eccb78bbd00f19c8cc55",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6787.MOV"
+  },
+  {
+    "image": "IMG_6787_f000540.jpg",
+    "source_clip": "IMG_6787.MOV",
+    "frame_number": 540,
+    "timestamp": 9.004245283018868,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6787-E2",
+    "candidate_index": 41,
+    "crop_xyxy": [
+      508,
+      673,
+      984,
+      1423
+    ],
+    "image_size": [
+      476,
+      750
+    ],
+    "boxes": [
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          230,
+          411,
+          710
+        ],
+        "confidence": 0.8514,
+        "origin": "visually_corrected",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          96,
+          54,
+          436,
+          539
+        ],
+        "confidence": 0.7736,
+        "origin": "visually_corrected",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          160,
+          40,
+          236,
+          116
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          200,
+          56,
+          285,
+          134
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          45,
+          40,
+          236,
+          540
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          278,
+          488,
+          384,
+          569
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "3b844ee2b347d0491684ed2ec848615944e8d58ed16eab7f2f1e0c2d342e8418",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6787.MOV"
+  },
+  {
+    "image": "IMG_6787_f001260.jpg",
+    "source_clip": "IMG_6787.MOV",
+    "frame_number": 1260,
+    "timestamp": 21.00990566037736,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6787-E3",
+    "candidate_index": 42,
+    "crop_xyxy": [
+      499,
+      610,
+      823,
+      1123
+    ],
+    "image_size": [
+      324,
+      513
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          128,
+          40,
+          200,
+          126
+        ],
+        "confidence": 0.868,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          204,
+          48,
+          266,
+          118
+        ],
+        "confidence": 0.5618,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          194,
+          378,
+          263,
+          433
+        ],
+        "confidence": 0.7686,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          46,
+          55,
+          197,
+          387
+        ],
+        "confidence": 0.8477,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 5
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          151,
+          279,
+          473
+        ],
+        "confidence": 0.7262,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 6
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          153,
+          56,
+          284,
+          289
+        ],
+        "confidence": 0.6161,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 7
+      }
+    ],
+    "image_sha256": "12c6fbc05bdc406c2e73b80956428d95e1ffbe2762685881cfdd67b04e26f323",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6787.MOV"
+  },
+  {
+    "image": "IMG_6787_f002130.jpg",
+    "source_clip": "IMG_6787.MOV",
+    "frame_number": 2130,
+    "timestamp": 35.51674528301887,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6787-E4",
+    "candidate_index": 44,
+    "crop_xyxy": [
+      408,
+      594,
+      773,
+      1170
+    ],
+    "image_size": [
+      365,
+      576
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          175,
+          40,
+          252,
+          120
+        ],
+        "confidence": 0.6572,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          141,
+          90,
+          185,
+          156
+        ],
+        "confidence": 0.2781,
+        "origin": "visually_corrected",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          182,
+          362,
+          263,
+          425
+        ],
+        "confidence": 0.7862,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          78,
+          55,
+          325,
+          429
+        ],
+        "confidence": 0.8313,
+        "origin": "visually_corrected",
+        "proposal_index": 5
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          178,
+          317,
+          536
+        ],
+        "confidence": 0.8235,
+        "origin": "visually_corrected",
+        "proposal_index": 6
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          58,
+          90,
+          182,
+          449
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "4dff7687e1eda16fd423d1b5cf7be80b2695b67946452e1691a0cbcd4cd5b3dc",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6787.MOV"
+  },
+  {
+    "image": "IMG_6788_f000570.jpg",
+    "source_clip": "IMG_6788.MOV",
+    "frame_number": 570,
+    "timestamp": 9.50439204808137,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6788-E1",
+    "candidate_index": 45,
+    "crop_xyxy": [
+      695,
+      607,
+      967,
+      1021
+    ],
+    "image_size": [
+      272,
+      414
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          112,
+          40,
+          159,
+          94
+        ],
+        "confidence": 0.6807,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          161,
+          244,
+          219,
+          287
+        ],
+        "confidence": 0.7771,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          46,
+          49,
+          204,
+          314
+        ],
+        "confidence": 0.8962,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          146,
+          232,
+          374
+        ],
+        "confidence": 0.8616,
+        "origin": "visually_corrected",
+        "proposal_index": 4
+      }
+    ],
+    "image_sha256": "aa21ef5b3f468bdfacbfc4bf5785b2cea6f14af7f3e983524cba383a0005f605",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6788.MOV"
+  },
+  {
+    "image": "IMG_6788_f000720.jpg",
+    "source_clip": "IMG_6788.MOV",
+    "frame_number": 720,
+    "timestamp": 12.005547850208044,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6788-E2",
+    "candidate_index": 46,
+    "crop_xyxy": [
+      660,
+      606,
+      928,
+      1010
+    ],
+    "image_size": [
+      268,
+      404
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          133,
+          40,
+          174,
+          84
+        ],
+        "confidence": 0.5976,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          68,
+          51,
+          228,
+          309
+        ],
+        "confidence": 0.8735,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          134,
+          207,
+          364
+        ],
+        "confidence": 0.5863,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 7
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          55,
+          65,
+          139,
+          303
+        ],
+        "confidence": 0.3768,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 8
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          99,
+          57,
+          138,
+          100
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "64433080a56dd9b19d28fc5899df12e2d7e442406619fe28cdad209bee405b8d",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6788.MOV"
+  },
+  {
+    "image": "IMG_6791_f000480.jpg",
+    "source_clip": "IMG_6791.MOV",
+    "frame_number": 480,
+    "timestamp": 8.003715170278639,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "helmeted rider comparison",
+    "candidate_index": 48,
+    "crop_xyxy": [
+      412,
+      657,
+      808,
+      1386
+    ],
+    "image_size": [
+      396,
+      729
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          181,
+          40,
+          280,
+          149
+        ],
+        "confidence": 0.2547,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          41,
+          54,
+          346,
+          551
+        ],
+        "confidence": 0.7477,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          171,
+          356,
+          689
+        ],
+        "confidence": 0.7122,
+        "origin": "visually_corrected",
+        "proposal_index": 5
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          254,
+          410,
+          341,
+          471
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "0ede9489b15318902077490adfe01bafb4789486412161923e7ce10a7fea010f",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6791.MOV"
+  },
+  {
+    "image": "IMG_6791_f001050.jpg",
+    "source_clip": "IMG_6791.MOV",
+    "frame_number": 1050,
+    "timestamp": 17.50812693498452,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6791-E1",
+    "candidate_index": 49,
+    "crop_xyxy": [
+      318,
+      623,
+      650,
+      1198
+    ],
+    "image_size": [
+      332,
+      575
+    ],
+    "boxes": [
+      {
+        "class_id": 1,
+        "xyxy": [
+          165,
+          361,
+          246,
+          422
+        ],
+        "confidence": 0.8121,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          167,
+          270,
+          535
+        ],
+        "confidence": 0.8682,
+        "origin": "visually_corrected",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          61,
+          40,
+          292,
+          443
+        ],
+        "confidence": 0.8653,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          160,
+          41,
+          220,
+          106
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          144,
+          74,
+          167,
+          122
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          64,
+          78,
+          177,
+          439
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          52,
+          89,
+          92,
+          110
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "b31f5361a561274a023c52b14affe4edcc06d92766d2458f36184fb85bd38bbf",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6791.MOV"
+  },
+  {
+    "image": "IMG_6792_f001860.jpg",
+    "source_clip": "IMG_6792.MOV",
+    "frame_number": 1860,
+    "timestamp": 31.013710073710072,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "helmeted rider comparison",
+    "candidate_index": 51,
+    "crop_xyxy": [
+      576,
+      618,
+      942,
+      1284
+    ],
+    "image_size": [
+      366,
+      666
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          150,
+          40,
+          248,
+          147
+        ],
+        "confidence": 0.8306,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          210,
+          401,
+          300,
+          463
+        ],
+        "confidence": 0.7866,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          44,
+          53,
+          298,
+          494
+        ],
+        "confidence": 0.834,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 5
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          191,
+          326,
+          626
+        ],
+        "confidence": 0.7457,
+        "origin": "visually_corrected",
+        "proposal_index": 7
+      }
+    ],
+    "image_sha256": "b99dfd5727417b1c258cdb98f21294b515b20dec7acffc725a8643ffac7e0d36",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6792.MOV"
+  },
+  {
+    "image": "IMG_6793_f000420.jpg",
+    "source_clip": "IMG_6793.MOV",
+    "frame_number": 420,
+    "timestamp": 7.0032357473035445,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "helmeted rider comparison",
+    "candidate_index": 53,
+    "crop_xyxy": [
+      477,
+      617,
+      812,
+      1215
+    ],
+    "image_size": [
+      335,
+      598
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          100,
+          40,
+          207,
+          136
+        ],
+        "confidence": 0.9219,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          193,
+          379,
+          274,
+          438
+        ],
+        "confidence": 0.7875,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          40,
+          56,
+          262,
+          447
+        ],
+        "confidence": 0.8377,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 5
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          50,
+          169,
+          295,
+          558
+        ],
+        "confidence": 0.7797,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 6
+      }
+    ],
+    "image_sha256": "036b4613547a709667ca53bbc3509fb3093f6203e0c162742677efec882d97e9",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6793.MOV"
+  },
+  {
+    "image": "IMG_6798_f000330.jpg",
+    "source_clip": "IMG_6798.MOV",
+    "frame_number": 330,
+    "timestamp": 5.50249716231555,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "helmeted rider comparison",
+    "candidate_index": 54,
+    "crop_xyxy": [
+      712,
+      607,
+      1080,
+      1157
+    ],
+    "image_size": [
+      368,
+      550
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          150,
+          49,
+          235,
+          139
+        ],
+        "confidence": 0.7866,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          227,
+          40,
+          322,
+          130
+        ],
+        "confidence": 0.6974,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          234,
+          371,
+          313,
+          434
+        ],
+        "confidence": 0.7364,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          120,
+          54,
+          329,
+          443
+        ],
+        "confidence": 0.8164,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          151,
+          312,
+          510
+        ],
+        "confidence": 0.6885,
+        "origin": "visually_corrected",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          51,
+          60,
+          239,
+          433
+        ],
+        "confidence": 0.5709,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 5
+      }
+    ],
+    "image_sha256": "01d57c16472cf85dd0a5be173cb4ee594478ea795529b41d98296717a3e8e1c8",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6798.MOV"
+  },
+  {
+    "image": "IMG_6798_f000630.jpg",
+    "source_clip": "IMG_6798.MOV",
+    "frame_number": 630,
+    "timestamp": 10.504767309875142,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6798-E1",
+    "candidate_index": 55,
+    "crop_xyxy": [
+      639,
+      610,
+      872,
+      976
+    ],
+    "image_size": [
+      233,
+      366
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          83,
+          40,
+          134,
+          93
+        ],
+        "confidence": 0.6756,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          120,
+          48,
+          162,
+          93
+        ],
+        "confidence": 0.471,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          130,
+          262,
+          184,
+          307
+        ],
+        "confidence": 0.7805,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          44,
+          47,
+          184,
+          262
+        ],
+        "confidence": 0.8832,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          148,
+          193,
+          326
+        ],
+        "confidence": 0.8038,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          42,
+          40,
+          134,
+          244
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "4e6b057319dc821fcef37161c2ac115a2ce4766681c9a1c5af4a4d413b290416",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6798.MOV"
+  },
+  {
+    "image": "IMG_6798_f000720.jpg",
+    "source_clip": "IMG_6798.MOV",
+    "frame_number": 720,
+    "timestamp": 12.005448354143018,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6798-E2",
+    "candidate_index": 56,
+    "crop_xyxy": [
+      710,
+      616,
+      1005,
+      1108
+    ],
+    "image_size": [
+      295,
+      492
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          138,
+          40,
+          191,
+          112
+        ],
+        "confidence": 0.7207,
+        "origin": "visually_corrected",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          174,
+          304,
+          242,
+          356
+        ],
+        "confidence": 0.7849,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          45,
+          141,
+          255,
+          452
+        ],
+        "confidence": 0.7461,
+        "origin": "visually_corrected",
+        "proposal_index": 7
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          47,
+          40,
+          234,
+          365
+        ],
+        "confidence": 0.6527,
+        "origin": "visually_corrected",
+        "proposal_index": 9
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          115,
+          46,
+          155,
+          110
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          40,
+          46,
+          155,
+          348
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "bc9e65fcdce6af14744279a9daddf2f723b31c4d564cfcfd8a85d96e490e320e",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6798.MOV"
+  },
+  {
+    "image": "IMG_6798_f000810.jpg",
+    "source_clip": "IMG_6798.MOV",
+    "frame_number": 810,
+    "timestamp": 13.506129398410897,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6798-E3",
+    "candidate_index": 57,
+    "crop_xyxy": [
+      363,
+      613,
+      647,
+      1080
+    ],
+    "image_size": [
+      284,
+      467
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          148,
+          56,
+          201,
+          105
+        ],
+        "confidence": 0.6857,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          79,
+          40,
+          120,
+          82
+        ],
+        "confidence": 0.5718,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          77,
+          59,
+          244,
+          356
+        ],
+        "confidence": 0.8471,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          60,
+          40,
+          130,
+          230
+        ],
+        "confidence": 0.8142,
+        "origin": "visually_corrected",
+        "proposal_index": 5
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          63,
+          156,
+          226,
+          427
+        ],
+        "confidence": 0.6693,
+        "origin": "visually_corrected",
+        "proposal_index": 7
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          130,
+          82,
+          160,
+          121
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          67,
+          83,
+          162,
+          357
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          44,
+          83,
+          98,
+          226
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          103,
+          134,
+          263
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "eadd6e7ab9008519882fbf1c8261297353939baa3e34ceeea85e275e5f20cae8",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6798.MOV"
+  },
+  {
+    "image": "IMG_6798_f001260.jpg",
+    "source_clip": "IMG_6798.MOV",
+    "frame_number": 1260,
+    "timestamp": 21.009534619750283,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6798-E5",
+    "candidate_index": 58,
+    "crop_xyxy": [
+      363,
+      600,
+      1080,
+      1374
+    ],
+    "image_size": [
+      717,
+      774
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          465,
+          40,
+          554,
+          137
+        ],
+        "confidence": 0.8412,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          122,
+          80,
+          168,
+          149
+        ],
+        "confidence": 0.7042,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          160,
+          81,
+          206,
+          141
+        ],
+        "confidence": 0.6271,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          177,
+          384,
+          244,
+          439
+        ],
+        "confidence": 0.7944,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          171,
+          246,
+          495
+        ],
+        "confidence": 0.8698,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          61,
+          82,
+          252,
+          417
+        ],
+        "confidence": 0.8628,
+        "origin": "visually_corrected",
+        "proposal_index": 5
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          304,
+          198,
+          684,
+          734
+        ],
+        "confidence": 0.8067,
+        "origin": "visually_corrected",
+        "proposal_index": 6
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          315,
+          83,
+          617,
+          566
+        ],
+        "confidence": 0.6908,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 7
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          567,
+          419,
+          654,
+          469
+        ],
+        "origin": "visually_added"
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          52,
+          85,
+          173,
+          384
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "86e3ba9642a84a0efcddc06474340513c34c8aa48c0611f1f894b3058d85deaf",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6798.MOV"
+  },
+  {
+    "image": "IMG_6798_f001440.jpg",
+    "source_clip": "IMG_6798.MOV",
+    "frame_number": 1440,
+    "timestamp": 24.010896708286037,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6798-E6",
+    "candidate_index": 59,
+    "crop_xyxy": [
+      118,
+      605,
+      507,
+      1188
+    ],
+    "image_size": [
+      389,
+      583
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          68,
+          40,
+          98,
+          67
+        ],
+        "confidence": 0.6656,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          198,
+          87,
+          267,
+          155
+        ],
+        "confidence": 0.614,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          86,
+          145,
+          125,
+          168
+        ],
+        "confidence": 0.5745,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          90,
+          96,
+          326,
+          454
+        ],
+        "confidence": 0.833,
+        "origin": "visually_corrected",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          122,
+          242,
+          349,
+          543
+        ],
+        "confidence": 0.8222,
+        "origin": "visually_corrected",
+        "proposal_index": 5
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          43,
+          110,
+          142,
+          239
+        ],
+        "confidence": 0.7466,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 6
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          40,
+          43,
+          127,
+          197
+        ],
+        "confidence": 0.5666,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 7
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          234,
+          314,
+          307,
+          341
+        ],
+        "origin": "visually_added"
+      }
+    ],
+    "image_sha256": "ef77c9a7b37c3b83c23ec3f93a7475fd973f0ded61bb70e120fc50d70940ccbd",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6798.MOV"
+  },
+  {
+    "image": "IMG_6805_f000210.jpg",
+    "source_clip": "IMG_6805.MOV",
+    "frame_number": 210,
+    "timestamp": 3.501699029126214,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6805-E1",
+    "candidate_index": 60,
+    "crop_xyxy": [
+      750,
+      618,
+      1016,
+      1092
+    ],
+    "image_size": [
+      266,
+      474
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          90,
+          40,
+          156,
+          118
+        ],
+        "confidence": 0.7371,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          139,
+          321,
+          211,
+          377
+        ],
+        "confidence": 0.7738,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          46,
+          46,
+          219,
+          365
+        ],
+        "confidence": 0.7611,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          176,
+          226,
+          434
+        ],
+        "confidence": 0.679,
+        "origin": "visually_corrected",
+        "proposal_index": 3
+      }
+    ],
+    "image_sha256": "23316ede1ebae9a32ded2b7dd670d0e98c5e24f95ce3232eaf01d1d7fb158f9b",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6805.MOV"
+  },
+  {
+    "image": "IMG_6805_f000300.jpg",
+    "source_clip": "IMG_6805.MOV",
+    "frame_number": 300,
+    "timestamp": 5.002427184466019,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6805-E2",
+    "candidate_index": 61,
+    "crop_xyxy": [
+      819,
+      596,
+      1080,
+      1031
+    ],
+    "image_size": [
+      261,
+      435
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          110,
+          40,
+          160,
+          96
+        ],
+        "confidence": 0.7275,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          189,
+          273,
+          251,
+          322
+        ],
+        "confidence": 0.8067,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          40,
+          47,
+          210,
+          244
+        ],
+        "confidence": 0.8459,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          64,
+          124,
+          261,
+          395
+        ],
+        "confidence": 0.5078,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 7
+      }
+    ],
+    "image_sha256": "e6baa985d5a4f47f91a6addcdb94701168bf94bcb36a5b871310ce1916f379b0",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6805.MOV"
+  },
+  {
+    "image": "IMG_6805_f000390.jpg",
+    "source_clip": "IMG_6805.MOV",
+    "frame_number": 390,
+    "timestamp": 6.503155339805826,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "helmeted rider comparison",
+    "candidate_index": 62,
+    "crop_xyxy": [
+      235,
+      609,
+      626,
+      1346
+    ],
+    "image_size": [
+      391,
+      737
+    ],
+    "boxes": [
+      {
+        "class_id": 3,
+        "xyxy": [
+          88,
+          40,
+          118,
+          67
+        ],
+        "confidence": 0.7077,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 0,
+        "xyxy": [
+          151,
+          73,
+          239,
+          168
+        ],
+        "confidence": 0.4331,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 1
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          217,
+          495,
+          310,
+          571
+        ],
+        "confidence": 0.8292,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          108,
+          151,
+          141,
+          178
+        ],
+        "confidence": 0.7089,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 3
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          63,
+          73,
+          151,
+          213
+        ],
+        "confidence": 0.8269,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          196,
+          351,
+          697
+        ],
+        "confidence": 0.8198,
+        "origin": "visually_corrected",
+        "proposal_index": 5
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          63,
+          86,
+          339,
+          560
+        ],
+        "confidence": 0.8124,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 6
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          63,
+          43,
+          139,
+          163
+        ],
+        "confidence": 0.2617,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 8
+      }
+    ],
+    "image_sha256": "bb15710f15aaa035974acf76418532b72e4579c141f3528d8afe976c2ddf098f",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6805.MOV"
+  },
+  {
+    "image": "IMG_6805_f000480.jpg",
+    "source_clip": "IMG_6805.MOV",
+    "frame_number": 480,
+    "timestamp": 8.003883495145631,
+    "source_size": [
+      1080,
+      1920
+    ],
+    "selection_reason": "confirmed no-helmet passage 6805-E3",
+    "candidate_index": 63,
+    "crop_xyxy": [
+      470,
+      617,
+      775,
+      1148
+    ],
+    "image_size": [
+      305,
+      531
+    ],
+    "boxes": [
+      {
+        "class_id": 0,
+        "xyxy": [
+          106,
+          40,
+          179,
+          126
+        ],
+        "confidence": 0.903,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 0
+      },
+      {
+        "class_id": 3,
+        "xyxy": [
+          169,
+          53,
+          228,
+          123
+        ],
+        "confidence": 0.5548,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 2
+      },
+      {
+        "class_id": 1,
+        "xyxy": [
+          156,
+          336,
+          226,
+          385
+        ],
+        "confidence": 0.7038,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 4
+      },
+      {
+        "class_id": 2,
+        "xyxy": [
+          40,
+          161,
+          238,
+          491
+        ],
+        "confidence": 0.7674,
+        "origin": "visually_corrected",
+        "proposal_index": 8
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          41,
+          52,
+          181,
+          416
+        ],
+        "confidence": 0.7284,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 9
+      },
+      {
+        "class_id": 5,
+        "xyxy": [
+          70,
+          64,
+          265,
+          408
+        ],
+        "confidence": 0.4218,
+        "origin": "model_proposal_visually_reviewed",
+        "proposal_index": 11
+      }
+    ],
+    "image_sha256": "9c17f9a4fdd5afab6bf6e882ca5e398832b57dcce6173bb7e5b24da94f3b3f17",
+    "review_status": "AI_visually_reviewed_and_corrected",
+    "split_group": "IMG_6805.MOV"
+  }
+]

@@ -1,0 +1,1164 @@
+[
+  {
+    "interval_seconds": 1.0,
+    "ocr": false,
+    "runtime_seconds": 120.42194700000073,
+    "ground_truth_events": 25,
+    "records": 8,
+    "true_positive_events": 8,
+    "false_negative_events": 17,
+    "false_positive_unmatched_records": 0,
+    "duplicate_records": 0,
+    "event_precision_duplicates_penalized": 1.0,
+    "event_recall": 0.32,
+    "event_f1_duplicates_penalized": 0.48484848484848486,
+    "helmet_correct_record_precision": 1.0,
+    "recall_if_uncertain_positive": 0.3076923076923077,
+    "clips": [
+      {
+        "clip": "IMG_7075.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 54,
+            "track_id": 1,
+            "event_id": "7075-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7076.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7076-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7077.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7078.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7078-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7079.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 96,
+            "track_id": 1,
+            "event_id": "7079-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7080.MOV",
+        "ground_truth": 4,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [
+          "7080-E1",
+          "7080-E3",
+          "7080-E4"
+        ],
+        "assignments": [
+          {
+            "frame": 552,
+            "track_id": 6,
+            "event_id": "7080-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7081.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7081-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7082.MOV",
+        "ground_truth": 2,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7082-E1",
+          "7082-E2"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7083.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 156,
+            "track_id": 2,
+            "event_id": "7083-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7084.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [
+          "7084-E2"
+        ],
+        "assignments": [
+          {
+            "frame": 198,
+            "track_id": 3,
+            "event_id": "7084-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7085.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7085-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7086.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [
+          "7086-E2"
+        ],
+        "assignments": [
+          {
+            "frame": 384,
+            "track_id": 3,
+            "event_id": "7086-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7087.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7087-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7088.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7088-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7089.MOV",
+        "ground_truth": 2,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7089-E1",
+          "7089-E2"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7090.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 306,
+            "track_id": 1,
+            "event_id": "7090-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7091.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 360,
+            "track_id": 1,
+            "event_id": "7091-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7092.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7093.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7094.MOV",
+        "ground_truth": 2,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7094-E1",
+          "7094-E2"
+        ],
+        "assignments": []
+      }
+    ]
+  },
+  {
+    "interval_seconds": 0.5,
+    "ocr": false,
+    "runtime_seconds": 138.7010590000009,
+    "ground_truth_events": 25,
+    "records": 13,
+    "true_positive_events": 13,
+    "false_negative_events": 12,
+    "false_positive_unmatched_records": 0,
+    "duplicate_records": 0,
+    "event_precision_duplicates_penalized": 1.0,
+    "event_recall": 0.52,
+    "event_f1_duplicates_penalized": 0.6842105263157895,
+    "helmet_correct_record_precision": 1.0,
+    "recall_if_uncertain_positive": 0.5,
+    "clips": [
+      {
+        "clip": "IMG_7075.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 57,
+            "track_id": 1,
+            "event_id": "7075-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7076.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 138,
+            "track_id": 2,
+            "event_id": "7076-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7077.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7078.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 249,
+            "track_id": 1,
+            "event_id": "7078-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7079.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 96,
+            "track_id": 1,
+            "event_id": "7079-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7080.MOV",
+        "ground_truth": 4,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [
+          "7080-E1",
+          "7080-E3",
+          "7080-E4"
+        ],
+        "assignments": [
+          {
+            "frame": 552,
+            "track_id": 6,
+            "event_id": "7080-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7081.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7081-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7082.MOV",
+        "ground_truth": 2,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7082-E1",
+          "7082-E2"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7083.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 159,
+            "track_id": 2,
+            "event_id": "7083-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7084.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [
+          "7084-E2"
+        ],
+        "assignments": [
+          {
+            "frame": 177,
+            "track_id": 3,
+            "event_id": "7084-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7085.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7085-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7086.MOV",
+        "ground_truth": 2,
+        "detected_events": 2,
+        "records": 2,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 387,
+            "track_id": 2,
+            "event_id": "7086-E1",
+            "duplicate": false
+          },
+          {
+            "frame": 663,
+            "track_id": 4,
+            "event_id": "7086-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7087.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7087-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7088.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7088-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7089.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [
+          "7089-E2"
+        ],
+        "assignments": [
+          {
+            "frame": 504,
+            "track_id": 8,
+            "event_id": "7089-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7090.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 306,
+            "track_id": 1,
+            "event_id": "7090-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7091.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 360,
+            "track_id": 1,
+            "event_id": "7091-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7092.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7093.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7094.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [
+          "7094-E2"
+        ],
+        "assignments": [
+          {
+            "frame": 366,
+            "track_id": 1,
+            "event_id": "7094-E1",
+            "duplicate": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "interval_seconds": 0.25,
+    "ocr": false,
+    "runtime_seconds": 335.74264480000056,
+    "ground_truth_events": 25,
+    "records": 19,
+    "true_positive_events": 17,
+    "false_negative_events": 8,
+    "false_positive_unmatched_records": 0,
+    "duplicate_records": 2,
+    "event_precision_duplicates_penalized": 0.8947368421052632,
+    "event_recall": 0.68,
+    "event_f1_duplicates_penalized": 0.7727272727272727,
+    "helmet_correct_record_precision": 1.0,
+    "recall_if_uncertain_positive": 0.6538461538461539,
+    "clips": [
+      {
+        "clip": "IMG_7075.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 57,
+            "track_id": 1,
+            "event_id": "7075-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7076.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 148,
+            "track_id": 1,
+            "event_id": "7076-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7077.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7078.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 249,
+            "track_id": 1,
+            "event_id": "7078-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7079.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 106,
+            "track_id": 1,
+            "event_id": "7079-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7080.MOV",
+        "ground_truth": 4,
+        "detected_events": 2,
+        "records": 2,
+        "missed_events": [
+          "7080-E1",
+          "7080-E3"
+        ],
+        "assignments": [
+          {
+            "frame": 563,
+            "track_id": 3,
+            "event_id": "7080-E2",
+            "duplicate": false
+          },
+          {
+            "frame": 1014,
+            "track_id": 8,
+            "event_id": "7080-E4",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7081.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 222,
+            "track_id": 1,
+            "event_id": "7081-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7082.MOV",
+        "ground_truth": 2,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7082-E1",
+          "7082-E2"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7083.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 173,
+            "track_id": 1,
+            "event_id": "7083-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7084.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [
+          "7084-E2"
+        ],
+        "assignments": [
+          {
+            "frame": 214,
+            "track_id": 2,
+            "event_id": "7084-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7085.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 76,
+            "track_id": 1,
+            "event_id": "7085-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7086.MOV",
+        "ground_truth": 2,
+        "detected_events": 2,
+        "records": 3,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 381,
+            "track_id": 1,
+            "event_id": "7086-E1",
+            "duplicate": false
+          },
+          {
+            "frame": 411,
+            "track_id": 2,
+            "event_id": "7086-E1",
+            "duplicate": true
+          },
+          {
+            "frame": 665,
+            "track_id": 3,
+            "event_id": "7086-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7087.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7087-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7088.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 263,
+            "track_id": 1,
+            "event_id": "7088-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7089.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [
+          "7089-E2"
+        ],
+        "assignments": [
+          {
+            "frame": 527,
+            "track_id": 3,
+            "event_id": "7089-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7090.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 2,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 280,
+            "track_id": 1,
+            "event_id": "7090-E1",
+            "duplicate": false
+          },
+          {
+            "frame": 310,
+            "track_id": 2,
+            "event_id": "7090-E1",
+            "duplicate": true
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7091.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 360,
+            "track_id": 1,
+            "event_id": "7091-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7092.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7093.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7094.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [
+          "7094-E2"
+        ],
+        "assignments": [
+          {
+            "frame": 366,
+            "track_id": 4,
+            "event_id": "7094-E1",
+            "duplicate": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "interval_seconds": 0.5,
+    "ocr": true,
+    "runtime_seconds": 145.57577509999828,
+    "ground_truth_events": 25,
+    "records": 13,
+    "true_positive_events": 13,
+    "false_negative_events": 12,
+    "false_positive_unmatched_records": 0,
+    "duplicate_records": 0,
+    "event_precision_duplicates_penalized": 1.0,
+    "event_recall": 0.52,
+    "event_f1_duplicates_penalized": 0.6842105263157895,
+    "helmet_correct_record_precision": 1.0,
+    "recall_if_uncertain_positive": 0.5,
+    "clips": [
+      {
+        "clip": "IMG_7075.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 57,
+            "track_id": 1,
+            "event_id": "7075-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7076.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 138,
+            "track_id": 2,
+            "event_id": "7076-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7077.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7078.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 249,
+            "track_id": 1,
+            "event_id": "7078-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7079.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 96,
+            "track_id": 1,
+            "event_id": "7079-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7080.MOV",
+        "ground_truth": 4,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [
+          "7080-E1",
+          "7080-E3",
+          "7080-E4"
+        ],
+        "assignments": [
+          {
+            "frame": 552,
+            "track_id": 6,
+            "event_id": "7080-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7081.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7081-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7082.MOV",
+        "ground_truth": 2,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7082-E1",
+          "7082-E2"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7083.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 159,
+            "track_id": 2,
+            "event_id": "7083-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7084.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [
+          "7084-E2"
+        ],
+        "assignments": [
+          {
+            "frame": 177,
+            "track_id": 3,
+            "event_id": "7084-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7085.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7085-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7086.MOV",
+        "ground_truth": 2,
+        "detected_events": 2,
+        "records": 2,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 387,
+            "track_id": 2,
+            "event_id": "7086-E1",
+            "duplicate": false
+          },
+          {
+            "frame": 663,
+            "track_id": 4,
+            "event_id": "7086-E2",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7087.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7087-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7088.MOV",
+        "ground_truth": 1,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [
+          "7088-E1"
+        ],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7089.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [
+          "7089-E2"
+        ],
+        "assignments": [
+          {
+            "frame": 504,
+            "track_id": 8,
+            "event_id": "7089-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7090.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 306,
+            "track_id": 1,
+            "event_id": "7090-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7091.MOV",
+        "ground_truth": 1,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [],
+        "assignments": [
+          {
+            "frame": 360,
+            "track_id": 1,
+            "event_id": "7091-E1",
+            "duplicate": false
+          }
+        ]
+      },
+      {
+        "clip": "IMG_7092.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7093.MOV",
+        "ground_truth": 0,
+        "detected_events": 0,
+        "records": 0,
+        "missed_events": [],
+        "assignments": []
+      },
+      {
+        "clip": "IMG_7094.MOV",
+        "ground_truth": 2,
+        "detected_events": 1,
+        "records": 1,
+        "missed_events": [
+          "7094-E2"
+        ],
+        "assignments": [
+          {
+            "frame": 366,
+            "track_id": 1,
+            "event_id": "7094-E1",
+            "duplicate": false
+          }
+        ]
+      }
+    ]
+  }
+]

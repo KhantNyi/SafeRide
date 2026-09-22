@@ -1,0 +1,359 @@
+{
+  "limitations": "Cached detections; OCR disabled; negative vehicle boxes unavailable in legacy metadata. Counts are not accuracy.",
+  "cases": [
+    {
+      "case": "IMG_6665-0.5",
+      "frames": 84,
+      "track_ids_created": 13,
+      "records": [
+        {
+          "frame": 528,
+          "association": {
+            "track_id": 5,
+            "track_hits": 5,
+            "helmet_status": "no_helmet",
+            "association_score": 0.4979,
+            "person_box": null,
+            "motorcycle_box": {
+              "label": "motorcycle",
+              "confidence": 0.6513671875,
+              "xyxy": [
+                581,
+                944,
+                723,
+                1120
+              ]
+            },
+            "helmet_box": {
+              "label": "without helmet",
+              "confidence": 0.62255859375,
+              "xyxy": [
+                660,
+                822,
+                700,
+                868
+              ]
+            },
+            "plate_box": {
+              "label": "license plate",
+              "confidence": 0.69287109375,
+              "xyxy": [
+                834,
+                1050,
+                913,
+                1114
+              ]
+            }
+          },
+          "plate_frame": 510,
+          "plate_box": [
+            834,
+            1050,
+            913,
+            1114
+          ]
+        },
+        {
+          "frame": 690,
+          "association": {
+            "track_id": 12,
+            "track_hits": 4,
+            "helmet_status": "no_helmet",
+            "association_score": 0.8497,
+            "person_box": {
+              "label": "person",
+              "confidence": 0.8427734375,
+              "xyxy": [
+                725,
+                851,
+                907,
+                1181
+              ]
+            },
+            "motorcycle_box": {
+              "label": "motorcycle",
+              "confidence": 0.85009765625,
+              "xyxy": [
+                724,
+                946,
+                971,
+                1282
+              ]
+            },
+            "helmet_box": {
+              "label": "without helmet",
+              "confidence": 0.76220703125,
+              "xyxy": [
+                804,
+                840,
+                874,
+                916
+              ]
+            },
+            "plate_box": {
+              "label": "license plate",
+              "confidence": 0.72802734375,
+              "xyxy": [
+                982,
+                1150,
+                1078,
+                1226
+              ]
+            }
+          },
+          "plate_frame": 684,
+          "plate_box": [
+            982,
+            1150,
+            1078,
+            1226
+          ]
+        }
+      ],
+      "record_count": 2,
+      "uncertain_motorcycle_observations": 12
+    },
+    {
+      "case": "IMG_6665-1.0",
+      "frames": 39,
+      "track_ids_created": 11,
+      "records": [
+        {
+          "frame": 696,
+          "association": {
+            "track_id": 11,
+            "track_hits": 2,
+            "helmet_status": "no_helmet",
+            "association_score": 0.846,
+            "person_box": {
+              "label": "person",
+              "confidence": 0.84130859375,
+              "xyxy": [
+                666,
+                845,
+                830,
+                1159
+              ]
+            },
+            "motorcycle_box": {
+              "label": "motorcycle",
+              "confidence": 0.78515625,
+              "xyxy": [
+                661,
+                946,
+                884,
+                1242
+              ]
+            },
+            "helmet_box": {
+              "label": "without helmet",
+              "confidence": 0.73388671875,
+              "xyxy": [
+                738,
+                842,
+                802,
+                908
+              ]
+            },
+            "plate_box": {
+              "label": "license plate",
+              "confidence": 0.72802734375,
+              "xyxy": [
+                982,
+                1150,
+                1078,
+                1226
+              ]
+            }
+          },
+          "plate_frame": 684,
+          "plate_box": [
+            982,
+            1150,
+            1078,
+            1226
+          ]
+        }
+      ],
+      "record_count": 1,
+      "uncertain_motorcycle_observations": 0
+    },
+    {
+      "case": "IMG_6805-0.5",
+      "frames": 75,
+      "track_ids_created": 9,
+      "records": [
+        {
+          "frame": 222,
+          "association": {
+            "track_id": 2,
+            "track_hits": 3,
+            "helmet_status": "no_helmet",
+            "association_score": 0.8233,
+            "person_box": {
+              "label": "person",
+              "confidence": 0.75146484375,
+              "xyxy": [
+                706,
+                668,
+                858,
+                926
+              ]
+            },
+            "motorcycle_box": {
+              "label": "motorcycle",
+              "confidence": 0.67236328125,
+              "xyxy": [
+                724,
+                814,
+                872,
+                1007
+              ]
+            },
+            "helmet_box": {
+              "label": "without helmet",
+              "confidence": 0.60400390625,
+              "xyxy": [
+                743,
+                655,
+                807,
+                725
+              ]
+            },
+            "plate_box": {
+              "label": "license plate",
+              "confidence": 0.72509765625,
+              "xyxy": [
+                830,
+                920,
+                914,
+                982
+              ]
+            }
+          },
+          "plate_frame": 216,
+          "plate_box": [
+            830,
+            920,
+            914,
+            982
+          ]
+        },
+        {
+          "frame": 312,
+          "association": {
+            "track_id": 3,
+            "track_hits": 3,
+            "helmet_status": "no_helmet",
+            "association_score": 0.7897,
+            "person_box": {
+              "label": "person",
+              "confidence": 0.39501953125,
+              "xyxy": [
+                734,
+                646,
+                875,
+                820
+              ]
+            },
+            "motorcycle_box": {
+              "label": "motorcycle",
+              "confidence": 0.7744140625,
+              "xyxy": [
+                724,
+                704,
+                922,
+                950
+              ]
+            },
+            "helmet_box": {
+              "label": "without helmet",
+              "confidence": 0.66357421875,
+              "xyxy": [
+                786,
+                642,
+                828,
+                688
+              ]
+            },
+            "plate_box": {
+              "label": "license plate",
+              "confidence": 0.67578125,
+              "xyxy": [
+                504,
+                781,
+                555,
+                819
+              ]
+            }
+          },
+          "plate_frame": 354,
+          "plate_box": [
+            504,
+            781,
+            555,
+            819
+          ]
+        },
+        {
+          "frame": 468,
+          "association": {
+            "track_id": 7,
+            "track_hits": 5,
+            "helmet_status": "no_helmet",
+            "association_score": 0.8235,
+            "person_box": {
+              "label": "person",
+              "confidence": 0.625,
+              "xyxy": [
+                709,
+                682,
+                901,
+                1057
+              ]
+            },
+            "motorcycle_box": {
+              "label": "motorcycle",
+              "confidence": 0.79833984375,
+              "xyxy": [
+                626,
+                938,
+                860,
+                1166
+              ]
+            },
+            "helmet_box": {
+              "label": "without helmet",
+              "confidence": 0.740234375,
+              "xyxy": [
+                788,
+                675,
+                862,
+                749
+              ]
+            },
+            "plate_box": {
+              "label": "license plate",
+              "confidence": 0.6875,
+              "xyxy": [
+                516,
+                924,
+                590,
+                974
+              ]
+            }
+          },
+          "plate_frame": 492,
+          "plate_box": [
+            516,
+            924,
+            590,
+            974
+          ]
+        }
+      ],
+      "record_count": 3,
+      "uncertain_motorcycle_observations": 0
+    }
+  ]
+}

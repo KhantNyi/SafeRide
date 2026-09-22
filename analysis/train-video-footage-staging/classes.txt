@@ -1,0 +1,6 @@
+Helmet
+License Plate
+Motorcycle
+No Helmet
+No License Plate
+Person

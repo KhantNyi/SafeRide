@@ -1,0 +1,212 @@
+{
+  "inventory": [
+    {
+      "clip": "IMG_7077.MOV",
+      "seconds": 19.2,
+      "fps": 30.0,
+      "frames": 576,
+      "width": 3840,
+      "height": 2160
+    },
+    {
+      "clip": "IMG_7087.MOV",
+      "seconds": 11.4,
+      "fps": 30.0,
+      "frames": 342,
+      "width": 3840,
+      "height": 2160
+    },
+    {
+      "clip": "IMG_7089.MOV",
+      "seconds": 33.10166666666667,
+      "fps": 29.998489502039174,
+      "frames": 993,
+      "width": 3840,
+      "height": 2160
+    }
+  ],
+  "settings": {
+    "project_root": "C:\\Users\\ADMIN\\Desktop\\SafeRide",
+    "data_dir": "C:\\Users\\ADMIN\\Desktop\\SafeRide\\analysis\\september-evaluation\\confidence-check\\helmet25-object25\\media",
+    "cache_dir": "C:\\Users\\ADMIN\\Desktop\\SafeRide\\.cache",
+    "upload_dir": "C:\\Users\\ADMIN\\Desktop\\SafeRide\\analysis\\september-evaluation\\confidence-check\\helmet25-object25\\media\\uploads",
+    "evidence_dir": "C:\\Users\\ADMIN\\Desktop\\SafeRide\\analysis\\september-evaluation\\confidence-check\\helmet25-object25\\media\\evidence",
+    "plate_dir": "C:\\Users\\ADMIN\\Desktop\\SafeRide\\analysis\\september-evaluation\\confidence-check\\helmet25-object25\\media\\plates",
+    "preview_dir": "C:\\Users\\ADMIN\\Desktop\\SafeRide\\analysis\\september-evaluation\\confidence-check\\helmet25-object25\\media\\previews",
+    "metadata_dir": "C:\\Users\\ADMIN\\Desktop\\SafeRide\\analysis\\september-evaluation\\confidence-check\\helmet25-object25\\media\\metadata",
+    "database_path": "C:\\Users\\ADMIN\\Desktop\\SafeRide\\analysis\\september-evaluation\\confidence-check\\helmet25-object25\\benchmark.db",
+    "object_model_path": "C:\\Users\\ADMIN\\Desktop\\SafeRide\\models\\yolo11s.pt",
+    "helmet_model_path": "C:\\Users\\ADMIN\\Desktop\\SafeRide\\training\\round3\\models\\helmet-v3-best.pt",
+    "plate_model_path": "C:\\Users\\ADMIN\\Desktop\\SafeRide\\training\\round3\\models\\license-plate-v3-best.pt",
+    "allowed_origins": [
+      "http://localhost:3000",
+      "http://127.0.0.1:3000"
+    ],
+    "video_orientation_auto": true,
+    "sample_every_seconds": 0.5,
+    "adaptive_sampling": true,
+    "adaptive_sample_divisor": 5,
+    "adaptive_hold_seconds": 2.5,
+    "live_preview_fps": 12,
+    "realtime_preview": false,
+    "metadata_write_seconds": 1.0,
+    "violation_cooldown_seconds": 4,
+    "plate_collection_seconds": 6.0,
+    "plate_candidate_limit": 5,
+    "plate_ocr_candidate_limit": 3,
+    "tracker_high_confidence": 0.25,
+    "tracker_low_confidence": 0.1,
+    "tracker_new_track_confidence": 0.25,
+    "tracker_match_threshold": 0.25,
+    "tracker_max_lost_seconds": 3.0,
+    "tracker_appearance_weight": 0.3,
+    "live_max_seconds": 900,
+    "rider_dedupe_seconds": 12.0,
+    "rider_dedupe_match_threshold": 0.22,
+    "min_helmet_person_score": 0.24,
+    "min_person_motorcycle_score": 0.18,
+    "min_helmet_motorcycle_score": 0.3,
+    "min_no_helmet_association_score": 0.38,
+    "min_plate_motorcycle_score": 0.28,
+    "min_no_helmet_votes": 2,
+    "plate_min_aspect": 0.55,
+    "plate_max_aspect": 2.0,
+    "plate_horizontal_slop": 0.22,
+    "plate_assignment_margin": 0.04,
+    "plate_min_track_sightings": 2,
+    "max_violations_per_video": 25,
+    "preview_every_samples": 1,
+    "object_imgsz": 960,
+    "helmet_imgsz": 960,
+    "helmet_crop_inference": false,
+    "helmet_crop_imgsz": 640,
+    "plate_imgsz": 960,
+    "object_confidence": 0.25,
+    "helmet_confidence": 0.25,
+    "plate_confidence": 0.3,
+    "model_device": "auto",
+    "enable_ocr": false,
+    "ocr_languages": [
+      "th",
+      "en"
+    ],
+    "ocr_gpu": null
+  },
+  "runs": [
+    {
+      "interval": 0.5,
+      "ocr": false,
+      "clips": [
+        {
+          "clip": "IMG_7077.MOV",
+          "wall_seconds": 9.099580300004163,
+          "job": {
+            "id": "3d30e45f0b8f4df6a7a99f922bca39fc",
+            "filename": "IMG_7077.MOV",
+            "status": "completed",
+            "message": "Detected 1 helmet violation(s)",
+            "progress": 100.0,
+            "current_frame": 576,
+            "total_frames": 576,
+            "sampled_frames": 61,
+            "violation_count": 1,
+            "elapsed_seconds": 9.0,
+            "processing_fps": 63.7,
+            "eta_seconds": 0.0,
+            "preview_image": "/media/previews/3d30e45f0b8f4df6a7a99f922bca39fc_latest.jpg",
+            "result": "violations_detected",
+            "created_at": "2026-09-06T17:33:24.205888+00:00",
+            "updated_at": "2026-09-06T17:33:33.266713+00:00",
+            "source_video": null
+          },
+          "violations": [
+            {
+              "id": "7dcc20458aca4e37828107254594045a",
+              "job_id": "3d30e45f0b8f4df6a7a99f922bca39fc",
+              "detected_at": "2026-09-06T17:33:32.461200+00:00",
+              "helmet_status": "no_helmet",
+              "helmet_confidence": 0.4560546875,
+              "plate_text": null,
+              "plate_confidence": null,
+              "evidence_image": "/media/evidence/3d30e45f0b8f4df6a7a99f922bca39fc_306_7dcc2045.jpg",
+              "plate_image": null,
+              "frame_number": 306,
+              "track_id": 2,
+              "review_status": "pending",
+              "source": "detected",
+              "note": null,
+              "miss_reason": null
+            }
+          ]
+        },
+        {
+          "clip": "IMG_7087.MOV",
+          "wall_seconds": 3.5469284999999218,
+          "job": {
+            "id": "734daef1cc0a4cddb11dc9017e7dc074",
+            "filename": "IMG_7087.MOV",
+            "status": "completed",
+            "message": "No violations detected in 23 sampled frame(s)",
+            "progress": 100.0,
+            "current_frame": 342,
+            "total_frames": 342,
+            "sampled_frames": 23,
+            "violation_count": 0,
+            "elapsed_seconds": 3.5,
+            "processing_fps": 98.1,
+            "eta_seconds": 0.0,
+            "preview_image": "/media/previews/734daef1cc0a4cddb11dc9017e7dc074_latest.jpg",
+            "result": "no_violations",
+            "created_at": "2026-09-06T17:33:33.318112+00:00",
+            "updated_at": "2026-09-06T17:33:36.816897+00:00",
+            "source_video": null
+          },
+          "violations": []
+        },
+        {
+          "clip": "IMG_7089.MOV",
+          "wall_seconds": 21.273762600001646,
+          "job": {
+            "id": "5f5d35c175c24b0fb130cce3bf033833",
+            "filename": "IMG_7089.MOV",
+            "status": "completed",
+            "message": "Detected 1 helmet violation(s)",
+            "progress": 100.0,
+            "current_frame": 993,
+            "total_frames": 993,
+            "sampled_frames": 146,
+            "violation_count": 1,
+            "elapsed_seconds": 21.2,
+            "processing_fps": 46.8,
+            "eta_seconds": 0.0,
+            "preview_image": "/media/previews/5f5d35c175c24b0fb130cce3bf033833_latest.jpg",
+            "result": "violations_detected",
+            "created_at": "2026-09-06T17:33:36.874258+00:00",
+            "updated_at": "2026-09-06T17:33:58.100531+00:00",
+            "source_video": null
+          },
+          "violations": [
+            {
+              "id": "af3f4d8bb85f42b797e7cf530f95c3bb",
+              "job_id": "5f5d35c175c24b0fb130cce3bf033833",
+              "detected_at": "2026-09-06T17:33:48.748628+00:00",
+              "helmet_status": "no_helmet",
+              "helmet_confidence": 0.83984375,
+              "plate_text": null,
+              "plate_confidence": null,
+              "evidence_image": "/media/evidence/5f5d35c175c24b0fb130cce3bf033833_483_af3f4d8b.jpg",
+              "plate_image": null,
+              "frame_number": 483,
+              "track_id": 9,
+              "review_status": "pending",
+              "source": "detected",
+              "note": null,
+              "miss_reason": null
+            }
+          ]
+        }
+      ],
+      "wall_seconds": 33.95160929999838
+    }
+  ]
+}

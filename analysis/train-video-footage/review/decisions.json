@@ -1,0 +1,1795 @@
+[
+  {
+    "candidate_index": 0,
+    "image": "IMG_6665_f000120.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      2,
+      3,
+      4,
+      5
+    ],
+    "replacements": {
+      "2": [
+        0,
+        [
+          629,
+          425,
+          754,
+          553
+        ]
+      ],
+      "4": [
+        2,
+        [
+          556,
+          553,
+          900,
+          1056
+        ]
+      ],
+      "5": [
+        5,
+        [
+          565,
+          425,
+          865,
+          950
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 1,
+    "image": "IMG_6665_f000510.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      1,
+      2,
+      6,
+      7,
+      9,
+      13
+    ],
+    "replacements": {},
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 2,
+    "image": "IMG_6665_f000690.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      5,
+      7,
+      9
+    ],
+    "replacements": {},
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 3,
+    "image": "IMG_6698_f000090.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      3,
+      4
+    ],
+    "replacements": {},
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 4,
+    "image": "IMG_6699_f000210.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      2,
+      3,
+      4
+    ],
+    "replacements": {
+      "4": [
+        2,
+        [
+          440,
+          424,
+          773,
+          801
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        1,
+        [
+          683,
+          416,
+          715,
+          453
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 5,
+    "image": "IMG_6699_f000300.jpg",
+    "decision": "excluded",
+    "reason": "Incomplete edge view, unhelpful duplicate/distant view, or no clear motorcycle in candidate"
+  },
+  {
+    "candidate_index": 6,
+    "image": "IMG_6701_f000540.jpg",
+    "decision": "excluded",
+    "reason": "Incomplete edge view, unhelpful duplicate/distant view, or no clear motorcycle in candidate"
+  },
+  {
+    "candidate_index": 7,
+    "image": "IMG_6701_f000630.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "replacements": {},
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 8,
+    "image": "IMG_6705_f000270.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "replacements": {
+      "3": [
+        5,
+        [
+          474,
+          331,
+          884,
+          835
+        ]
+      ],
+      "4": [
+        2,
+        [
+          485,
+          475,
+          804,
+          990
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        0,
+        [
+          624,
+          373,
+          708,
+          451
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 9,
+    "image": "IMG_6705_f000360.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      1,
+      2,
+      3,
+      6,
+      7,
+      9
+    ],
+    "replacements": {
+      "7": [
+        2,
+        [
+          652,
+          426,
+          883,
+          701
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 10,
+    "image": "IMG_6705_f000450.jpg",
+    "decision": "excluded",
+    "reason": "Incomplete edge view, unhelpful duplicate/distant view, or no clear motorcycle in candidate"
+  },
+  {
+    "candidate_index": 11,
+    "image": "IMG_6712_f000165.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2
+    ],
+    "replacements": {
+      "1": [
+        2,
+        [
+          711,
+          385,
+          899,
+          652
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 12,
+    "image": "IMG_6712_f000300.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      3,
+      4,
+      5
+    ],
+    "replacements": {
+      "5": [
+        5,
+        [
+          527,
+          307,
+          770,
+          697
+        ]
+      ],
+      "4": [
+        2,
+        [
+          514,
+          434,
+          778,
+          807
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        0,
+        [
+          634,
+          307,
+          685,
+          384
+        ]
+      ],
+      [
+        5,
+        [
+          622,
+          307,
+          750,
+          629
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 13,
+    "image": "IMG_6714_f000690.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      2,
+      4,
+      5
+    ],
+    "replacements": {},
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 14,
+    "image": "IMG_6714_f001140.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "replacements": {
+      "3": [
+        2,
+        [
+          820,
+          480,
+          960,
+          653
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 15,
+    "image": "IMG_6760_f000060.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "replacements": {},
+    "added_boxes": [
+      [
+        1,
+        [
+          278,
+          277,
+          333,
+          304
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 16,
+    "image": "IMG_6760_f000420.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "replacements": {
+      "0": [
+        3,
+        [
+          925,
+          189,
+          1012,
+          265
+        ]
+      ],
+      "3": [
+        2,
+        [
+          815,
+          270,
+          1044,
+          559
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        3,
+        [
+          882,
+          177,
+          937,
+          261
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 17,
+    "image": "IMG_6760_f001080.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "replacements": {},
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 18,
+    "image": "IMG_6761_f000330.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      2,
+      3,
+      4
+    ],
+    "replacements": {
+      "4": [
+        2,
+        [
+          506,
+          294,
+          774,
+          699
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 19,
+    "image": "IMG_6761_f000480.jpg",
+    "decision": "excluded",
+    "reason": "Incomplete edge view, unhelpful duplicate/distant view, or no clear motorcycle in candidate"
+  },
+  {
+    "candidate_index": 20,
+    "image": "IMG_6766_f000270.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "replacements": {
+      "2": [
+        2,
+        [
+          223,
+          319,
+          506,
+          799
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 21,
+    "image": "IMG_6766_f000570.jpg",
+    "decision": "excluded",
+    "reason": "Incomplete edge view, unhelpful duplicate/distant view, or no clear motorcycle in candidate"
+  },
+  {
+    "candidate_index": 22,
+    "image": "IMG_6766_f001350.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "replacements": {
+      "3": [
+        2,
+        [
+          326,
+          328,
+          593,
+          695
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 23,
+    "image": "IMG_6767_f000120.jpg",
+    "decision": "excluded",
+    "reason": "Incomplete edge view, unhelpful duplicate/distant view, or no clear motorcycle in candidate"
+  },
+  {
+    "candidate_index": 24,
+    "image": "IMG_6767_f000750.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "replacements": {},
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 25,
+    "image": "IMG_6767_f001050.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "replacements": {
+      "1": [
+        2,
+        [
+          260,
+          313,
+          550,
+          787
+        ]
+      ],
+      "3": [
+        5,
+        [
+          315,
+          174,
+          572,
+          638
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        0,
+        [
+          390,
+          209,
+          461,
+          288
+        ]
+      ],
+      [
+        3,
+        [
+          455,
+          174,
+          530,
+          253
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 26,
+    "image": "IMG_6767_f001140.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      2,
+      3,
+      4,
+      5
+    ],
+    "replacements": {
+      "3": [
+        5,
+        [
+          550,
+          202,
+          900,
+          701
+        ]
+      ],
+      "5": [
+        5,
+        [
+          509,
+          192,
+          777,
+          687
+        ]
+      ],
+      "4": [
+        2,
+        [
+          504,
+          315,
+          845,
+          837
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        1,
+        [
+          729,
+          698,
+          815,
+          780
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 27,
+    "image": "IMG_6768_f000690.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "replacements": {
+      "3": [
+        5,
+        [
+          644,
+          165,
+          820,
+          470
+        ]
+      ],
+      "4": [
+        2,
+        [
+          620,
+          258,
+          857,
+          536
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 28,
+    "image": "IMG_6768_f000840.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      1,
+      3,
+      4
+    ],
+    "replacements": {
+      "3": [
+        2,
+        [
+          578,
+          280,
+          881,
+          671
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        1,
+        [
+          814,
+          522,
+          877,
+          571
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 29,
+    "image": "IMG_6773_f000270.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      3,
+      4
+    ],
+    "replacements": {
+      "4": [
+        2,
+        [
+          625,
+          290,
+          845,
+          595
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 30,
+    "image": "IMG_6773_f000630.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      2,
+      3,
+      4
+    ],
+    "replacements": {
+      "2": [
+        2,
+        [
+          367,
+          323,
+          729,
+          817
+        ]
+      ],
+      "3": [
+        5,
+        [
+          364,
+          225,
+          640,
+          660
+        ]
+      ],
+      "4": [
+        5,
+        [
+          414,
+          230,
+          742,
+          733
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        0,
+        [
+          518,
+          225,
+          614,
+          324
+        ]
+      ],
+      [
+        3,
+        [
+          623,
+          230,
+          700,
+          334
+        ]
+      ],
+      [
+        1,
+        [
+          605,
+          619,
+          697,
+          692
+        ]
+      ],
+      [
+        1,
+        [
+          697,
+          319,
+          748,
+          347
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 31,
+    "image": "IMG_6774_f000600.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1
+    ],
+    "replacements": {
+      "0": [
+        2,
+        [
+          206,
+          423,
+          659,
+          1040
+        ]
+      ],
+      "1": [
+        5,
+        [
+          256,
+          247,
+          651,
+          906
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        0,
+        [
+          352,
+          293,
+          405,
+          391
+        ]
+      ],
+      [
+        3,
+        [
+          391,
+          247,
+          515,
+          385
+        ]
+      ],
+      [
+        1,
+        [
+          467,
+          790,
+          596,
+          880
+        ]
+      ],
+      [
+        5,
+        [
+          294,
+          295,
+          406,
+          548
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 32,
+    "image": "IMG_6774_f000810.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      2,
+      3,
+      4
+    ],
+    "replacements": {},
+    "added_boxes": [
+      [
+        0,
+        [
+          594,
+          198,
+          623,
+          251
+        ]
+      ],
+      [
+        5,
+        [
+          524,
+          198,
+          624,
+          473
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 33,
+    "image": "IMG_6774_f001470.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "replacements": {
+      "2": [
+        2,
+        [
+          573,
+          321,
+          887,
+          771
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 34,
+    "image": "IMG_6776_f000480.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "replacements": {
+      "3": [
+        2,
+        [
+          450,
+          370,
+          703,
+          662
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 35,
+    "image": "IMG_6779_f000000.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2
+    ],
+    "replacements": {},
+    "added_boxes": [
+      [
+        0,
+        [
+          799,
+          181,
+          869,
+          254
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 36,
+    "image": "IMG_6779_f000150.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "replacements": {
+      "1": [
+        3,
+        [
+          853,
+          158,
+          901,
+          208
+        ]
+      ],
+      "4": [
+        2,
+        [
+          738,
+          238,
+          954,
+          497
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        5,
+        [
+          778,
+          163,
+          934,
+          418
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 37,
+    "image": "IMG_6779_f001770.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "replacements": {
+      "3": [
+        5,
+        [
+          598,
+          167,
+          785,
+          535
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        5,
+        [
+          573,
+          193,
+          695,
+          529
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 38,
+    "image": "IMG_6786_f000060.jpg",
+    "decision": "excluded",
+    "reason": "Incomplete edge view, unhelpful duplicate/distant view, or no clear motorcycle in candidate"
+  },
+  {
+    "candidate_index": 39,
+    "image": "IMG_6786_f000180.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "replacements": {
+      "3": [
+        5,
+        [
+          614,
+          198,
+          846,
+          535
+        ]
+      ],
+      "4": [
+        2,
+        [
+          548,
+          344,
+          811,
+          667
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        5,
+        [
+          554,
+          275,
+          666,
+          526
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 40,
+    "image": "IMG_6787_f000000.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "replacements": {
+      "3": [
+        2,
+        [
+          267,
+          254,
+          389,
+          453
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 41,
+    "image": "IMG_6787_f000540.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      1,
+      2
+    ],
+    "replacements": {
+      "2": [
+        5,
+        [
+          604,
+          247,
+          944,
+          732
+        ]
+      ],
+      "1": [
+        2,
+        [
+          548,
+          423,
+          919,
+          903
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        3,
+        [
+          668,
+          233,
+          744,
+          309
+        ]
+      ],
+      [
+        3,
+        [
+          708,
+          249,
+          793,
+          327
+        ]
+      ],
+      [
+        5,
+        [
+          553,
+          233,
+          744,
+          733
+        ]
+      ],
+      [
+        1,
+        [
+          786,
+          681,
+          892,
+          762
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 42,
+    "image": "IMG_6787_f001260.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      4,
+      5,
+      6,
+      7
+    ],
+    "replacements": {},
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 43,
+    "image": "IMG_6787_f001560.jpg",
+    "decision": "excluded",
+    "reason": "Incomplete edge view, unhelpful duplicate/distant view, or no clear motorcycle in candidate"
+  },
+  {
+    "candidate_index": 44,
+    "image": "IMG_6787_f002130.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      3,
+      4,
+      5,
+      6
+    ],
+    "replacements": {
+      "3": [
+        0,
+        [
+          549,
+          204,
+          593,
+          270
+        ]
+      ],
+      "5": [
+        5,
+        [
+          486,
+          169,
+          733,
+          543
+        ]
+      ],
+      "6": [
+        2,
+        [
+          448,
+          292,
+          725,
+          650
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        5,
+        [
+          466,
+          204,
+          590,
+          563
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 45,
+    "image": "IMG_6788_f000570.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      2,
+      3,
+      4
+    ],
+    "replacements": {
+      "4": [
+        2,
+        [
+          735,
+          273,
+          927,
+          501
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 46,
+    "image": "IMG_6788_f000720.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      1,
+      4,
+      7,
+      8
+    ],
+    "replacements": {},
+    "added_boxes": [
+      [
+        3,
+        [
+          759,
+          183,
+          798,
+          226
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 47,
+    "image": "IMG_6788_f002010.jpg",
+    "decision": "excluded",
+    "reason": "Incomplete edge view, unhelpful duplicate/distant view, or no clear motorcycle in candidate"
+  },
+  {
+    "candidate_index": 48,
+    "image": "IMG_6791_f000480.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      1,
+      4,
+      5
+    ],
+    "replacements": {
+      "5": [
+        2,
+        [
+          452,
+          348,
+          768,
+          866
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        1,
+        [
+          666,
+          587,
+          753,
+          648
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 49,
+    "image": "IMG_6791_f001050.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      1,
+      2,
+      3
+    ],
+    "replacements": {
+      "2": [
+        2,
+        [
+          358,
+          310,
+          588,
+          678
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        3,
+        [
+          478,
+          184,
+          538,
+          249
+        ]
+      ],
+      [
+        0,
+        [
+          462,
+          217,
+          485,
+          265
+        ]
+      ],
+      [
+        5,
+        [
+          382,
+          221,
+          495,
+          582
+        ]
+      ],
+      [
+        1,
+        [
+          370,
+          232,
+          410,
+          253
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 50,
+    "image": "IMG_6792_f001530.jpg",
+    "decision": "excluded",
+    "reason": "Incomplete edge view, unhelpful duplicate/distant view, or no clear motorcycle in candidate"
+  },
+  {
+    "candidate_index": 51,
+    "image": "IMG_6792_f001860.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      3,
+      5,
+      7
+    ],
+    "replacements": {
+      "7": [
+        2,
+        [
+          616,
+          329,
+          902,
+          764
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 52,
+    "image": "IMG_6793_f000240.jpg",
+    "decision": "excluded",
+    "reason": "Incomplete edge view, unhelpful duplicate/distant view, or no clear motorcycle in candidate"
+  },
+  {
+    "candidate_index": 53,
+    "image": "IMG_6793_f000420.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      2,
+      5,
+      6
+    ],
+    "replacements": {},
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 54,
+    "image": "IMG_6798_f000330.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "replacements": {
+      "4": [
+        2,
+        [
+          752,
+          278,
+          1024,
+          637
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 55,
+    "image": "IMG_6798_f000630.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "replacements": {},
+    "added_boxes": [
+      [
+        5,
+        [
+          681,
+          170,
+          773,
+          374
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 56,
+    "image": "IMG_6798_f000720.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      4,
+      7,
+      9
+    ],
+    "replacements": {
+      "0": [
+        3,
+        [
+          848,
+          176,
+          901,
+          248
+        ]
+      ],
+      "9": [
+        5,
+        [
+          757,
+          176,
+          944,
+          501
+        ]
+      ],
+      "7": [
+        2,
+        [
+          755,
+          277,
+          965,
+          588
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        0,
+        [
+          825,
+          182,
+          865,
+          246
+        ]
+      ],
+      [
+        5,
+        [
+          750,
+          182,
+          865,
+          484
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 57,
+    "image": "IMG_6798_f000810.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      2,
+      4,
+      5,
+      7
+    ],
+    "replacements": {
+      "5": [
+        5,
+        [
+          423,
+          173,
+          493,
+          363
+        ]
+      ],
+      "7": [
+        2,
+        [
+          426,
+          289,
+          589,
+          560
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        0,
+        [
+          493,
+          215,
+          523,
+          254
+        ]
+      ],
+      [
+        5,
+        [
+          430,
+          216,
+          525,
+          490
+        ]
+      ],
+      [
+        5,
+        [
+          407,
+          216,
+          461,
+          359
+        ]
+      ],
+      [
+        2,
+        [
+          403,
+          236,
+          497,
+          396
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 58,
+    "image": "IMG_6798_f001260.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "replacements": {
+      "5": [
+        5,
+        [
+          424,
+          202,
+          615,
+          537
+        ]
+      ],
+      "6": [
+        2,
+        [
+          667,
+          318,
+          1047,
+          854
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        1,
+        [
+          930,
+          539,
+          1017,
+          589
+        ]
+      ],
+      [
+        5,
+        [
+          415,
+          205,
+          536,
+          504
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 59,
+    "image": "IMG_6798_f001440.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "replacements": {
+      "4": [
+        5,
+        [
+          208,
+          221,
+          444,
+          579
+        ]
+      ],
+      "5": [
+        2,
+        [
+          240,
+          367,
+          467,
+          668
+        ]
+      ]
+    },
+    "added_boxes": [
+      [
+        1,
+        [
+          352,
+          439,
+          425,
+          466
+        ]
+      ]
+    ]
+  },
+  {
+    "candidate_index": 60,
+    "image": "IMG_6805_f000210.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "replacements": {
+      "3": [
+        2,
+        [
+          790,
+          314,
+          976,
+          572
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 61,
+    "image": "IMG_6805_f000300.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      3,
+      4,
+      7
+    ],
+    "replacements": {},
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 62,
+    "image": "IMG_6805_f000390.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8
+    ],
+    "replacements": {
+      "5": [
+        2,
+        [
+          275,
+          325,
+          586,
+          826
+        ]
+      ]
+    },
+    "added_boxes": []
+  },
+  {
+    "candidate_index": 63,
+    "image": "IMG_6805_f000480.jpg",
+    "decision": "included",
+    "retained_proposals": [
+      0,
+      2,
+      4,
+      8,
+      9,
+      11
+    ],
+    "replacements": {
+      "8": [
+        2,
+        [
+          510,
+          298,
+          708,
+          628
+        ]
+      ]
+    },
+    "added_boxes": []
+  }
+]

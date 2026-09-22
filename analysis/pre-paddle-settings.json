@@ -1,0 +1,1 @@
+{"object_confidence":0.35,"helmet_confidence":0.35,"plate_confidence":0.3,"helmet_crop_inference":false,"video_orientation_auto":true,"sample_every_seconds":0.5,"max_violations_per_video":25,"enable_ocr":true}

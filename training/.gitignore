@@ -3,6 +3,7 @@ __pycache__/
 round3/
 round4/
 round5/
+round6/
 datasets/
 runs/
 *.pt

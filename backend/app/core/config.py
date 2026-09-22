@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     min_no_helmet_association_score: float = 0.38
     min_plate_motorcycle_score: float = 0.28
     min_no_helmet_votes: int = 2
+    evidence_interval_seconds: float = 0.2
+    rider_assignment_margin: float = 0.08
+    occlusion_overlap_fraction: float = 0.45
     plate_min_aspect: float = 0.55
     plate_max_aspect: float = 2.0
     plate_horizontal_slop: float = 0.22

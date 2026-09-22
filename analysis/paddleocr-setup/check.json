@@ -1,0 +1,18 @@
+{
+  "versions": {
+    "paddleocr": "3.7.0",
+    "paddlepaddle": "3.3.0",
+    "paddlex": "3.7.2"
+  },
+  "model": "th_PP-OCRv5_mobile_rec",
+  "device": "cpu",
+  "input": "C:\\Users\\ADMIN\\Desktop\\SafeRide\\analysis\\paddleocr-setup\\synthetic-digits.png",
+  "synthetic": true,
+  "results": [
+    {
+      "text": "3583",
+      "score": 0.9999821186065674
+    }
+  ],
+  "note": "Synthetic smoke test only; not a real-plate accuracy benchmark."
+}

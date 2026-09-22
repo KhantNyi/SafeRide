@@ -10,6 +10,7 @@ import cv2
 from app.core.config import settings
 from app.core.database import utc_now
 from app.services.byte_tracker import ByteTrackDetection, ByteTracker
+from app.services.assignment import match_scores
 from app.services.plate_ocr import read_plate_text, vote_plate_texts, plate_reading_status
 from app.services.plate_candidates import crop_descriptor, select_plate_candidates
 from app.services.repository import create_violation, update_job
@@ -93,6 +94,7 @@ class RiderTrackManager:
             match_threshold=settings.tracker_match_threshold,
             max_time_lost=max_lost_frames,
             appearance_weight=settings.tracker_appearance_weight,
+            source_fps=self.source_fps,
         )
         self.violation_tracks: dict[int, dict] = {}
         self.helmet_votes: dict[int, dict] = {}
@@ -104,12 +106,17 @@ class RiderTrackManager:
 
     def update(self, analysis: dict, frame_number: int, frame=None) -> None:
         motorcycles = analysis["motorcycles"]
+        for bike in motorcycles:
+            bike.pop("track_id", None)
+            bike["association_uncertain"] = False
         detections = [
             ByteTrackDetection(
                 xyxy=motorcycle["xyxy"],
                 score=motorcycle["confidence"],
-                metadata={"index": index},
-                feature=None if frame is None else appearance_feature(frame, motorcycle["xyxy"]),
+                metadata={"index": index, "occluded": any(
+                    other is not motorcycle and overlap_fraction(other["xyxy"], motorcycle["xyxy"]) >= settings.occlusion_overlap_fraction
+                    for other in motorcycles)},
+                feature=None if frame is None else appearance_feature(frame, rider_context_box(motorcycle["xyxy"])),
             )
             for index, motorcycle in enumerate(motorcycles)
         ]
@@ -134,7 +141,7 @@ class RiderTrackManager:
             rider = self.nearest_rider_index(detection.xyxy, people)
             candidates = [other for other in tracked_detections
                           if other.track_id < detection.track_id
-                          and box_iou(other.xyxy, detection.xyxy) >= 0.5
+                          and duplicate_bike_geometry(other.xyxy, detection.xyxy)
                           and rider is not None
                           and self.nearest_rider_index(other.xyxy, people) == rider]
             if candidates:
@@ -156,6 +163,32 @@ class RiderTrackManager:
             motorcycle["track_id"] = self.track_aliases[tracked_detection.track_id]
             motorcycle["track_hits"] = tracked_detection.hits
 
+        for raw_track in self.tracker.tracks:
+            raw_track["identity"] = self.track_aliases.get(raw_track["id"], raw_track["id"])
+        for motorcycle in motorcycles:
+            motorcycle["association_uncertain"] = motorcycle.get("track_id") is None or any(
+                other is not motorcycle
+                and other.get("track_id") != motorcycle.get("track_id")
+                and overlap_fraction(other["xyxy"], motorcycle["xyxy"]) >= settings.occlusion_overlap_fraction
+                for other in motorcycles)
+            if motorcycle.get("track_id") is not None:
+                track = self.violation_track(motorcycle["track_id"], frame_number)
+                motorcycle["plate_identity"] = track.get("plate_identity")
+        # Rebuild geometric associations AFTER identities and occlusion states
+        # are available. Provisional per-frame matches never enter evidence.
+        if "helmets" in analysis and "no_helmets" in analysis:
+            analysis["associations"] = associate_riders(
+                analysis.get("people", []), motorcycles, analysis["helmets"],
+                analysis["no_helmets"], analysis.get("plates", []), analysis.get("negative_vehicles", []))
+        else:
+            analysis["associations"] = [a for a in analysis["associations"]
+                if not (a.get("motorcycle_box") or {}).get("association_uncertain")]
+
+        for motorcycle in motorcycles:
+            if motorcycle.get("track_id") is None or motorcycle["association_uncertain"]:
+                motorcycle["plate_box"] = None
+                continue
+
             # Buffer a few strong plate crops for every motorcycle track. If
             # the no-helmet vote confirms later, early readable views are still
             # available; collection then continues even through helmet-model
@@ -169,6 +202,7 @@ class RiderTrackManager:
                 motorcycle.get("plate_box"),
                 frame_number,
                 frame,
+                motorcycle=motorcycle,
             )
 
         # Simultaneous, spatially separate motorcycles are positive evidence
@@ -192,6 +226,12 @@ class RiderTrackManager:
                 motorcycle["track_id"], association.get("helmet_status"), frame_number
             )
 
+        no_helmet = [a for a in analysis["associations"] if a.get("helmet_status") == "no_helmet"]
+        primary = max(no_helmet, key=lambda a:a.get("association_score",0), default=None)
+        analysis["has_no_helmet"] = bool(no_helmet)
+        analysis["helmet_box"] = primary.get("helmet_box") if primary else None
+        analysis["plate_box"] = primary.get("plate_box") if primary else None
+
         self.prune(frame_number)
 
     @staticmethod
@@ -207,6 +247,11 @@ class RiderTrackManager:
         votes = self.helmet_votes.setdefault(
             track_id, {"no_helmet": 0, "with_helmet": 0, "last_frame": frame_number}
         )
+        vote_frames = votes.setdefault("vote_frames", {})
+        previous = vote_frames.get(helmet_status)
+        if previous is not None and frame_number - previous < max(1, round(settings.evidence_interval_seconds * self.source_fps)):
+            return
+        vote_frames[helmet_status] = frame_number
         votes[helmet_status] += 1
         votes["last_frame"] = frame_number
 
@@ -321,6 +366,7 @@ class RiderTrackManager:
             "plate_candidates": [],
             "plate_sightings": 0,
             "last_plate_frame": None,
+            "plate_identity": None,
         }
         self.violation_tracks[track_id] = track
         return track
@@ -346,7 +392,8 @@ class RiderTrackManager:
             track["pending_annotated"] = annotated.copy()
 
         self.collect_plate_candidate(
-            track, association.get("plate_box"), frame_number, frame
+            track, association.get("plate_box"), frame_number, frame,
+            motorcycle=association.get("motorcycle_box"),
         )
 
     def collect_plate_candidate(
@@ -355,19 +402,46 @@ class RiderTrackManager:
         plate_box: dict | None,
         frame_number: int,
         frame,
+        motorcycle: dict | None = None,
     ) -> None:
         if not plate_box or frame is None:
             return
-        if track.get("last_plate_frame") == frame_number:
+        if motorcycle and motorcycle.get("association_uncertain"):
             return
-
-        track["last_plate_frame"] = frame_number
-        track["plate_sightings"] += 1
+        previous = track.get("last_plate_frame")
+        if previous is not None and frame_number - previous < max(1, round(settings.evidence_interval_seconds * self.source_fps)):
+            return
         candidate = build_plate_candidate(frame, plate_box, run_ocr=False)
         if not candidate:
             return
-
+        if motorcycle:
+            relative = relative_plate_box(plate_box, motorcycle)
+            identity = track.get("plate_identity")
+            # OCR crops include surrounding bodywork. Exclude that padding
+            # from identity checks so it cannot dilute a changed plate colour.
+            plate_interior = crop_box(frame, plate_box["xyxy"], padding=0)
+            hsv = cv2.cvtColor(plate_interior, cv2.COLOR_BGR2HSV)
+            colour = cv2.calcHist([hsv], [0, 1], None, [12, 4], [0, 180, 0, 256])
+            cv2.normalize(colour, colour, alpha=1, norm_type=cv2.NORM_L1)
+            if identity:
+                if not consistent_plate_position(relative, identity["relative"]):
+                    return
+                # Appearance is an extra veto, never a substitute for geometry.
+                if float(abs(candidate["descriptor"] - identity["descriptor"]).mean()) > .28:
+                    return
+                # Compare with the original accepted appearance, not a rolling
+                # average that can gradually drift onto another plate. Colour
+                # is only a veto; matching colour does not prove identity.
+                anchor = identity.get("colour_anchor")
+                if anchor is not None and cv2.compareHist(anchor, colour, cv2.HISTCMP_BHATTACHARYYA) > .5:
+                    return
+            track["plate_identity"] = {"relative": relative, "descriptor": candidate["descriptor"],
+                                       "frame": frame_number,
+                                       "colour_anchor": identity.get("colour_anchor", colour) if identity else colour}
+        track["last_plate_frame"] = frame_number
+        track["plate_sightings"] += 1
         candidate["timestamp"] = frame_number / self.source_fps
+        candidate["frame_number"] = frame_number
         candidates = track["plate_candidates"]
         candidates.append(candidate)
         track["plate_candidates"] = select_plate_candidates(candidates, settings.plate_candidate_limit)
@@ -385,9 +459,7 @@ class RiderTrackManager:
         association = (track["evidence_association"] or track["pending_association"]).copy()
         candidate, ocr_reads = finalize_plate_candidates(track["plate_candidates"])
 
-        # Co-travel gate: the plate must have been seen with this track in enough
-        # samples, otherwise a one-off plate (a passing car's) is dropped rather
-        # than attached to the rider.
+        # Only spatially/visually consistent, time-separated observations count.
         required_sightings = max(settings.plate_min_track_sightings, 1)
         if candidate and track["plate_sightings"] >= required_sightings:
             association["plate_box"] = candidate["plate_box"]
@@ -513,6 +585,7 @@ class RiderTrackManager:
         track["plate_candidates"] = []
         track["plate_sightings"] = 0
         track["last_plate_frame"] = None
+        track["plate_identity"] = None
 
     def prune(self, frame_number: int) -> None:
         max_age = max(self.cooldown_frames * 2, 1)
@@ -1013,6 +1086,7 @@ def serialize_boxes(boxes: list[dict]) -> list[dict]:
             "confidence": box["confidence"],
             "xyxy": box["xyxy"],
             **({"track_id": box["track_id"]} if box.get("track_id") is not None else {}),
+            **({"association_uncertain": True} if box.get("association_uncertain") else {}),
         }
         for box in boxes
     ]
@@ -1292,7 +1366,12 @@ def appearance_feature(frame, xyxy: list[int]):
         return None
     small = cv2.resize(crop, (48, 48), interpolation=cv2.INTER_AREA)
     hsv = cv2.cvtColor(small, cv2.COLOR_BGR2HSV)
-    hist = cv2.calcHist([hsv], [0, 1], None, [16, 8], [0, 180, 0, 256]).flatten().astype("float64")
+    # Include brightness so a black shirt and a white shirt do not both reduce
+    # to the same low-saturation colour. Upper/lower regions preserve layout.
+    import numpy as np
+    hist = np.concatenate([cv2.calcHist([part], [0, 1, 2], None, [8, 4, 4],
+                          [0, 180, 0, 256, 0, 256]).flatten()
+                          for part in (hsv[:24], hsv[24:])]).astype("float64")
     total = hist.sum()
     if total <= 0:
         return None
@@ -1318,6 +1397,64 @@ def extract_boxes(result) -> list[dict]:
             }
         )
     return boxes
+
+
+def overlap_fraction(first, second):
+    x1, y1 = max(first[0],second[0]), max(first[1],second[1])
+    x2, y2 = min(first[2],second[2]), min(first[3],second[3])
+    return max(0,x2-x1)*max(0,y2-y1)/max(min(box_area(first),box_area(second)),1)
+
+
+def duplicate_bike_geometry(first, second):
+    """Nested detector boxes share a rear anchor; aligned bikes need not."""
+    width = max(min(first[2]-first[0], second[2]-second[0]), 1)
+    height = max(min(first[3]-first[1], second[3]-second[1]), 1)
+    return (box_iou(first, second) >= .5
+            and abs(first[3]-second[3]) <= .12*height
+            and abs(box_center(first)[0]-box_center(second)[0]) <= .25*width)
+
+
+def rider_context_box(box):
+    x1,y1,x2,y2=box
+    return [x1, max(0, int(y1-(y2-y1)*.75)), x2,y2]
+
+
+def relative_plate_box(plate, motorcycle):
+    px,py=box_center(plate["xyxy"])
+    x1,y1,x2,y2=motorcycle["xyxy"]
+    w,h=max(x2-x1,1),max(y2-y1,1)
+    p=plate["xyxy"]
+    return [(px-x1)/w,(py-y1)/h,(p[2]-p[0])/w,(p[3]-p[1])/h]
+
+
+def consistent_plate_position(current, previous):
+    return (abs(current[0]-previous[0]) <= .30 and abs(current[1]-previous[1]) <= .30
+            and all(.4 <= a/max(b,.0001) <= 2.5 for a,b in zip(current[2:],previous[2:])))
+
+
+def plausible_person_on_motorcycle(person, motorcycle):
+    if motorcycle.get("association_uncertain"):
+        return False
+    px1,py1,px2,py2=person["xyxy"]
+    x1,y1,x2,y2=motorcycle["xyxy"]
+    h,w=max(y2-y1,1),max(x2-x1,1)
+    # A distant rider whose feet only touch the top of the nearer bike is not
+    # seated on it. This also works when the distant bike was not detected.
+    return (y1+.25*h <= py2 <= y2+.35*h
+            and min(px2,x2)-max(px1,x1) >= min(px2-px1,w)*.25)
+
+
+def choose_motorcycle(scored):
+    # Duplicate detector boxes with the same established identity count once.
+    identities = {}
+    for score,bike in scored:
+        identity=bike.get("track_id",id(bike))
+        if score > identities.get(identity,(0,None))[0]:
+            identities[identity]=(score,bike)
+    ranked=sorted(identities.values(),key=lambda x:x[0],reverse=True)
+    if not ranked or (len(ranked)>1 and ranked[0][0]-ranked[1][0]<settings.rider_assignment_margin):
+        return None,0.0
+    return ranked[0][1],ranked[0][0]
 
 
 def associate_riders(
@@ -1429,12 +1566,12 @@ def assign_plates_to_motorcycles(
 ) -> dict[int, tuple[dict, float]]:
     """One-to-one plate-to-motorcycle assignment, keyed by id(motorcycle).
 
-    Each plate picks its single best motorcycle; ambiguous plates (runner-up
-    motorcycle within the assignment margin) and plates that fit a nearby
-    car/bus/truck better are dropped. Greedy assignment guarantees two riders
-    can never claim the same plate in one frame.
+    Ambiguous plates (runner-up motorcycle within the assignment margin) and
+    plates that fit a nearby car/bus/truck better are dropped. Global matching
+    assigns each remaining plate to at most one motorcycle in the frame.
     """
-    pairs = []
+    import numpy as np
+    scores = np.zeros((len(plate_boxes),len(motorcycles)))
     for plate_index, plate in enumerate(plate_boxes):
         scored = []
         for motorcycle_index, motorcycle in enumerate(motorcycles):
@@ -1452,18 +1589,14 @@ def assign_plates_to_motorcycles(
             continue
         if plate_prefers_negative_vehicle(plate, best_score, negative_vehicles):
             continue
-        pairs.append((best_score, plate_index, best_motorcycle_index))
-
-    pairs.sort(reverse=True)
-    assigned_plates: set[int] = set()
-    assigned_motorcycles: set[int] = set()
+        # Keep every plausible alternative for global one-to-one matching;
+        # uncertainty above still permits leaving a plate unassigned.
+        for score,index in scored:
+            if not plate_prefers_negative_vehicle(plate,score,negative_vehicles):
+                scores[plate_index,index]=score
     assignments: dict[int, tuple[dict, float]] = {}
-    for score, plate_index, motorcycle_index in pairs:
-        if plate_index in assigned_plates or motorcycle_index in assigned_motorcycles:
-            continue
-        assigned_plates.add(plate_index)
-        assigned_motorcycles.add(motorcycle_index)
-        assignments[id(motorcycles[motorcycle_index])] = (plate_boxes[plate_index], score)
+    for plate_index,motorcycle_index in match_scores(scores,settings.min_plate_motorcycle_score):
+        assignments[id(motorcycles[motorcycle_index])] = (plate_boxes[plate_index], float(scores[plate_index,motorcycle_index]))
     return assignments
 
 
@@ -1512,25 +1645,13 @@ def best_motorcycle_for_person(person: dict | None, motorcycles: list[dict]) -> 
     if not person:
         return None, 0.0
 
-    best_motorcycle = None
-    best_score = 0.0
-    for motorcycle in motorcycles:
-        score = score_person_to_motorcycle(person, motorcycle)
-        if score > best_score:
-            best_motorcycle = motorcycle
-            best_score = score
-    return best_motorcycle, best_score
+    return choose_motorcycle([(score_person_to_motorcycle(person,bike),bike)
+                              for bike in motorcycles if plausible_person_on_motorcycle(person,bike)])
 
 
 def best_motorcycle_for_helmet(helmet_box: dict, motorcycles: list[dict]) -> tuple[dict | None, float]:
-    best_motorcycle = None
-    best_score = 0.0
-    for motorcycle in motorcycles:
-        score = score_helmet_to_motorcycle(helmet_box, motorcycle)
-        if score > best_score:
-            best_motorcycle = motorcycle
-            best_score = score
-    return best_motorcycle, best_score
+    return choose_motorcycle([(score_helmet_to_motorcycle(helmet_box,bike),bike)
+                              for bike in motorcycles if not bike.get("association_uncertain")])
 
 
 def combined_score(
@@ -1555,6 +1676,8 @@ def score_helmet_to_person(helmet_box: dict, person: dict) -> float:
     person_height = max(y2 - y1, 1)
     upper_person = [x1, y1, x2, int(y1 + person_height * 0.62)]
     expanded_upper = expand_box(upper_person, 0.20)
+    if not point_in_box((hx,hy),expanded_upper):
+        return 0.0
     top_center = ((x1 + x2) / 2, y1 + person_height * 0.20)
     normalized_distance = point_distance((hx, hy), top_center) / max(person_width, person_height)
     center_bonus = 0.55 if point_in_box((hx, hy), expanded_upper) else 0.0
@@ -1612,6 +1735,11 @@ def score_plate_to_motorcycle(plate: dict, motorcycle: dict) -> float:
 
 
 def plausible_plate_for_motorcycle(plate: dict, motorcycle: dict) -> bool:
+    if motorcycle.get("association_uncertain"):
+        return False
+    identity=motorcycle.get("plate_identity")
+    if identity and not consistent_plate_position(relative_plate_box(plate,motorcycle),identity["relative"]):
+        return False
     px, py = box_center(plate["xyxy"])
     mx1, my1, mx2, my2 = motorcycle["xyxy"]
     motorcycle_width = max(mx2 - mx1, 1)
